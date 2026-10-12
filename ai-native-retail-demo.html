@@ -253,6 +253,10 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
 .sml{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px 2px 10px}
 .sm{border-bottom:1px solid var(--line);padding-bottom:8px;font-size:14px}.sh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}.sh time{color:var(--ink3);font-variant-numeric:tabular-nums}
 @media(max-width:1000px){#lower{grid-template-columns:1fr!important}}
+.why-d{margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:0 12px;background:var(--surface2);font-size:13px}.why-d summary{cursor:pointer;padding:8px 0;font-weight:600;color:var(--accent)}.why-d p{margin:0 0 8px}
+.rcell{width:34px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;color:var(--ink3)}
+.r-R{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}.r-A,.r-AR{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}.r-AR{font-size:11px}.r-C{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}.r-I{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.raci th{white-space:normal;min-width:72px}.raci td:first-child,.raci th:first-child{position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px}
 @media(max-width:1500px){.role>span{display:none}}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
@@ -1000,7 +1004,7 @@ const VERB = { approved: 'Approved', edited: 'Edited and approved', rejected: 'R
 
 /* ---------- state ---------- */
 const S = { persona: 'ch', route: 'landing', arg: null, dec: [], log: [], feed: [], adj: {}, adjLog: [], stats: {}, flash: {}, seq: 0,
-  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', tflt: 'all', stage: null, wiVal: {}, chat: {}, btab: {}, pres: { on: false, i: 0, did3: false } };
+  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, rfired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', tflt: 'all', stage: null, wiVal: {}, chat: {}, btab: {}, pres: { on: false, i: 0, did3: false } };
 AG.forEach((a, i) => {
   a.act = [`05:55  Checked ${ri(300, 1900)} records, nothing else changed`, `05:20  Compared with yesterday and the same weekday last month`];
   const req = ri(22, 80), acc = Math.round(req * (0.62 + R() * 0.18)), ed = Math.round(req * (0.1 + R() * 0.1));
@@ -1009,7 +1013,7 @@ AG.forEach((a, i) => {
 });
 const stageOfAgent = id => (AGM[id] || {}).stage;
 function addDecision(o) {
-  const d = Object.assign({ id: 'd' + (++S.seq), status: 'open', effect: {}, ev: [], source: 'scenario' }, o);
+  const d = Object.assign({ id: 'd' + (++S.seq), status: 'open', effect: {}, ev: [], source: 'scenario', t0: S.sim.t }, o);
   if (d.stage == null) d.stage = stageOfAgent(d.agent || d.sa);
   S.dec.push(d);
   const aid = d.agent || d.sa;
@@ -1088,13 +1092,14 @@ document.addEventListener('keydown', e => {
 function decisionCard(d, compact) {
   const ag = d.agentName ? `<span class="tag acc">${d.agentName}</span>` : '', an = analysisFor(d);
   if (d.status !== 'open') {
-    return `<div class="dcard done-d ${d.status === 'rejected' ? 'rej' : ''}"><div class="row" style="justify-content:space-between"><strong>${d.title}</strong>${ag}</div><p class="why"><b>${VERB[d.status]}</b> by ${PWHO[d.role]} at ${d.at}. Reason: ${esc(d.reason)}${d.changeTxt ? ' Change: ' + esc(d.changeTxt) : ''}</p><button class="chip" data-act="brief" data-id="${d.id}">View the evidence used</button></div>`;
+    return `<div class="dcard done-d ${d.status === 'rejected' ? 'rej' : ''}"><div class="row" style="justify-content:space-between"><strong>${d.title}</strong>${ag}</div><p class="why"><b>${VERB[d.status]}</b> by ${d.by || PWHO[d.role]} at ${d.at}. Reason: ${esc(d.reason)}${d.changeTxt ? ' Change: ' + esc(d.changeTxt) : ''}</p><button class="chip" data-act="brief" data-id="${d.id}">View the evidence used</button></div>`;
   }
   return `<div class="dcard" data-did="${d.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><strong>${d.title}</strong>${ag}</div>
     <p class="why">${d.why}</p>${!compact && d.ev && d.ev.length ? `<ul class="ev">${d.ev.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+    ${reasonBox(d)}
     <div class="ask">${d.ask}</div>
-    <p class="imp">${impactLine(d)}${an ? ' &middot; Confidence ' + an.conf.p + '%' : ''}</p>
-    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="brief" data-id="${d.id}">Review evidence</button><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
+    <p class="imp">${impactLine(d)}${an ? ' &middot; Confidence ' + an.conf.p + '%' : ''}</p>${raciLine(d)}
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="brief" data-id="${d.id}">Review evidence</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Question this</button><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
 }
 const REASONS = { approve: ['Evidence is clear', 'Within our limits', 'Low risk, high value', 'Time is short'], edit: ['Adjusted for local knowledge', 'Right idea, wrong size', 'Needs a smaller first step'], reject: ['Not enough evidence', 'Cost is too high', 'Wrong timing', 'Handle another way'] };
 function decideHTML(d, kind) {
@@ -1119,7 +1124,7 @@ function decideHTML(d, kind) {
 function openDecide(id, kind) { const d = S.dec.find(x => x.id === id); if (!d || d.status !== 'open') return; const L = openLayer('modal', 'Decision: ' + d.title, () => decideHTML(d, kind)); setTimeout(() => { const t = $('#chg', L.el) || $('input[name=chg]:checked', L.el) || $('#reason', L.el); t && t.focus(); }, 30); }
 function decide(id, kind, reason, chg) {
   const d = S.dec.find(x => x.id === id); if (!d || d.status !== 'open') return;
-  d.status = { approve: 'approved', edit: 'edited', reject: 'rejected' }[kind]; d.reason = reason; d.at = clock(S.sim.t);
+  d.status = { approve: 'approved', edit: 'edited', reject: 'rejected' }[kind]; d.reason = reason; d.at = clock(S.sim.t); d.by = PWHO[S.persona];
   const ed = d.edit; let vars = {}, txt = '';
   if (ed && kind !== 'reject') {
     if (ed.type === 'choice') { const id2 = kind === 'edit' ? chg : ed.rec; const o = ed.options.find(x => x.id === id2) || ed.options[0]; vars.choice = o.l; txt = kind === 'edit' ? o.l : ''; }
@@ -1129,10 +1134,12 @@ function decide(id, kind, reason, chg) {
   const sa = d.agent || d.sa, st = S.stats[sa];
   if (st) { if (kind === 'approve') st.acc++; else if (kind === 'edit') st.edit++; else st.rej++; }
   const f = kind === 'approve' ? 1 : kind === 'edit' ? 0.8 : 0;
-  Object.entries(d.effect || {}).forEach(([k, v]) => { if (!f) return; S.adj[k] = (S.adj[k] || 0) + v * f; S.adjLog.unshift({ k, v: v * f, who: d.agentName || 'Decision', t: clock(S.sim.t) }); S.flash[k] = 1; });
-  S.log.unshift({ role: d.role, who: PWHO[d.role], agent: d.agentName || 'Agent', wf: d.wf || (d.source === 'task' ? 'task' : d.source === 'scenario' ? 'scenario' : d.source === 'day' ? 'day' : null), kind: d.status, item: d.title, reason, change: txt, time: 'Today ' + clock(S.sim.t), ord: ++S.seq });
+  Object.entries(d.effect || {}).forEach(([k, v]) => { if (!f) return; S.adj[k] = (S.adj[k] || 0) + v * f; S.adjLog.unshift({ k, v: v * f, who: d.agentName || 'Decision', by: d.by, t: clock(S.sim.t) }); S.flash[k] = 1; });
+  S.log.unshift({ role: S.persona, who: d.by, agent: d.agentName || 'Agent', wf: d.wf || (d.source === 'task' ? 'task' : d.source === 'scenario' ? 'scenario' : d.source === 'day' ? 'day' : null), kind: d.status, item: d.title, reason, change: txt, time: 'Today ' + clock(S.sim.t), ord: ++S.seq });
   if (d.agent) { const a = AGM[d.agent]; a.act.unshift(`${clock(S.sim.t)}  ${VERB[d.status]} by ${PWHO[d.role]}: ${reason}`); a.last = `${VERB[d.status]} ${clock(S.sim.t)}`; if (!openFor(d.agent).length) a.status = 'Watching'; }
   toast(`${VERB[d.status]}. Logged with your reason.`);
+  if (d.source !== 'task') { if (d.status === 'rejected') recordReject(d); else applyWritebacks(d); raciNotify(d); }
+  if (d.id === 'd-lineup' && d.status !== 'rejected') applyLineup();
   if (d.wf) wfAfter(d);
 }
 
@@ -1153,7 +1160,7 @@ function genAn(d) {
 function checkBox(d, kind) {
   const an = analysisFor(d) || genAn(d);
   const body = kind === 'reject' ? `<b>If you reject:</b> ${an.noact}` : kind === 'edit' ? `<b>Agent's recommendation:</b> ${an.sum}` : `<b>What happens next:</b> ${an.next.slice(0, 3).join('; ')}.`;
-  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}<br><span style="display:block;margin-top:6px">${body}</span><button class="chip" style="margin-top:8px" data-act="brief" data-id="${d.id}">Open the full evidence brief</button></div>`;
+  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}${raciLine(d)}<br><span style="display:block;margin-top:6px">${body}</span><span class="row" style="margin-top:8px"><button class="chip" data-act="brief" data-id="${d.id}">Open the full evidence brief</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this first</button></span></div>`;
 }
 function barSVG(c) {
   const W = 520, H = 176, pl = 8, pb = 24, pt = 20, n = c.data.length, mx = Math.max(...c.data, c.ref || 0) * 1.15, bw = (W - pl * 2) / n;
@@ -1180,7 +1187,7 @@ function briefHTML(id) {
       <div class="card stat" style="box-shadow:none"><div class="l">Expected effect</div><div class="small" style="margin-top:4px">${imp.length ? imp.map(([k, v]) => `<b>${METRIC[k].name}</b> ${v > 0 ? '+' : '-'}${METRIC[k].d(v)}`).join('<br>') : 'No scorecard change'}</div></div>
       <div class="card stat" style="box-shadow:none"><div class="l">If we do nothing</div><div class="small" style="margin-top:4px">${firstS(an.noact)}</div></div></div>
     <h3 class="h3">Options at a glance</h3><div class="tw card"><table class="tbl"><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b>${o.rec ? ' <span class="tag acc">Recommended</span>' : ''}</td><td>${o.net || o.gain}</td></tr>`).join('')}</tbody></table></div>
-    <h3 class="h3">Main risk</h3><p>${an.risks[0]}</p>
+    <h3 class="h3">Main risk</h3><p>${an.risks[0]}</p>${raciLine(d) ? '<h3 class="h3">Who is involved</h3>' + raciLine(d) : ''}
     <div class="row" style="margin-top:14px"><button class="btn" data-act="btab" data-id="${id}" data-k="detail">See full detail</button><button class="btn" data-act="btab" data-id="${id}" data-k="chat">Ask the team a question</button></div>`;
   } else if (tab === 'detail') {
     body = `<div style="margin-top:12px">` +
@@ -1195,7 +1202,7 @@ function briefHTML(id) {
   return `<div class="brief"><span class="eyebrow">Decision brief &middot; ${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 8px">${d.title}</h2>
   <div class="row"><span class="tag acc">${d.agentName || 'Agent'}</span><span class="tag">Illustrative data</span></div>
   <div class="btabs" role="tablist" aria-label="Brief sections">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" class="btab" data-act="btab" data-id="${id}" data-k="${k}">${l}</button>`).join('')}</div>${body}
-  <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><button class="btn" data-act="share-slack" data-id="${d.id}">Share in Slack</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
+  <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><button class="btn" data-act="share-slack" data-id="${d.id}">Share in Slack</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${d.by || PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
 }
 /* ---------- team chat: free-text questions, any agent can join ----------
    The demo assistant answers from the illustrative data and a prepared knowledge base (KB). No live AI. */
@@ -1266,6 +1273,13 @@ K('assign', /assign|delegate|\btask|follow.?up|remind/g, [['chief', (cx, st) => 
 K('draft', /draft|write|e-?mail|script|compose/g, [['reply', cx => `Draft for ${cx.d && /day|supplier|truck/i.test(cx.d.title) ? SG : SG}: "Hello, our order for ${CAT_DAIRY} was due at 06:00 and has not arrived. Please confirm a dispatch time and truck registration by 08:00 so we can plan the dock. Thank you." The Buyer reviews it before it is sent.`]], ['What do we offer in return?', 'What if they cannot deliver today?', 'Assign the call'], '', []);
 K('simple', /\bsimple|plain|eli5|in short|in a nutshell|summar(y|ise|ize) (this|it)/g, [['analyst', cx => cx.d ? `In plain words: ${firstS((analysisFor(cx.d) || genAn(cx.d)).sum)} If we do nothing: ${firstS((analysisFor(cx.d) || genAn(cx.d)).noact)}` : 'Open a decision, then ask me again and I will explain it in plain words.']], [], '', []);
 K('wbr', /\bwbr\b|weekly business review|weekly review|business review/g, [['analyst', () => 'I compile the weekly business review data pack: the scorecard this week against last, what moved and which agents moved it, decisions taken, and open items. Open it from your task board with Generate data pack, or request each team\'s numbers with Request WBR data. Requests go to a Slack channel and become tasks on each person\'s board.']], ['Request WBR numbers from each team', 'What moved this week?', 'Where are we losing margin?'], '', []);
+K('okr', /\bokrs?\b|objective|key result|quarter|on pace/g, [['analyst', () => { const all = OKRS.flatMap(o => o.krs), b = all.filter(k => krStatus(k) === 'Behind'), r = all.filter(k => krStatus(k) === 'At risk'); return `Week ${QTR.week} of ${QTR.of}: ${all.length - b.length - r.length} of ${all.length} key results are on pace, ${r.length} at risk, ${b.length} behind. Behind: ${b.map(k => `${k.n} (${Math.round(krProg(k) * 100)}% against ${Math.round(PACE * 100)}% expected)`).join('; ') || 'none'}.`; }]], ['Which team should I nudge?', 'What is blocking the growth lineup?', 'Which approvals are delayed?'], 'The biggest gap is growth: the GMV step change is far behind the pace of the quarter, and the lineup is gated by working capital and approvals.', [T('gro', 'Share a plan to close the GMV gap this quarter'), T('fin', 'Confirm the working capital release for the lineup')]);
+K('nudge', /nudge|chase|who is behind|which team|who should i|monitor/g, [['chief', () => { const r = orgRows(); return `Nudge: ${r.filter(x => x.rec === 'Nudge').map(x => `${x.p.who} (${x.offs} off target, ${x.open.length} decisions waiting)`).join('; ') || 'nobody'}. Watch: ${r.filter(x => x.rec === 'Watch').map(x => x.p.who).join(', ') || 'nobody'}. Monitor only: ${r.filter(x => x.rec === 'Monitor').map(x => x.p.who).join(', ') || 'nobody'}. Open the Org and OKRs page to send the nudge in Slack.`; }]], ['How are the OKRs moving?', 'Which approvals are delayed?'], '', []);
+K('deps', /dependenc|approval|allocation|delayed|blocked on|escalat|waiting for/g, [['chief', () => { const late = S.deps.filter(d => !d.done && depStatus(d) === 'Breached'); return `${late.length} approvals are past their turnaround: ` + late.map(d => `${d.title} (${rname(d.owner)}, ${d.days} of ${d.sla} days)`).join('; ') + '. You can nudge or escalate each one from Org and OKRs.'; }], ['cash', () => { const c = lineupCalc(S.lint); return `Working capital for the growth lineup: ${C} ${num(c.peakWc)}k needed at peak against ${C} ${num(c.alloc)}k available. ${c.ok ? 'It fits.' : 'It is short by ' + C + ' ' + num(c.peakWc - c.alloc) + 'k until the cash decision and the CFO top-up land.'}`; }]], ['Can the growth lineup go ahead?', 'Who falls under availability in the RACI?'], 'Clear the two oldest approvals (CFO top-up and marketing budget) first: they gate the growth lineup.', [T('ch', 'Escalate the CFO top-up and the marketing budget approval')]);
+K('lineup', /lineup|line-up|growth campaigns?|scale growth|campaign plan|marketing plan|step change/g, [['scout', () => `The lineup has 6 campaigns across weeks 3 to 8, about ${C} 1.98M of expected extra sales, most with no history in Chile. It is phased: phase 1 in weeks 3 to 5, later phases only if their gates are met.`], ['cash', () => { const c = lineupCalc(S.lint); return `Peak working capital need is ${C} ${num(c.peakWc)}k in week ${c.peakWeek} against ${C} ${num(c.alloc)}k available.`; }], ['camp', () => 'Each campaign has a measurable gate, for example week-1 basket size or share of orders. Missing a gate keeps the next phase closed.']], ['Which approvals are delayed?', 'What if we push the lineup harder?'], 'Approve phase 1 now and gate the rest.', [T('gro', 'Prepare phase 1 campaigns for weeks 3 to 5')]);
+K('raci', /\braci\b|accountable|responsible for|who owns|who falls under|owner of/g, [['chief', cx => { const L = cx.low, m = [[/availab/, 'avail'], [/margin/, 'margin'], [/gmv|sales/, 'gmv'], [/repeat/, 'repeat'], [/working|cash/, 'wc'], [/picker|productiv/, 'pick'], [/supplier|on.?time/, 'sot'], [/forecast/, 'fcst'], [/invoice/, 'invm'], [/price/, 'd_price'], [/competitor/, 'd_comp'], [/campaign/, 'd_camp']].find(x => x[0].test(L)); if (!m) return `The RACI matrix covers ${RACI_KEYS.length} KPIs and decisions. ${RACI_KEYS.filter(raciIssue).length} need attention. It drives who approves, who executes, who is consulted and who is informed. Edit it on the Team dashboard.`; const r = raciOf(m[1]); return `${RACI0[m[1]].n}: Accountable ${raciNames(r.A)}. Responsible ${raciNames(r.R)}. Consulted ${raciNames(r.C)}. Informed ${raciNames(r.I)}.`; }]], ['Which tools were updated by recent decisions?'], '', []);
+K('tools', /\btools?\b|write.?back|\bsync|connected/g, [['chief', () => `${Object.values(S.tools).filter(t => t.on).length} of ${Object.keys(S.tools).length} tools are connected. ` + (S.wb.length ? 'Latest updates from decisions: ' + S.wb.filter(w => w.tool !== 'bi' && w.tool !== 'slack').slice(0, 3).map(w => `${S.tools[w.tool].n}: ${w.text} (${w.status.toLowerCase()})`).join('; ') + '.' : 'No decision has written back yet. Approve one and the tools it touches update.')]], ['Who falls under availability in the RACI?'], '', []);
+K('routines', /routine|recurring|scheduled|running every/g, [['chief', () => `${S.routines.filter(r => r.on).length} daily routines are running: ` + S.routines.filter(r => r.on).slice().sort((a, b) => a.min - b.min).map(r => `${r.time} ${AGM[r.agent].name} (${r.text.charAt(0).toLowerCase() + r.text.slice(1)})`).join('; ') + '. Add one from the Agent routines page, or just tell me, for example: every day at 7 ask Margin Guardian to check prices below the floor.']], ['Brief me on today'], '', []);
 K('help', /what can you|how does this work|\bhelp\b|who are you|what do you do/g, [['chief', () => 'I coordinate. Ask in your own words about stock, suppliers, price and margin, forecasts, cash, customers, stores or growth, and I bring in the right agents. The Business Analyst joins for "why", "what if" and "how much" questions. I can also turn answers into tasks for a role.']], ['Brief me on today', 'Where are we losing margin?', 'Why did GMV drop in Zone 3 yesterday?'], '', []);
 function detectMetric(l) { return /availab|stock/.test(l) ? 'avail' : /repeat|retention|churn/.test(l) ? 'repeat' : /margin|profit/.test(l) ? 'margin' : /working|cash|inventory/.test(l) ? 'wc' : /pick|productiv/.test(l) ? 'pick' : 'gmv'; }
 const roleOfText = (t, dflt) => { const a = AG.find(x => x.role !== 'all' && t.includes(x.name)); return a ? a.role : dflt; };
@@ -1293,7 +1307,7 @@ function ctxIntents(cx, add, ctxData) {
 }
 function chatCtx(key) { return { key, d: key.startsWith('d:') ? S.dec.find(x => x.id === key.slice(2)) : null, persona: S.persona }; }
 function chatState(key) {
-  if (!S.chat[key]) { const cx = chatCtx(key); S.chat[key] = { msgs: [{ w: 'a', a: 'chief', t: cx.d ? `You are looking at "${cx.d.title}". Ask me anything about it, or beyond it. Other agents join when the question touches their area.` : 'Hello. Ask me anything about your business in your own words. I bring in whichever agents are needed, from supply and pricing to cash and customers. Answers come from this demo\'s illustrative data and a prepared knowledge base, not from live systems.' }], follow: null, asked: [], tasks: [], typing: null }; }
+  if (!S.chat[key]) { const cx = chatCtx(key); S.chat[key] = { msgs: [{ w: 'a', a: 'chief', t: cx.d ? `You are looking at "${cx.d.title}". Challenge it: ask why, what if, what the alternatives are, or anything beyond it. Other agents join when the question touches their area.` : 'Hello. Ask me anything about your business in your own words. I bring in whichever agents are needed, from supply and pricing to cash and customers. Answers come from this demo\'s illustrative data and a prepared knowledge base, not from live systems.' }], follow: null, asked: [], tasks: [], typing: null }; }
   return S.chat[key];
 }
 function ctxSuggest(cx) {
@@ -1324,6 +1338,12 @@ function chatReply(cx, text, st) {
   scored.forEach((s, i) => { s.k.voices.forEach(([a, f]) => { if (!(ctxHas && voices.some(v => v.a === a))) add(a, f(cx, st)); }); follow.push(...s.k.follow); if (!lever && s.k.lever) lever = s.k.lever; if (!tasks.length && s.k.tasks.length) tasks = s.k.tasks; });
   AG.forEach(a => { if (low.includes(a.name.toLowerCase())) add(a.id, `${a.finding} Why: ${a.why} It asks: ${a.ask}`); });
   if (cx.tasks) tasks = cx.tasks;
+  const rm = /(every day|daily|each day|every morning|every evening|every weekday|each morning)/.test(low) && !/^(what|which|show|list|how)/.test(low.trim());
+  if (rm) {
+    const hm = low.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/); let h = hm ? +hm[1] : 7; if (hm && hm[3] === 'pm' && h < 12) h += 12; if (/evening/.test(low) && !hm) h = 17; h = Math.min(19, Math.max(6, h));
+    const time = String(h).padStart(2, '0') + ':' + ((hm && hm[2]) || '00'), agent = (voices.find(v => v.a !== 'chief' && v.a !== 'analyst') || voices[0] || { a: 'chief' }).a, role = AGM[agent].role === 'all' ? S.persona : AGM[agent].role;
+    return { msgs: [{ w: 'a', a: 'chief', t: `I can set that up as a daily routine: ${AGM[agent].name} will run it every day at ${time} and post the result to the ${PWHO[role]}'s task board and team channel.`, acts: [{ type: 'routine', agent, text: text.replace(/^please\s+/i, '').slice(0, 90), time, role, done: false }] }], follow: ['What routines are already running?'], tasks: [] };
+  }
   const msgs = [];
   if (!voices.length) {
     msgs.push({ w: 'a', a: 'chief', t: 'I do not have a prepared analysis for that in this demo. Tell me the area (stock, suppliers, price and margin, forecasts, cash, customers, stores, growth) or pick one of the suggestions, and I will bring in the right agents.' });
@@ -1348,7 +1368,7 @@ function chatSend(key, text) {
 function msgHTML(m, i, key) {
   if (m.w === 'u') return `<div class="mu">${esc(m.t)}</div>`;
   const a = AGM[m.a], tag = a.kind === 'shared' ? 'Shared agent' : 'Functional agent &middot; ' + a.team;
-  return `<div class="ma ${a.kind}"><div class="mh"><b>${a.name}</b><span class="tag ${a.kind === 'shared' ? 'acc' : ''}">${tag}</span></div><div>${m.t}</div>${m.acts ? `<div class="row" style="margin-top:8px">${m.acts.map((x, j) => `<button class="btn sm" data-act="chat-act" data-ctx="${key}" data-i="${i}" data-j="${j}" ${x.done ? 'disabled' : ''}>${x.done ? 'Assigned to ' + PNAME[x.role] : 'Assign to ' + PNAME[x.role] + ': ' + x.text}</button>`).join('')}</div>` : ''}</div>`;
+  return `<div class="ma ${a.kind}"><div class="mh"><b>${a.name}</b><span class="tag ${a.kind === 'shared' ? 'acc' : ''}">${tag}</span></div><div>${m.t}</div>${m.acts ? `<div class="row" style="margin-top:8px">${m.acts.map((x, j) => `<button class="btn sm" data-act="chat-act" data-ctx="${key}" data-i="${i}" data-j="${j}" ${x.done ? 'disabled' : ''}>${x.type === 'routine' ? (x.done ? 'Routine created' : 'Create daily routine: ' + AGM[x.agent].name + ' at ' + x.time) : x.done ? 'Assigned to ' + PNAME[x.role] : 'Assign to ' + PNAME[x.role] + ': ' + x.text}</button>`).join('')}</div>` : ''}</div>`;
 }
 function chatLog(key) { const st = chatState(key); return st.msgs.map((m, i) => msgHTML(m, i, key)).join('') + (st.typing ? `<div class="ma typing"><span class="small muted">${st.typing}</span><span class="dots3" aria-hidden="true"><i></i><i></i><i></i></span></div>` : ''); }
 function chatSug(key) { const st = chatState(key), cx = chatCtx(key), list = st.follow === null ? ctxSuggest(cx) : st.follow; return list.map(q => `<button class="chip" data-act="chat-q" data-ctx="${key}" data-q="${esc(q)}">${esc(q)}</button>`).join(''); }
@@ -1420,13 +1440,13 @@ function fireDay() {
   });
 }
 function simTick() {
-  const s = S.sim; s.t = Math.min(840, s.t + s.speed * 3); fireDay();
+  const s = S.sim; s.t = Math.min(840, s.t + s.speed * 3); fireDay(); fireRoutines();
   if (s.t >= 840) { simPause(); toast('The day is complete.'); }
   updateTop(); if (S.route === 'day') updateDay(); else if (S.route === 'home' || S.route === 'score') { /* static until user acts */ }
 }
 function simPlay() { const s = S.sim; if (s.timer) return; if (s.t >= 840) simReset(); s.playing = true; s.timer = setInterval(simTick, 400); }
 function simPause() { const s = S.sim; clearInterval(s.timer); s.timer = null; s.playing = false; if (S.route === 'day') updateDay(); }
-function simReset() { simPause(); const s = S.sim; s.t = 0; s.fired = {}; S.feed = []; S.dec = S.dec.filter(d => !(d.source === 'day' && d.status === 'open')); }
+function simReset() { simPause(); const s = S.sim; s.t = 0; s.fired = {}; s.rfired = {}; S.feed = []; S.dec = S.dec.filter(d => !(d.source === 'day' && d.status === 'open')); }
 function inject(id) {
   const sc = SCEN.find(x => x.id === id);
   if (S.sim.world !== 'ai') {
@@ -1558,6 +1578,7 @@ function agentHTML(id) {
   <h3 class="h3" style="margin-top:14px">Why</h3><p class="muted" style="margin-top:4px">${a.why}</p>
   <h3 class="h3" style="margin-top:14px">Evidence</h3><ul class="ev">${a.ev.map(x => `<li>${x}</li>`).join('')}</ul><hr>${act}<div class="row" style="margin-top:12px"><button class="btn sm" data-act="chat-open" data-q="Tell me about ${a.name}">Discuss this with the team</button></div><hr>
   <h3 class="h3">Last 30 days (illustrative)</h3><div class="grid g4" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${[['Asked', st.req], ['Accepted', st.acc], ['Edited', st.edit], ['Rejected', st.rej]].map(([l, v]) => `<div class="card stat" style="padding:10px"><div class="v" style="font-size:20px">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+  <h3 class="h3" style="margin-top:16px">Daily routines</h3>${routineRowsHTML(S.routines.filter(r => r.agent === id))}<div class="row" style="margin-top:8px"><button class="btn sm" data-act="routine-new" data-agent="${id}">Add a daily task for this agent</button></div>
   <h3 class="h3" style="margin-top:16px">Recent activity</h3><ul class="feed">${a.act.slice(0, 6).map(x => `<li><time>${x.slice(0, 5)}</time><span>${esc(x.slice(5).trim())}</span></li>`).join('')}</ul>`;
 }
 V.flows = () => `<section class="hero" style="padding-top:6px"><span class="eyebrow">Workflows</span><h1 class="h1">See a workflow run, step by step</h1><p>Six full workflows you can play, with a progress bar and an audit log. Four previews show the shape of the rest. Where a person must decide, the run stops and waits for you.</p></section>
@@ -1687,7 +1708,7 @@ function taskCard(t) {
   return `<div class="tcard ${t.prio === 'high' ? 'hi' : ''}"><div class="row" style="gap:6px"><span class="tag ${t.src === 'agent' ? 'acc' : ''}">${tag}</span>${t.prio === 'high' ? '<span class="tag crit">High priority</span>' : ''}</div><b style="display:block;margin:6px 0 2px">${esc(t.title)}</b><div class="small faint">Due ${t.due}${who}</div>
   <div class="row" style="margin-top:8px">${acts}</div><div class="row" style="margin-top:6px">${t.kind === 'wbr' ? `<button class="chip" data-act="wbr-gen" data-id="${t.id}">Generate data pack</button>` : ''}${t.link ? `<button class="chip" data-act="agent" data-id="${t.link}">Open agent</button>` : ''}<button class="chip" data-act="task-msg" data-id="${t.id}">Message the team</button></div></div>`;
 }
-function decCard(d) { const an = analysisFor(d); return `<div class="tcard dec"><div class="row" style="gap:6px"><span class="tag acc">Decision</span>${an ? `<span class="tag">Confidence ${an.conf.p}%</span>` : ''}</div><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${d.agentName || 'Agent'}</div><div class="row" style="margin-top:8px"><button class="btn sm pri" data-act="brief" data-id="${d.id}">Review and decide</button></div></div>`; }
+function decCard(d) { const an = analysisFor(d); return `<div class="tcard dec"><div class="row" style="gap:6px"><span class="tag acc">Decision</span>${an ? `<span class="tag">Confidence ${an.conf.p}%</span>` : ''}</div><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${d.agentName || 'Agent'}</div>${reasonBox(d)}<div class="small" style="margin-top:6px"><b>Asks:</b> ${d.ask}</div><div class="row" style="margin-top:8px"><button class="btn sm pri" data-act="brief" data-id="${d.id}">Review and decide</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Question this</button></div></div>`; }
 function boardHTML(role) {
   const ts = S.tasks.filter(t => t.role === role), open = openDec(role), dnow = S.dec.filter(d => d.role === role && (d.status === 'approved' || d.status === 'edited' || d.status === 'rejected')).slice(-3);
   const col = (k, l) => { const items = ts.filter(t => t.status === k), n = items.length + (k === 'todo' ? open.length : k === 'done' ? dnow.length : 0);
@@ -1717,7 +1738,7 @@ V.my = () => {
   const ags = AG.filter(a => a.kind === 'shared' || a.role === role);
   return `<section class="hero" style="padding-top:6px"><span class="eyebrow">My day</span><h1 class="h1">${p.name}</h1><p>One screen for what to do today: your tasks, your numbers, your agents and your team.</p></section>
   <div class="grid g4" style="margin:18px 0"><div class="card stat"><div class="v">${openDec(role).length}</div><div class="l">decisions waiting for you</div></div><div class="card stat"><div class="v">${openT}</div><div class="l">open items on your board</div></div><div class="card stat"><div class="v" id="kp-unread">${unread(role)}</div><div class="l">unread messages for you</div></div><div class="card stat"><div class="v">${att}</div><div class="l">of ${mets.length} numbers off target or on watch</div></div></div>
-  <section class="sec" style="margin-top:8px"><div class="sec-h"><h2 class="h2">Your agents</h2><span class="muted small">Select one to read its finding or discuss it with the team</span></div><div class="row">${ags.map(a => `<button class="chip agentchip" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i>${a.name}${a.kind === 'shared' ? ' (shared)' : ''}</button>`).join('')}</div></section>
+  <section class="sec" style="margin-top:8px"><div class="sec-h"><h2 class="h2">Your agents</h2><span class="muted small">Select one to read its finding or discuss it with the team</span></div><div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="routine-new">Set a daily routine for an agent</button><a class="small" href="#/routines">Manage all routines (${S.routines.filter(r => r.on).length} running)</a></div><div class="row">${ags.map(a => `<button class="chip agentchip" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i>${a.name}${a.kind === 'shared' ? ' (shared)' : ''}</button>`).join('')}</div></section>
   <section class="sec" id="tasks"><div class="sec-h"><h2 class="h2">Task board</h2><div class="row"><button class="btn pri sm" data-act="task-new">New task</button><button class="btn sm" data-act="task-new" data-k="wbr">Request WBR data</button></div></div>${boardHTML(role)}</section>
   <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:36px" id="lower">
     <section id="metrics"><div class="sec-h"><h2 class="h2">Metric board</h2><span class="muted small">Status against target</span></div><div class="grid g3">${mets.map(metricCard).join('')}</div></section>
@@ -1755,16 +1776,276 @@ function wbrHTML(role, tid) {
   <h3 class="h3" style="margin-top:16px">Plain text for email or Slack</h3><textarea class="in" id="wbr-text" readonly style="min-height:150px">${esc(wbrText(role))}</textarea>
   <div class="row" style="margin-top:12px"><button class="btn pri" data-act="wbr-send" data-id="${tid || ''}">Post to ${CHANNELS[5].n} and mark done</button><button class="btn" data-act="wbr-copy">Copy text</button></div>`;
 }
+/* ---------- daily routines: recurring tasks defined for an agent ---------- */
+const hmToMin = hm => { const [h, m] = hm.split(':'); return +h * 60 + +m - 360; };
+const RT_TIMES = []; for (let h = 6; h <= 19; h++) { RT_TIMES.push(String(h).padStart(2, '0') + ':00'); if (h < 19) RT_TIMES.push(String(h).padStart(2, '0') + ':30'); }
+const ROUT0 = [['chief', 'Publish the morning bulletin for every role', '06:00', 'Daily', 'both', 'ch'], ['comp', 'Check competitor prices on the 412 items we both sell', '06:10', 'Daily', 'both', 'ch'], ['guard', 'Scan prices and costs for items below the margin floor', '06:30', 'Daily', 'both', 'cat'], ['cattask', 'Find opportunities and worries in my portfolio', '06:45', 'Weekdays', 'board', 'cat'], ['tower', 'Scan stock-outs by zone and tag the cause', '07:00', 'Daily', 'both', 'ch'], ['cash', 'Compare inventory days with payment days', '07:30', 'Weekdays', 'slack', 'fin'], ['transfer', "Build tomorrow's transfer plan", '14:00', 'Daily', 'board', 'wh'], ['inv', 'Match supplier invoices to goods received', '16:00', 'Weekdays', 'board', 'fin'], ['ops', 'Check evening staffing against the order forecast', '17:00', 'Daily', 'both', 'store']];
+function addRoutine(o) { const r = Object.assign({ id: 'rt' + (++S.seq), days: 'Daily', out: 'both', on: true, runs: 0, last: '' }, o); r.min = hmToMin(r.time); S.routines.push(r); if (S.sim.t >= r.min) S.sim.rfired[r.id] = true; return r; }
+S.routines = []; ROUT0.forEach(r => addRoutine({ agent: r[0], text: r[1], time: r[2], days: r[3], out: r[4], to: r[5] }));
+const runsToday = r => r.days !== 'Mondays';
+function runRoutine(r, manual) {
+  const a = AGM[r.agent], res = a.finding; r.last = clock(S.sim.t); r.runs++;
+  a.act.unshift(`${clock(S.sim.t)}  Daily routine: ${r.text}`);
+  if (r.out !== 'slack' && !S.tasks.some(t => t.status !== 'done' && t.by === a.name && t.title === `${a.name}: ${firstS(res)}` && t.role === r.to)) addTask({ role: r.to, title: `${a.name}: ${firstS(res)}`, by: a.name, src: 'agent', due: 'Today 17:00', link: a.id, prio: a.status === 'Needs you' ? 'high' : 'normal' });
+  if (r.out !== 'board') postMsg(ROLECH[r.to] || 'ops', { f: a.name, k: 'bot', r: a.id, t: `Daily routine done (${r.text.charAt(0).toLowerCase() + r.text.slice(1)}). ${res}`, to: r.to });
+  if (manual) toast(`${a.name} ran the routine and posted the result.`);
+}
+function fireRoutines() { if (S.sim.world !== 'ai') return; S.routines.forEach(r => { if (!r.on || S.sim.rfired[r.id] || S.sim.t < r.min || !runsToday(r)) return; S.sim.rfired[r.id] = true; runRoutine(r); }); }
+function nextRun(r) { return !r.on ? 'Paused' : r.days === 'Mondays' ? 'Next Monday ' + r.time : S.sim.rfired[r.id] ? (r.last ? 'Ran at ' + r.last : 'Next run tomorrow ' + r.time) : 'Today ' + r.time; }
+const outLabel = r => (r.out === 'board' ? `Task board of the ${PWHO[r.to]}` : r.out === 'slack' ? CHANNELS.find(c => c.id === (ROLECH[r.to] || 'ops')).n : `Task board of the ${PWHO[r.to]} and ${CHANNELS.find(c => c.id === (ROLECH[r.to] || 'ops')).n}`);
+function routineRowsHTML(list) {
+  return list.length ? `<ul class="feed">${list.map(r => `<li style="grid-template-columns:62px 1fr"><time>${r.time}</time><span><b>${esc(r.text)}</b><br><span class="small muted">${r.days}. Delivers to: ${outLabel(r)}. ${nextRun(r)}.</span><span class="row" style="margin-top:6px"><button class="chip" data-act="routine-toggle" data-id="${r.id}">${r.on ? 'Pause' : 'Resume'}</button><button class="chip" data-act="routine-run" data-id="${r.id}">Run now</button><button class="chip" data-act="routine-del" data-id="${r.id}">Remove</button></span></span></li>`).join('')}</ul>` : '<p class="small muted">No daily routines yet.</p>';
+}
+function routineHTML(pre) {
+  pre = pre || {}; const me = S.persona, a0 = pre.agent || 'tower', teams = [...new Set(AG.map(a => a.team))];
+  return `<span class="eyebrow">Daily routine</span><h2 class="h2" style="margin:4px 0 6px">Give an agent a daily task</h2><p class="small muted">The agent runs it every day at the time you set. Each run posts the result to your task board, your team channel, or both.</p><div class="stack" style="margin-top:12px">
+  <div><label class="f" for="rt-agent">Agent</label><select class="in" id="rt-agent" data-change="rtagent">${teams.map(t => `<optgroup label="${t === 'Program team' ? 'Shared agents' : t}">${AG.filter(a => a.team === t).map(a => `<option value="${a.id}" ${a.id === a0 ? 'selected' : ''}>${a.name}</option>`).join('')}</optgroup>`).join('')}</select></div>
+  <div><label class="f" for="rt-text">What should it do every day?</label><input class="in" id="rt-text" type="text" value="${esc(pre.text || '')}" placeholder="For example: check Zone 3 dairy availability and flag gaps"></div>
+  <div class="row" style="align-items:flex-end"><div style="flex:1"><label class="f" for="rt-time">Time</label><select class="in" id="rt-time">${RT_TIMES.map(t => `<option ${t === (pre.time || '07:00') ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+  <div style="flex:1"><label class="f" for="rt-days">Repeats</label><select class="in" id="rt-days"><option>Daily</option><option>Weekdays</option><option>Mondays</option></select></div></div>
+  <div class="row" style="align-items:flex-end"><div style="flex:1"><label class="f" for="rt-out">Deliver the result to</label><select class="in" id="rt-out"><option value="both">Task board and Slack channel</option><option value="board">Task board only</option><option value="slack">Slack channel only</option></select></div>
+  <div style="flex:1"><label class="f" for="rt-to">For the</label><select class="in" id="rt-to">${PERSONAS.map(p => `<option value="${p.id}" ${p.id === (pre.role || me) ? 'selected' : ''}>${p.who}</option>`).join('')}</select></div></div>
+  <div class="err" id="rterr" hidden></div><div class="row"><button class="btn pri" data-act="routine-create">Create routine</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`;
+}
+V.routines = () => `<section class="hero" style="padding-top:6px"><span class="eyebrow">Agent routines</span><h1 class="h1">Daily tasks your agents run on their own</h1><p>Define what an agent does every day and when. Each run delivers its result to a task board, a Slack channel, or both. Routines also run on the Day in the life timeline.</p></section>
+  <div class="row" style="margin:18px 0"><button class="btn pri" data-act="routine-new">Add a daily routine</button><span class="muted small">${S.routines.filter(r => r.on).length} of ${S.routines.length} running</span></div>
+  <div class="card tw"><table class="tbl"><thead><tr><th>Agent</th><th>What it does</th><th>When</th><th>Delivers to</th><th>Status</th><th></th></tr></thead><tbody>${S.routines.slice().sort((a, b) => a.min - b.min).map(r => `<tr><td><button class="chip" data-act="agent" data-id="${r.agent}">${AGM[r.agent].name}</button><div class="small faint">${AGM[r.agent].kind === 'shared' ? 'Shared agent' : AGM[r.agent].team}</div></td><td>${esc(r.text)}</td><td style="white-space:nowrap">${r.time}<div class="small faint">${r.days}</div></td><td class="small">${outLabel(r)}</td><td>${r.on ? `<span class="tag ${S.sim.rfired[r.id] ? 'good' : 'acc'}">${nextRun(r)}</span>` : '<span class="tag">Paused</span>'}<div class="small faint">${r.runs} run${r.runs === 1 ? '' : 's'} in this demo</div></td><td><div class="row" style="gap:6px"><button class="btn sm" data-act="routine-toggle" data-id="${r.id}">${r.on ? 'Pause' : 'Resume'}</button><button class="btn sm" data-act="routine-run" data-id="${r.id}">Run now</button><button class="btn sm bad" data-act="routine-del" data-id="${r.id}">Remove</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="muted">No routines yet.</td></tr>'}</tbody></table></div>`;
+function reasonBox(d) {
+  const an = analysisFor(d) || genAn(d), facts = an.facts.slice(0, 3).map(f => f[1] ? `${f[0]}: <b>${f[1]}</b>${f[2] ? ' (' + f[2] + ')' : ''}` : f[0]);
+  return `<details class="why-d"><summary>Why the agent recommends this</summary><p>${an.sum}</p><ul class="ev">${facts.map(x => `<li>${x}</li>`).join('')}</ul><p class="small muted">Biggest risk: ${an.risks[0]} Confidence ${an.conf.p}%: ${an.conf.why}</p><div class="row"><button class="chip" data-act="brief" data-id="${d.id}">Open full evidence</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this</button></div></details>`;
+}
+
+/* ---------- team dashboard: RACI matrix, connected tools, write-backs from decisions ----------
+   BASELINES: replace the default RACI and the tool list with your real ones. */
+const RACI_COLS = PERSONAS.map(p => ({ id: p.id, n: p.who })).concat([{ id: 'cfo', n: 'CFO office' }, { id: 'legal', n: 'Legal team' }, { id: 'mkt', n: 'Regional marketing' }]);
+const RACI0 = {
+  gmv: { n: 'GMV', k: 'KPI', A: 'ch', R: ['gro', 'cat'], C: ['dp', 'store'], I: ['fin'] },
+  avail: { n: 'Availability', k: 'KPI', A: 'wh', R: ['buy', 'store', 'dp'], C: ['cat'], I: ['ch', 'gro'] },
+  repeat: { n: 'Repeat rate', k: 'KPI', A: 'gro', R: ['store'], C: ['wh', 'cat'], I: ['ch'] },
+  margin: { n: 'Gross margin', k: 'KPI', A: 'cat', R: ['cat', 'buy'], C: ['fin', 'gro'], I: ['ch'] },
+  wc: { n: 'Working capital days', k: 'KPI', A: 'fin', R: ['fin', 'buy', 'wh'], C: ['cat', 'gro', 'cfo'], I: ['ch'] },
+  pick: { n: 'Picker productivity', k: 'KPI', A: 'store', R: ['store'], C: ['wh'], I: ['ch'] },
+  sot: { n: 'Supplier on-time delivery', k: 'KPI', A: 'buy', R: ['buy', 'wh'], C: ['cat'], I: ['ch', 'store'] },
+  fcst: { n: 'Forecast accuracy', k: 'KPI', A: 'dp', R: ['dp'], C: ['cat', 'buy'], I: ['wh', 'ch'] },
+  floor: { n: 'Items below margin floor', k: 'KPI', A: 'cat', R: ['cat'], C: ['fin'], I: ['ch', 'buy'] },
+  invm: { n: 'Invoices matched', k: 'KPI', A: 'fin', R: ['fin', 'buy'], C: ['cat'], I: ['ch'] },
+  d_price: { n: 'Supplier price change', k: 'Decision', A: 'cat', R: ['buy'], C: ['fin', 'cfo'], I: ['ch'] },
+  d_comp: { n: 'Competitor response', k: 'Decision', A: 'ch', R: ['cat', 'gro'], C: ['fin'], I: ['store'] },
+  d_xfer: { n: 'Daily transfer plan', k: 'Decision', A: 'wh', R: ['wh'], C: ['store', 'dp'], I: ['buy'] },
+  d_stock: { n: 'Stock-out fix', k: 'Decision', A: 'store', R: ['wh', 'buy'], C: ['dp'], I: ['ch'] },
+  d_camp: { n: 'Campaign approval', k: 'Decision', A: 'ch', R: ['gro'], C: ['fin', 'wh', 'store', 'mkt'], I: ['cat'] },
+  d_cash: { n: 'Payment terms and credit line', k: 'Decision', A: 'fin', R: ['fin'], C: ['cat', 'cfo'], I: ['buy', 'ch'] },
+  d_legal: { n: 'Licence and compliance', k: 'Decision', A: 'ch', R: ['cat'], C: ['legal'], I: ['fin'] }
+};
+const RACI_KEYS = Object.keys(RACI0);
+S.raci = {}; RACI_KEYS.forEach(k => { const r = RACI0[k], m = {}; (r.R || []).forEach(x => m[x] = 'R'); (r.C || []).forEach(x => m[x] = 'C'); (r.I || []).forEach(x => m[x] = 'I'); m[r.A] = (m[r.A] === 'R') ? 'AR' : 'A'; S.raci[k] = m; });
+const RSEQ = ['', 'R', 'A', 'AR', 'C', 'I'], RNAME = { R: 'Responsible', A: 'Accountable', AR: 'Accountable and Responsible', C: 'Consulted', I: 'Informed', '': 'Not involved' };
+function raciOf(k) { const m = S.raci[k] || {}, out = { A: [], R: [], C: [], I: [] }; Object.keys(m).forEach(r => { const v = m[r]; if (v === 'A' || v === 'AR') out.A.push(r); if (v === 'R' || v === 'AR') out.R.push(r); if (v === 'C') out.C.push(r); if (v === 'I') out.I.push(r); }); return out; }
+const raciIssue = k => { const n = raciOf(k).A.length; return n === 1 ? '' : n === 0 ? 'No accountable owner' : 'More than one accountable owner'; };
+const AGROW = { tower: 'd_stock', guard: 'd_price', negprep: 'd_price', comp: 'd_comp', cash: 'd_cash', paytm: 'd_cash', credit: 'd_cash', risk: 'd_legal', transfer: 'd_xfer', resp: 'd_stock', reply: 'd_stock', coach: 'pick', fdoc: 'fcst', pulse: 'fcst', unblock: 'avail', camp: 'd_camp', scout: 'd_camp', voice: 'repeat', waste: 'margin', inv: 'invm', cattask: 'margin', fit: 'margin', valid: 'fcst', pofu: 'sot', campf: 'fcst', edrev: 'fcst', hday: 'sot', acc: 'avail', inbd: 'sot', excess: 'wc', wca: 'wc', cov: 'gmv', ops: 'pick', pcheck: 'floor' };
+const rowFor = d => AGROW[d.agent || d.sa] || null;
+const raciNames = list => list.length ? list.map(rname).join(', ') : 'nobody';
+function raciLine(d) { const k = rowFor(d); if (!k) return ''; const r = raciOf(k); return `<p class="small muted" style="margin:6px 0 0"><b>RACI</b> (${RACI0[k].n}): Accountable <b>${raciNames(r.A)}</b> &middot; Responsible ${raciNames(r.R)} &middot; Consulted ${raciNames(r.C)} &middot; Informed ${raciNames(r.I)}</p>`; }
+/* --- connected tools --- */
+S.tools = {}; const TOOLS = [['buy', 'Buy plan tool', 'Purchase orders, cost prices, supplier links'], ['price', 'Pricing tool', 'Shelf prices, promotions, margin floors'], ['fcst', 'Forecast tool', 'Demand forecast and baselines'], ['wms', 'Warehouse system', 'Stock, transfers, dock slots'], ['store', 'Store app', 'Pick lists, shift plans, shelf counts'], ['fin', 'Finance system', 'Invoices, payment terms, credit lines'], ['supp', 'Supplier portal', 'Supplier messages, documents, escalations'], ['camp', 'Campaign tool', 'Offers, customer messages, vouchers'], ['bi', 'Central dashboard', 'Team scorecard and data points'], ['slack', 'Slack (simulated)', 'Team channels and notifications']];
+TOOLS.forEach((t, i) => { S.tools[t[0]] = { id: t[0], n: t[1], d: t[2], on: true, last: '05:55', writes: 0, custom: false, teams: [] }; });
+S.wb = [];
+const TEAMTOOLS = { 'Commercial team': ['price', 'supp'], 'Supply chain team': ['wms'], 'Procurement team': ['buy', 'supp'], 'Demand planning team': ['fcst'], 'Finance team': ['fin'], 'Growth team': ['camp'], 'Store operations team': ['store'], 'Customer team': ['camp'], 'Risk and Compliance team': ['supp'], 'Program team': [] };
+const WB = {
+  comp: [['price', '12 prices set to change Friday 06:00 (revert Monday)'], ['camp', 'Weekend offer scheduled; customer message Friday 10:00']],
+  tower: [['wms', `Stock move ${Z2} to ${Z3} booked (480 units)`], ['buy', `Top-up order to ${SG} flagged as expedite`], ['store', `Shelf lists for ${Z3} stores updated`]],
+  guard: [['price', '14 items held at today\'s price pending the talk'], ['buy', '14 buy lines held until the price is agreed']], negprep: [['supp', 'Negotiation brief shared with the Commercial lead'], ['buy', '14 buy lines held until the price is agreed']],
+  cash: [['buy', 'Buying paused on 9 excess items'], ['fin', `${SK} payment terms moved to day 45`]], risk: [['supp', `Licence escalation created for ${SL}, 7-day deadline`]],
+  transfer: [['wms', '62 transfer moves released; 5 trucks booked'], ['store', 'Pick lists sent to stores']], coach: [['store', 'Evening shift plan and new pick path loaded']],
+  fdoc: [['fcst', 'Old promotion removed from the baseline; forecast re-run'], ['buy', "Tonight's order paused for over-forecast items"]], unblock: [['buy', '19 supplier links filled from last month']],
+  reply: [['supp', `Reply tracked; firm delivery time requested from ${SG}`]], resp: [['store', 'Substitutes enabled for 6 items'], ['wms', "Last item added to tonight's transfer"]],
+  paytm: [['fin', '9 invoices rescheduled to the last allowed day']], camp: [['camp', 'Rainy-day offer scheduled for 11:00']], credit: [['supp', `Document request sent to ${SK}`]],
+  voice: [['camp', 'Voucher message queued for 1,150 customers']], scout: [['camp', 'Phase 1 campaigns approved (weeks 3 to 5)'], ['fin', 'Working capital allocation reserved for the lineup']], pulse: [['fcst', "Tonight's forecast raised by 12% for two zones"]]
+};
+function wbFor(d) {
+  const ag = AGM[d.agent || d.sa], key = d.agent || d.sa, an = analysisFor(d) || genAn(d); let list = (WB[key] || []).slice();
+  if (!list.length && ag) (TEAMTOOLS[ag.team] || []).forEach((t, i) => list.push([t, an.next[i] || an.next[0] || 'Action recorded']));
+  Object.values(S.tools).filter(t => t.custom && ag && t.teams.includes(ag.team)).forEach(t => list.push([t.id, 'Decision data point sent: ' + d.title]));
+  list.push(['bi', 'Data points updated: ' + impactLine(d).replace('Expected effect: ', '')]); list.push(['slack', 'RACI notifications posted']);
+  return list;
+}
+function applyWritebacks(d) {
+  wbFor(d).forEach(([t, text]) => { const tool = S.tools[t]; if (!tool) return; const ok = tool.on; S.wb.unshift({ id: 'w' + (++S.seq), time: clock(S.sim.t), dec: d.title, by: d.by, tool: t, text: text + (d.changeTxt && t !== 'bi' && t !== 'slack' ? ` (edited: ${d.changeTxt})` : ''), status: ok ? 'Applied' : 'Queued' }); if (ok) { tool.writes++; tool.last = clock(S.sim.t); } });
+}
+function recordReject(d) { S.wb.unshift({ id: 'w' + (++S.seq), time: clock(S.sim.t), dec: d.title, by: d.by, tool: 'bi', text: 'Decision recorded as rejected: no change made in any tool', status: 'Recorded' }); }
+function syncTool(id) { const t = S.tools[id]; t.last = clock(S.sim.t); S.wb.forEach(w => { if (w.tool === id && w.status === 'Queued') { w.status = 'Applied after reconnect'; t.writes++; } }); }
+function raciNotify(d) {
+  const k = rowFor(d); if (!k) return; const r = raciOf(k), ch = rchan(r.A[0] || 'ch'), me = S.persona;
+  postMsg(ch, { f: 'Chief of Staff', k: 'bot', r: 'chief', t: `Decision ${d.status}: "${d.title}" by ${d.by}. Accountable: ${raciNames(r.A)}. Responsible, now executing: ${raciNames(r.R)}. Consulted: ${raciNames(r.C)}. Informed: ${raciNames(r.I)}.`, to: r.I.concat(r.C).find(x => x === me) });
+  if (d.status !== 'rejected') { const an = analysisFor(d) || genAn(d); r.R.filter(x => PERSONAS.some(p => p.id === x) && x !== me).forEach(role => addTask({ role, title: 'Execute: ' + (an.next[0] || d.title), by: 'RACI: you are Responsible', src: 'agent', due: 'Today 17:00', link: d.agent || d.sa || '' })); }
+}
+function dataPoints() {
+  const MAPK = { gmv: 'gmv', avail: 'avail', repeat: 'repeat', margin: 'margin', wc: 'wc', pick: 'pick' }, SRC = { gmv: ['camp', 'price'], avail: ['wms', 'buy'], repeat: ['camp'], margin: ['price', 'fin'], wc: ['fin', 'buy'], pick: ['store'] };
+  return METRICS.map(m => { const last = S.adjLog.find(x => x.k === m.k), A = raciOf(MAPK[m.k]).A[0]; return { m, A, last, tools: SRC[m.k].map(t => S.tools[t]) }; });
+}
+const toolDot = t => `<i class="sdot ${t.on ? 'n' : ''}" style="${t.on ? 'background:var(--good)' : 'background:var(--crit)'}"></i>`;
+function raciTable() {
+  const lens = S.rlens || 'all', cols = RACI_COLS;
+  return `<div class="tw card"><table class="tbl raci"><thead><tr><th>KPI or decision</th>${cols.map(c => `<th class="n" style="${lens === c.id ? 'background:var(--accent-soft)' : ''}">${c.n}</th>`).join('')}<th>Check</th></tr></thead><tbody>${RACI_KEYS.map(k => `<tr><td><b>${RACI0[k].n}</b><div class="small faint">${RACI0[k].k}</div></td>${cols.map(c => { const v = (S.raci[k] || {})[c.id] || ''; return `<td class="n" style="${lens === c.id ? 'background:var(--accent-soft)' : ''}"><button class="rcell r-${v || 'x'}" data-act="raci-cell" data-k="${k}" data-id="${c.id}" aria-label="${RACI0[k].n}, ${c.n}: ${RNAME[v]}. Press to change.">${v || '&middot;'}</button></td>`; }).join('')}<td class="small">${raciIssue(k) ? `<span class="tag crit">${raciIssue(k)}</span>` : '<span class="tag good">One owner</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function lensHTML() {
+  const lens = S.rlens || 'all'; if (lens === 'all') return '<p class="small muted">Choose a person above to see where they sit in every KPI and decision.</p>';
+  const grp = { A: [], R: [], C: [], I: [] }; RACI_KEYS.forEach(k => { const r = raciOf(k); ['A', 'R', 'C', 'I'].forEach(x => { if (r[x].includes(lens)) grp[x].push(RACI0[k].n); }); });
+  return `<div class="grid g4">${[['A', 'Accountable for'], ['R', 'Responsible for'], ['C', 'Consulted on'], ['I', 'Kept informed on']].map(([x, l]) => `<div class="card pad" style="box-shadow:none"><b>${l}</b><ul class="ev">${grp[x].map(n => `<li>${n}</li>`).join('') || '<li class="faint">Nothing</li>'}</ul></div>`).join('')}</div>`;
+}
+function connectToolHTML() { const teams = Object.keys(TEAMTOOLS).filter(t => t !== 'Program team'); return `<span class="eyebrow">Tools</span><h2 class="h2" style="margin:4px 0 6px">Connect a tool</h2><p class="small muted">Once connected, decisions taken by the chosen teams are written back to it, and the central dashboard shows what changed.</p><div class="stack" style="margin-top:10px"><div><label class="f" for="tl-name">Tool name</label><input class="in" id="tl-name" type="text" placeholder="For example: Weekly planning sheet"></div><fieldset style="border:0;padding:0;margin:0"><legend class="f">Receives updates from decisions in</legend>${teams.map(t => `<label class="row" style="gap:8px;margin:4px 0"><input type="checkbox" name="tl-team" value="${t}"> ${t}</label>`).join('')}</fieldset><div class="err" id="tlerr" hidden></div><div class="row"><button class="btn pri" data-act="tool-add">Connect</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`; }
+V.team = () => {
+  const tab = S.ttab || 'overview', tabs = [['overview', 'Overview'], ['raci', 'RACI matrix'], ['tools', 'Tools and write-backs']];
+  const today = S.log.filter(l => /^Today/.test(l.time)), applied = S.wb.filter(w => w.status.startsWith('Applied')).length, queued = S.wb.filter(w => w.status === 'Queued').length, gaps = RACI_KEYS.filter(raciIssue).length, on = Object.values(S.tools).filter(t => t.on).length;
+  let body = '';
+  if (tab === 'overview') {
+    body = `<div class="grid g4" style="margin:16px 0">${[['Decisions taken today', today.length], ['Tool updates applied', applied], ['Tools connected', `${on} of ${Object.keys(S.tools).length}`], ['RACI gaps', gaps]].map(([l, v]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+    ${queued ? `<div class="callout" style="margin-bottom:14px">${queued} update${queued > 1 ? 's are' : ' is'} queued because a tool is disconnected. Reconnect it under Tools and write-backs.</div>` : ''}
+    <h2 class="h2" style="margin-bottom:10px">Data points and who owns them</h2><div class="card tw"><table class="tbl"><thead><tr><th>Data point</th><th class="n">Now</th><th>Accountable</th><th>Last updated by a decision</th><th>Fed by tools</th></tr></thead><tbody>${dataPoints().map(x => `<tr><td><b>${x.m.name}</b></td><td class="n">${x.m.fmt(mNow(x.m.k))}</td><td>${x.A ? rname(x.A) : '<span class="tag crit">No owner</span>'}</td><td class="small">${x.last ? `${x.last.t}: ${x.last.v > 0 ? '+' : '-'}${x.m.d(x.last.v)} from ${esc(x.last.who)}${x.last.by ? ', decided by ' + x.last.by : ''}` : '<span class="faint">No decision has changed it yet</span>'}</td><td class="small">${x.tools.map(t => `${toolDot(t)}${t.n}`).join(', ')}</td></tr>`).join('')}</tbody></table></div>
+    <h2 class="h2" style="margin:24px 0 10px">Decisions flowing in</h2><div class="card pad">${today.length ? `<ul class="feed">${today.slice(0, 8).map(l => `<li style="grid-template-columns:60px 1fr"><time>${l.time.replace('Today ', '')}</time><span><b>${VERB[l.kind]}</b> by ${esc(l.who)}: ${l.item}<br><span class="small muted">${S.wb.filter(w => w.dec === l.item && w.tool !== 'bi' && w.tool !== 'slack').map(w => S.tools[w.tool].n).join(', ') || 'No tool update'}. Reason: ${esc(l.reason)}</span></span></li>`).join('')}</ul>` : '<p class="muted small">No decisions yet today. Decide something from My day and watch the data points, tools and notifications update here.</p>'}</div>`;
+  } else if (tab === 'raci') {
+    body = `<p class="muted" style="margin:14px 0 8px">R Responsible (does the work), A Accountable (approves, one per row), C Consulted (asked for input), I Informed. Click a cell to change it. The matrix drives routing: the Accountable owner approves, Responsible roles get a task when a decision is made, Consulted and Informed roles are notified in Slack.</p>
+    <div class="row" style="margin:10px 0"><label class="small" for="rl"><b>Show me where</b></label><select class="in" id="rl" style="width:auto" data-change="rlens"><option value="all">Everyone</option>${RACI_COLS.map(c => `<option value="${c.id}" ${S.rlens === c.id ? 'selected' : ''}>${c.n}</option>`).join('')}</select><button class="btn sm" data-act="raci-reset">Reset to default</button><span class="tag ${gaps ? 'crit' : 'good'}">${gaps ? gaps + ' row' + (gaps > 1 ? 's' : '') + ' need attention' : 'Every row has one accountable owner'}</span></div>${lensHTML()}<div style="margin-top:14px">${raciTable()}</div>`;
+  } else {
+    body = `<div class="row" style="margin:16px 0"><button class="btn pri" data-act="tool-new">Connect a tool</button><span class="muted small">Decisions write back to these tools. A disconnected tool queues its updates.</span></div>
+    <div class="grid g3">${Object.values(S.tools).map(t => `<article class="card pad"><div class="row" style="justify-content:space-between"><b>${toolDot(t)}${t.n}</b><span class="tag ${t.on ? 'good' : 'crit'}">${t.on ? 'Connected' : 'Disconnected'}</span></div><p class="small muted" style="margin:4px 0">${t.d || (t.teams.join(', ') + ' decisions')}</p><p class="small">Last sync ${t.last}. ${t.writes} update${t.writes === 1 ? '' : 's'} from decisions.</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="tool-toggle" data-id="${t.id}">${t.on ? 'Disconnect' : 'Reconnect'}</button><button class="btn sm" data-act="tool-sync" data-id="${t.id}" ${t.on ? '' : 'disabled'}>Sync now</button></div></article>`).join('')}</div>
+    <h2 class="h2" style="margin:24px 0 10px">Write-back log</h2><div class="card tw"><table class="tbl"><thead><tr><th>Time</th><th>Decision</th><th>Decided by</th><th>Tool</th><th>What changed</th><th>Status</th></tr></thead><tbody>${S.wb.slice(0, 40).map(w => `<tr><td>${w.time}</td><td class="small">${w.dec}</td><td>${esc(w.by)}</td><td>${S.tools[w.tool].n}</td><td class="small">${esc(w.text)}</td><td><span class="tag ${w.status === 'Queued' ? 'warn' : w.status === 'Recorded' ? '' : 'good'}">${w.status}</span></td></tr>`).join('') || '<tr><td colspan="6" class="muted">No updates yet. Approve a decision and the tools it touches will appear here.</td></tr>'}</tbody></table></div>`;
+  }
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Team dashboard</span><h1 class="h1">Decisions in, tools and data points updated</h1><p>One central place where every decision taken by an org member updates the connected tools and the scorecard data points, and notifies the right people according to the RACI.</p></section>
+  <div class="btabs" role="tablist" aria-label="Team dashboard sections">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" class="btab" data-act="ttab" data-id="${k}">${l}</button>`).join('')}</div>${body}`;
+};
+
+/* ---------- org view: team KPIs to monitor or nudge, OKRs, cross-org dependencies, growth lineup ---------- */
+const EXT = { cfo: 'CFO office', legal: 'Legal team', mkt: 'Regional marketing' };
+const rname = r => PWHO[r] || EXT[r] || r;
+const rchan = r => ROLECH[r] || { cfo: 'fin', legal: 'ops', mkt: 'growth' }[r] || 'ops';
+const hash = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7);
+function ageH(d) { if (d.t0 == null) { if (d.seedAge == null) d.seedAge = 3 + Math.abs(hash(d.id)) % 20; return d.seedAge + S.sim.t / 60; } return (S.sim.t - d.t0) / 60; }
+S.nudges = {};
+/* --- OKRs (quarter: week 8 of 13). BASELINES: replace starts and targets with agreed OKRs --- */
+const QTR = { week: 8, of: 13 }, PACE = QTR.week / QTR.of;
+const OKRS = [
+  { id: 'o1', o: 'Be the most reliable quick-commerce service in Chile', krs: [
+    { n: 'Availability', cur: () => mNow('avail'), start: 93.5, tgt: 95.5, fmt: v => v.toFixed(1) + '%', owner: 'wh', q: 'Why is availability behind its objective?' },
+    { n: 'Repeat rate (30 days)', cur: () => mNow('repeat'), start: 59.5, tgt: 64, fmt: v => v.toFixed(1) + '%', owner: 'gro', q: 'Why is the repeat rate moving slowly?' },
+    { n: 'Supplier on-time delivery', cur: () => 74, start: 68, tgt: 90, fmt: v => Math.round(v) + '%', owner: 'buy', q: 'Why is supplier on-time delivery off track?' }] },
+  { id: 'o2', o: 'Grow profitably, at scale (a step change, not the historic trend)', krs: [
+    { n: 'GMV per day', cur: () => mNow('gmv'), start: 2.05e6, tgt: 3.0e6, fmt: v => `${C} ${(v / 1e6).toFixed(2)}M`, owner: 'gro', q: 'Why is GMV behind the step change we need?' },
+    { n: 'Gross margin', cur: () => mNow('margin'), start: 24.2, tgt: 25.5, fmt: v => v.toFixed(1) + '%', owner: 'cat', q: 'Where are we losing margin?' },
+    { n: 'Growth campaigns approved (of 6)', cur: () => S.lineup.filter(c => c.state !== 'planned').length, start: 0, tgt: 6, fmt: v => String(Math.round(v)), owner: 'gro', q: 'What is blocking the growth lineup?' }] },
+  { id: 'o3', o: 'Run on less cash', krs: [
+    { n: 'Working capital days', cur: () => mNow('wc'), start: 6.5, tgt: 3, fmt: v => v.toFixed(1) + ' days', owner: 'fin', q: 'Why is working capital behind its objective?' },
+    { n: 'Excess stock above target', cur: () => 310 - (S.dec.find(d => d.id === 'd-cash' && d.status !== 'open' && d.status !== 'rejected') ? 120 : 0), start: 480, tgt: 150, fmt: v => `${C} ${Math.round(v)}k`, owner: 'fin', q: 'Do we have too much stock anywhere?' },
+    { n: 'Invoices matched to goods received', cur: () => 94, start: 91, tgt: 98, fmt: v => Math.round(v) + '%', owner: 'fin', q: 'Which invoices do not match?' }] },
+  { id: 'o4', o: 'Become an AI-native operation', krs: [
+    { n: 'Decisions made within 4 hours', cur: () => Math.min(95, 62 + S.log.filter(l => /^Today/.test(l.time)).length * 2), start: 40, tgt: 90, fmt: v => Math.round(v) + '%', owner: 'ch', q: 'Which decisions are waiting longest?' },
+    { n: 'Agent proposals accepted or edited', cur: () => { const t = Object.values(S.stats).reduce((a, s) => (a.r += s.req, a.a += s.acc + s.edit, a), { r: 0, a: 0 }); return t.a / Math.max(1, t.r) * 100; }, start: 60, tgt: 85, fmt: v => Math.round(v) + '%', owner: 'ch', q: 'How are the agents performing?' },
+    { n: 'Workflows with a measured baseline (of 10)', cur: () => 4, start: 0, tgt: 10, fmt: v => String(Math.round(v)), owner: 'ch', q: 'What is the status of the baselines?' }] }
+];
+const krProg = k => Math.max(0, Math.min(1.2, (k.cur() - k.start) / (k.tgt - k.start)));
+const krStatus = k => { const p = krProg(k); return p >= PACE - 0.05 ? 'On pace' : p >= PACE - 0.2 ? 'At risk' : 'Behind'; };
+const krTag = s => `<span class="tag ${s === 'On pace' ? 'good' : s === 'At risk' ? 'warn' : 'crit'}">${s}</span>`;
+/* --- org rows: who to monitor, who to nudge --- */
+const ORGROLES = ['cat', 'buy', 'dp', 'wh', 'store', 'fin', 'gro'];
+function orgRows() {
+  return ORGROLES.map(role => {
+    const p = PERSONAS.find(x => x.id === role), mets = metricItems(role), st = mets.map(m => [m, mStat(m)]), offs = st.filter(x => x[1] === 'Off track').length, watch = st.filter(x => x[1] === 'Watch').length;
+    const open = openDec(role), oldest = open.reduce((a, d) => Math.max(a, ageH(d)), 0), score = offs * 3 + watch + (open.length ? Math.min(3, Math.floor(oldest / 8)) : 0);
+    return { role, p, st, offs, watch, open, oldest, score, rec: score >= 5 ? 'Nudge' : score >= 2 ? 'Watch' : 'Monitor' };
+  }).sort((a, b) => b.score - a.score);
+}
+const recTag = r => `<span class="tag ${r === 'Nudge' ? 'crit' : r === 'Watch' ? 'warn' : 'good'}">${r}</span>`;
+/* --- cross-org dependencies --- */
+S.deps = [
+  { id: 'dp1', title: 'Working capital top-up for the growth lineup (' + C + ' 500k)', owner: 'cfo', days: 6, sla: 3, cost: 'Blocks lineup weeks 6 to 8', kind: 'wc' },
+  { id: 'dp2', title: 'Regional marketing budget top-up (' + C + ' 120k)', owner: 'mkt', days: 5, sla: 3, cost: 'About ' + C + ' 25k of expected sales a day', kind: 'mkt' },
+  { id: 'dp3', title: `${SK} credit-line review`, owner: 'fin', days: 3, sla: 2, cost: C + ' 37k of cash held earlier, each day' },
+  { id: 'dp4', title: `${SL} licence escalation`, owner: 'legal', days: 2, sla: 3, cost: C + ' 74k of sales at risk if the licence lapses' },
+  { id: 'dp5', title: 'Evening staffing: 2 extra pickers in ' + Z5, owner: 'store', days: 1, sla: 1, cost: 'Delivery time up about 6 minutes at peak' },
+  { id: 'dp6', title: 'Price change approval on 14 dairy items', owner: 'cat', days: 1, sla: 1, cost: C + ' 6.2k of margin a week' }
+].map(d => Object.assign({ done: false, esc: false }, d));
+const depStatus = d => d.done ? 'Approved' : d.days > d.sla ? 'Breached' : d.days === d.sla ? 'At risk' : 'Within SLA';
+const depTag = s => `<span class="tag ${s === 'Approved' || s === 'Within SLA' ? 'good' : s === 'At risk' ? 'warn' : 'crit'}">${s}</span>`;
+function wcAlloc() { const cash = S.dec.find(d => d.id === 'd-cash'); return { base: 900, cash: cash && (cash.status === 'approved' || cash.status === 'edited') ? 860 : 0, top: S.deps.find(d => d.kind === 'wc').done ? 500 : 0 }; }
+/* --- growth lineup: forward plan, not based on history. BASELINES: replace with the real campaign plan --- */
+const LINEUP = [
+  { n: 'Back-to-school bundles', wk: 3, dur: 2, up: 300, cost: 52, wc: 260, zones: 'Zones 1 and 4', hist: 'Partly new', gate: 'Scale to all zones if week-1 basket size is 8% above normal', mkt: false },
+  { n: 'Winter ready-meals launch', wk: 4, dur: 3, up: 420, cost: 64, wc: 380, zones: 'All zones', hist: 'New format', gate: 'Scale if ready meals reach 6% of orders in week 1', mkt: false },
+  { n: 'Weekend free-delivery push', wk: 5, dur: 2, up: 380, cost: 120, wc: 90, zones: 'Zones 2 and 3', hist: 'New', gate: 'Stop if cost per extra order passes ' + C + ' 4', mkt: true },
+  { n: 'Loyalty membership beta', wk: 6, dur: 3, up: 260, cost: 48, wc: 80, zones: 'Zone 1', hist: 'New', gate: 'Scale if 12% of customers join in 2 weeks', mkt: true },
+  { n: 'Fresh-produce price lock', wk: 7, dur: 2, up: 340, cost: 90, wc: 480, zones: 'All zones', hist: 'New', gate: 'Scale if availability stays above 95%', mkt: false },
+  { n: 'Zone 6 neighbourhood launch', wk: 8, dur: 3, up: 280, cost: 70, wc: 265, zones: 'Zone 6, 4 neighbourhoods', hist: 'New', gate: 'Open the next neighbourhood if orders pass 300 a day', mkt: true }
+];
+S.lineup = LINEUP.map(c => Object.assign({ state: 'planned' }, c)); S.lint = 1;
+const HEADROOM = 650;
+function lineupCalc(int) {
+  const weeks = []; let gmv = 0, cost = 0;
+  for (let w = 1; w <= 8; w++) { let inc = 0, wc = 0; S.lineup.forEach(c => { if (w >= c.wk && w < c.wk + c.dur) inc += c.up / c.dur * Math.pow(int, 0.8); if (w >= c.wk - 1 && w <= c.wk + c.dur) wc += c.wc * 0.9 * int; }); weeks.push({ w, inc, wc }); }
+  S.lineup.forEach(c => { gmv += c.up * Math.pow(int, 0.8); cost += c.cost * int; });
+  const peak = weeks.reduce((a, x) => x.wc > a.wc ? x : a, weeks[0]), al = wcAlloc(), alloc = al.base + al.cash + al.top;
+  return { gmv, cost, margin: gmv * 0.24 - cost, peakWc: Math.round(peak.wc), peakWeek: peak.w, alloc, weeks, over: weeks.filter(x => x.inc > HEADROOM).length, ok: peak.wc <= alloc };
+}
+function applyLineup() { S.lineup.forEach(c => { c.state = c.wk <= 5 ? 'approved' : 'gated'; }); }
+S.dec.push({ id: 'd-lineup', status: 'open', agent: 'scout', agentName: 'Growth Scout', role: 'ch', stage: ST('Customer'), source: 'agent', an: 'lineup', title: 'Approve the 8-week growth lineup: 6 campaigns, phased with test-and-scale gates',
+  ask: `Approve phase 1 now (weeks 3 to 5) and release later phases only when the gates are met and working capital is in place?`, why: 'Growth needs a step change, not the historic trend. Most of these campaigns have no history, so the plan is phased and each phase has a gate.',
+  ev: ['6 campaigns, about ' + C + ' 1.98M of expected extra sales', 'Peak working capital need ' + C + ' 1.17M in week 7 against ' + C + ' 900k allocated', '5 of 6 campaigns have no history'], effect: { gmv: 60000, wc: 0.3, margin: -0.05 }, edit: null });
+AN.lineup = {
+  sum: `Approve phase 1 (three campaigns, weeks 3 to 5) now and gate the rest. This is a step change with little history, so each phase has to earn the next. Working capital is the binding limit: the full plan needs about ${C} 1.17M at peak against ${C} 0.9M allocated, which the cash release and a top-up from the CFO office would close.`,
+  facts: [['Campaigns in the lineup', '6', 'weeks 3 to 8'], ['Expected extra sales (6 weeks)', `${C} 1.98M`, 'wide range, mostly no history'], ['Campaign cost', `${C} 444k`, ''], ['Peak working capital need', `${C} 1.17M`, 'week 7'], ['Allocated today', `${C} 900k`, `+${C} 860k if the cash decision is approved`], ['Campaigns with no history', '5 of 6', 'estimates use analogues']],
+  chart: { t: 'Expected extra sales per week at plan intensity (' + C + ' thousand)', labels: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'], data: [0, 0, 150, 290, 330, 417, 257, 350], mark: 5, u: '', ref: 650, refl: 'Delivery headroom 650' },
+  opts: [{ n: 'Approve the full lineup now', cost: `${C} 444k plus ${C} 1.17M peak working capital`, gain: `About ${C} 1.98M extra sales`, risk: 'High: breaches working capital; 5 of 6 have no history', net: 'Not feasible without a top-up' }, { n: 'Phase 1 now, later phases gated', rec: 1, cost: `${C} 164k and ${C} 0.75M peak working capital`, gain: `About ${C} 0.9M extra sales, learning before scaling`, risk: 'Medium: slower to scale', net: 'Fits the allocation' }, { n: 'Hold until we have history', cost: '0', gain: 'Lower risk', risk: 'High: GMV key result stays far behind the step change needed', net: 'Growth target missed' }],
+  wi: { label: 'Campaign intensity (1 = plan)', u: 'x', min: 0.5, max: 2, step: 0.1, value: 1, f: v => { const c = lineupCalc(v); return [['Extra sales over the 6 weeks', `${C} ${num(Math.round(c.gmv))}k`], ['Campaign cost', `${C} ${num(Math.round(c.cost))}k`], ['Net margin after cost', `${c.margin >= 0 ? '+' : '-'}${C} ${num(Math.abs(Math.round(c.margin)))}k`, c.margin >= 0 ? 'good' : 'crit'], ['Peak working capital', `${C} ${num(c.peakWc)}k, week ${c.peakWeek}`, c.ok ? 'good' : 'crit'], ['Against allocation', `${C} ${num(c.alloc)}k: ${c.ok ? 'fits' : 'short by ' + C + ' ' + num(c.peakWc - c.alloc) + 'k'}`, c.ok ? 'good' : 'crit'], ['Weeks over delivery headroom', String(c.over), c.over ? 'crit' : 'good']]; }, note: 'Intensity above about 1.6 breaches delivery headroom in the busiest weeks.' },
+  assume: ['Estimates use analogues from similar markets and past promotions, not Chile history', 'Each campaign runs 2 to 3 weeks and holds stock for a week before and after', 'The CFO office releases the top-up and the cash decision is approved'],
+  risks: ['Several campaigns land in the same weeks and strain delivery and stock', 'A gate is missed and a phase is cancelled after stock is bought', 'Marketing budget top-up stays delayed (5 days against a 3-day SLA)'],
+  noact: 'Without a plan GMV stays on its historic trend and the growth key result falls further behind: it is 37% of the way against 62% expected.',
+  conf: { p: 52, why: 'Lower than other briefs: five of six campaigns have no history here, so the range is wide and the gates matter more than the forecast.' },
+  src: ['Analogue campaigns from similar markets', 'Working capital model, Finance', 'Delivery capacity by week, Store operations'],
+  qa: [['Why phase it?', 'Five of the six campaigns have no history. Phasing limits the money at risk before we learn what works.'], ['What are the gates?', 'Each campaign has a measurable gate, for example week-1 basket size or share of orders. If it is missed, the next phase stays closed.']],
+  next: ['Growth Scout approves phase 1 campaigns for weeks 3 to 5', 'Cash and Working Capital reserves the allocation with Finance', 'Campaign Planner schedules phase 1 and sets the gates', 'Chief of Staff reports gate results in the weekly review']
+};
+function nudgeHTML(o) {
+  const dueOpts = ['Today 12:00', 'Today 17:00', 'Tomorrow 09:00', 'Fri'];
+  return `<span class="eyebrow">Nudge</span><h2 class="h2" style="margin:4px 0 6px">Nudge the ${rname(o.role)}</h2><p class="small muted">${esc(o.why || '')}</p><div class="stack" style="margin-top:10px">
+  <div><label class="f" for="ng-text">Message</label><textarea class="in" id="ng-text">${esc(o.text)}</textarea></div>
+  <div><label class="f" for="ng-due">Ask for a reply by</label><select class="in" id="ng-due">${dueOpts.map(d => `<option ${d === (o.due || 'Today 12:00') ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+  ${PERSONAS.some(p => p.id === o.role) ? '<label class="row" style="gap:8px"><input type="checkbox" id="ng-task" checked> Also put it on their task board</label>' : '<p class="small faint">This is outside the program team, so the nudge goes to Slack only.</p>'}
+  <div class="row"><button class="btn pri" data-act="nudge-send" data-role="${o.role}" data-key="${o.key}" data-title="${esc(o.title)}">Send in Slack</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`;
+}
+function orgNudgeText(r) { const offs = r.st.filter(x => x[1] !== 'On track').map(x => `${x[0].n} ${x[0].fmt(x[0].now())} (target ${x[0].fmt(x[0].tgt)})`); return `Quick check-in. ${offs.length ? 'Behind or on watch: ' + offs.join('; ') + '. ' : ''}${r.open.length ? `${r.open.length} decision${r.open.length > 1 ? 's are' : ' is'} waiting for you, the oldest ${Math.round(r.oldest)} hours. ` : ''}What is your plan, and what do you need from me?`; }
+V.org = () => {
+  const me = S.persona, isCh = me === 'ch', rows = orgRows(), nu = rows.filter(r => r.rec === 'Nudge'), wa = rows.filter(r => r.rec === 'Watch'), mo = rows.filter(r => r.rec === 'Monitor');
+  const objProg = o => o.krs.reduce((a, k) => a + krProg(k), 0) / o.krs.length, al = wcAlloc(), alloc = al.base + al.cash + al.top, calc = lineupCalc(S.lint);
+  const pieces = [];
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Org and OKRs</span><h1 class="h1">Which teams to monitor, which to nudge, and what is blocking growth</h1><p>The Chief of Staff ranks each team by how far its numbers are off target and how long its decisions have waited. Below: OKR progress against the pace of the quarter, and the dependencies that sit outside any one team.</p></section>
+  ${isCh ? '' : '<div class="callout" style="margin-top:14px">This view is built for the Country head. You can read it, but nudges are sent from the Country head role.</div>'}
+  <section class="sec"><div class="sec-h"><h2 class="h2">Team KPIs: monitor or nudge</h2><span class="muted small">Chief of Staff recommendation</span></div>
+  <div class="card pad" style="margin-bottom:14px"><b>Nudge:</b> ${nu.map(r => r.p.who).join(', ') || 'nobody'}. <b>Watch:</b> ${wa.map(r => r.p.who).join(', ') || 'nobody'}. <b>Monitor only:</b> ${mo.map(r => r.p.who).join(', ') || 'nobody'}.</div>
+  <div class="grid g3">${rows.map(r => `<article class="card pad"><div class="row" style="justify-content:space-between"><b>${r.p.who}</b>${recTag(r.rec)}</div><ul class="ev" style="list-style:none;padding:0;margin-top:8px">${r.st.map(([m, s]) => `<li style="display:flex;justify-content:space-between;gap:8px;margin:5px 0"><span>${m.n}<br><span class="small faint">${m.fmt(m.now())}, target ${m.fmt(m.tgt)}</span></span>${statTag(s)}</li>`).join('')}</ul>
+  <p class="small muted" style="margin-top:8px">${r.open.length ? `${r.open.length} decision${r.open.length > 1 ? 's' : ''} waiting, oldest ${Math.round(r.oldest)} h.` : 'No decisions waiting.'}${S.nudges['org-' + r.role] ? ` Nudged at ${S.nudges['org-' + r.role]}.` : ''}</p>
+  <div class="row" style="margin-top:8px">${isCh ? `<button class="btn ${r.rec === 'Nudge' ? 'pri' : ''} sm" data-act="nudge" data-role="${r.role}" data-kind="org">Nudge</button>` : ''}<button class="btn sm" data-act="chat-open" data-q="Why is the ${esc(r.p.who.toLowerCase())} behind on its numbers?">Ask why</button><button class="btn sm" data-act="persona-go" data-id="${r.role}">View their day</button></div></article>`).join('')}</div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">OKRs: week ${QTR.week} of ${QTR.of}</h2><span class="muted small">The marker shows where progress should be by now (${Math.round(PACE * 100)}%)</span></div><div class="stack">${OKRS.map(o => `<div class="card pad"><div class="row" style="justify-content:space-between"><h3 class="h3">${o.o}</h3><span class="small muted">${Math.round(objProg(o) * 100)}% overall</span></div>${o.krs.map(k => { const p = krProg(k), s = krStatus(k); return `<div style="border-top:1px solid var(--line);padding:10px 0;margin-top:10px"><div class="row" style="justify-content:space-between"><b>${k.n}</b>${krTag(s)}</div><div class="small muted">${k.fmt(k.cur())} now, started at ${k.fmt(k.start)}, target ${k.fmt(k.tgt)}. Owner: ${rname(k.owner)}</div><div class="track" style="margin-top:6px;position:relative" role="progressbar" aria-valuenow="${Math.round(p * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${k.n} progress"><i style="width:${Math.min(100, p * 100)}%"></i><b style="position:absolute;left:${PACE * 100}%;top:-3px;width:3px;height:16px;background:var(--ink);border-radius:2px" title="Expected by now"></b></div><div class="row" style="margin-top:8px">${isCh && k.owner !== 'ch' ? `<button class="chip" data-act="nudge" data-role="${k.owner}" data-kind="kr" data-key="${k.n}" data-p="${Math.round(p * 100)}">Nudge the owner</button>` : ''}<button class="chip" data-act="chat-open" data-q="${esc(k.q)}">Ask why</button></div></div>`; }).join('')}</div>`).join('')}</div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">Cross-org dependencies</h2><span class="muted small">Things that sit outside any one team</span></div>
+  <div class="card pad"><h3 class="h3">Working capital allocation</h3><p class="small muted">Allocated to the growth lineup, and what the lineup needs at peak.</p><div class="grid g3" style="margin-top:8px"><div class="card stat" style="box-shadow:none"><div class="v">${C} ${num(al.base)}k</div><div class="l">base allocation</div></div><div class="card stat" style="box-shadow:none"><div class="v">+${C} ${num(al.cash)}k</div><div class="l">from the cash decision ${al.cash ? '(approved)' : '(pending: Cash and Working Capital)'}</div></div><div class="card stat" style="box-shadow:none"><div class="v">+${C} ${num(al.top)}k</div><div class="l">CFO top-up ${al.top ? '(approved)' : '(pending, 6 days)'}</div></div></div>
+  <p style="margin-top:10px"><b>Peak need at plan: ${C} ${num(calc.peakWc)}k (week ${calc.peakWeek}).</b> Available: ${C} ${num(alloc)}k. ${calc.ok ? '<span class="tag good">Fits</span>' : `<span class="tag crit">Short by ${C} ${num(calc.peakWc - alloc)}k</span>`}</p></div>
+  <div class="card tw" style="margin-top:14px"><div style="padding:16px 20px 0"><h3 class="h3">Delayed approvals</h3><p class="small muted">Days waiting against the agreed turnaround (SLA), and what each extra day costs.</p></div><table class="tbl"><thead><tr><th>Waiting for approval</th><th>Approver</th><th class="n">Days</th><th>Status</th><th>Cost of delay</th><th></th></tr></thead><tbody>${S.deps.map(d => `<tr><td>${d.title}${d.esc ? ' <span class="tag warn">Escalated</span>' : ''}</td><td>${rname(d.owner)}</td><td class="n">${d.days} of ${d.sla}</td><td>${depTag(depStatus(d))}</td><td class="small">${d.cost}</td><td>${d.done ? '' : `<div class="row" style="gap:6px">${isCh ? `<button class="btn sm" data-act="nudge" data-role="${d.owner}" data-kind="dep" data-key="${d.id}">Nudge</button><button class="btn sm" data-act="dep-esc" data-id="${d.id}" ${d.esc ? 'disabled' : ''}>Escalate</button>` : ''}<button class="btn sm" data-act="dep-ok" data-id="${d.id}">Mark approved</button></div>`}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card pad" style="margin-top:14px" id="lineup"><div class="row" style="justify-content:space-between"><h3 class="h3">Growth campaign lineup: weeks 3 to 8</h3><span class="tag warn">Forward plan, not historic</span></div><p class="small muted">Six campaigns built to scale growth beyond the trend. Most have no history here, so each has a gate and the plan is phased. Move the slider to test how hard to push.</p>
+  <div class="tw card" style="box-shadow:none;margin-top:10px"><table class="tbl"><thead><tr><th>Campaign</th><th>Starts</th><th>Where</th><th>History</th><th class="n">Extra sales</th><th class="n">Working capital</th><th>Ready?</th><th>Gate</th><th>State</th></tr></thead><tbody>${S.lineup.map(c => { const apprOK = !c.mkt || S.deps.find(d => d.kind === 'mkt').done, fundOK = calc.ok; return `<tr><td><b>${c.n}</b></td><td>Week ${c.wk}</td><td>${c.zones}</td><td><span class="tag ${c.hist === 'Partly new' ? 'warn' : 'crit'}">${c.hist}</span></td><td class="n">${C} ${Math.round(c.up * Math.pow(S.lint, 0.8))}k</td><td class="n">${C} ${Math.round(c.wc * 0.9 * S.lint)}k</td><td class="small"><span class="tag good">Stock</span> <span class="tag ${fundOK ? 'good' : 'warn'}">Cash</span> <span class="tag ${apprOK ? 'good' : 'crit'}">${apprOK ? 'Budget' : 'Budget blocked'}</span></td><td class="small">${c.gate}</td><td><span class="tag ${c.state === 'approved' ? 'good' : c.state === 'gated' ? 'warn' : ''}">${c.state === 'approved' ? 'Approved' : c.state === 'gated' ? 'Gated' : 'Planned'}</span></td></tr>`; }).join('')}</tbody></table></div>
+  <div style="margin-top:14px"><label class="f" for="lint">Campaign intensity (1 = plan): <b id="lint-v">${S.lint.toFixed(1)}x</b></label><input type="range" id="lint" min="0.5" max="2" step="0.1" value="${S.lint}" data-input="lint"><div class="wiout" id="lint-out">${wiOut(AN.lineup.wi, S.lint)}</div></div>
+  <div class="tw" style="margin-top:12px"><table class="tbl"><thead><tr><th></th>${[1, 2, 3, 4, 5, 6, 7, 8].map(w => `<th class="n">W${w}</th>`).join('')}</tr></thead><tbody><tr><td>Extra sales (${C} k)</td>${calc.weeks.map(x => `<td class="n" style="${x.inc > HEADROOM ? 'color:var(--crit);font-weight:700' : ''}">${Math.round(x.inc)}</td>`).join('')}</tr><tr><td>Working capital held (${C} k)</td>${calc.weeks.map(x => `<td class="n" style="${x.wc > alloc ? 'color:var(--crit);font-weight:700' : ''}">${Math.round(x.wc)}</td>`).join('')}</tr></tbody></table></div>
+  <div class="row" style="margin-top:12px">${S.dec.find(d => d.id === 'd-lineup').status === 'open' ? `<button class="btn pri" data-act="brief" data-id="d-lineup">Review and decide on the lineup</button><button class="btn" data-act="brief-q" data-id="d-lineup">Question this</button>` : '<span class="tag good">Lineup decision made</span>'}</div></div></section>`;
+};
+
 /* ---------- presenter ---------- */
 const PSTEPS = [
-  { t: '1. Landing: the north star', time: '0:00 to 0:40', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
-  { t: '2. Country head: morning bulletin', time: '0:40 to 1:30', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
-  { t: '3. My day: one screen per role', time: '1:30 to 2:30', say: 'Every role gets one consolidated screen: decisions and tasks on a board, numbers against target, all their agents, and a team channel. Create a task, ask a colleague in Slack, or generate the WBR data pack in one click.', go: () => { S.persona = 'ch'; nav('my'); }, spot: '#tasks' },
-  { t: '4. Play one scenario', time: '2:30 to 3:30', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
-  { t: '5. Approve a decision', time: '3:30 to 4:15', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
+  { t: '1. Landing: the north star', time: '0:00 to 0:35', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
+  { t: '2. Country head: morning bulletin', time: '0:35 to 1:15', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
+  { t: '3. My day: one screen per role', time: '1:15 to 2:00', say: 'Every role gets one consolidated screen: decisions and tasks on a board, numbers against target, all their agents, and a team channel. Create a task, ask a colleague in Slack, or generate the WBR data pack in one click.', go: () => { S.persona = 'ch'; nav('my'); }, spot: '#tasks' },
+  { t: '4. Org and OKRs: monitor, nudge, unblock', time: '2:00 to 2:45', say: 'As Country head you see which team KPIs to monitor and which to nudge, how the OKRs are moving against the pace of the quarter, and the dependencies outside any one team: working capital, delayed approvals and the growth lineup. Nudge from here and it goes to Slack and the task board.', go: () => { S.persona = 'ch'; nav('org'); }, spot: '#lineup' },
+  { t: '5. Play one scenario', time: '2:45 to 3:45', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
+  { t: '6. Approve a decision', time: '3:45 to 4:20', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
     action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
-  { t: '6. Before and after', time: '4:15 to 4:45', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
-  { t: '7. Close on the north star', time: '4:45 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
+  { t: '7. Before and after', time: '4:20 to 4:45', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
+  { t: '8. Close on the north star', time: '4:45 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
 ];
 function presHTML() {
   const i = S.pres.i, p = PSTEPS[i];
@@ -1777,7 +2058,7 @@ function presRender() { const el = $('#presenter'); el.hidden = !S.pres.on; $('#
 function presGo() { const p = PSTEPS[S.pres.i]; p.go(); presRender(); setTimeout(() => { const t = $(p.spot); if (t) { t.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); t.classList.add('spot'); setTimeout(() => t.classList.remove('spot'), 5200); } }, 350); }
 
 /* ---------- shell: routing, render, events ---------- */
-const NAV = [['landing', 'North star'], ['my', 'My day'], ['home', 'Briefing and agents'], ['score', 'Scorecard'], ['flows', 'Workflows'], ['day', 'Day in the life'], ['agents', 'Agent portfolio'], ['log', 'Decision log'], ['compare', 'Before and after']];
+const NAV = [['landing', 'North star'], ['my', 'My day'], ['org', 'Org and OKRs'], ['team', 'Team dashboard'], ['home', 'Briefing and agents'], ['score', 'Scorecard'], ['flows', 'Workflows'], ['routines', 'Agent routines'], ['day', 'Day in the life'], ['agents', 'Agent portfolio'], ['log', 'Decision log'], ['compare', 'Before and after']];
 function nav(r, arg) { const h = '#/' + r + (arg ? '/' + arg : ''); if (location.hash === h) route(); else location.hash = h; }
 function route() { const m = location.hash.replace(/^#\/?/, '').split('/'); S.route = V[m[0]] ? m[0] : 'landing'; S.arg = m[1] || null; window.scrollTo(0, 0); render(); document.title = 'AI Native Retail Demo'; }
 function updateTop() {
@@ -1804,7 +2085,7 @@ const ACT = {
   btab: el => { S.btab[el.dataset.id] = el.dataset.k; LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); },
   'chat-open': el => openChat(el.dataset.q),
   'chat-q': el => chatSend(el.dataset.ctx, el.dataset.q),
-  'chat-act': el => { const st = chatState(el.dataset.ctx), x = st.msgs[+el.dataset.i].acts[+el.dataset.j]; if (x.done) return; x.done = true; addDecision({ role: x.role, agentName: 'Chief of Staff', title: 'Task: ' + x.text, ask: 'Accept this task?', why: 'Raised in a conversation with the team.', ev: [], source: 'task' }); toast('Task sent to ' + PNAME[x.role] + '.'); renderChat(el.dataset.ctx); updateTop(); },
+  'chat-act': el => { const st = chatState(el.dataset.ctx), x = st.msgs[+el.dataset.i].acts[+el.dataset.j]; if (x.done) return; x.done = true; if (x.type === 'routine') { addRoutine({ agent: x.agent, text: x.text, time: x.time, to: x.role }); toast(`Daily routine created for ${AGM[x.agent].name}.`); renderChat(el.dataset.ctx); return; } addDecision({ role: x.role, agentName: 'Chief of Staff', title: 'Task: ' + x.text, ask: 'Accept this task?', why: 'Raised in a conversation with the team.', ev: [], source: 'task' }); toast('Task sent to ' + PNAME[x.role] + '.'); renderChat(el.dataset.ctx); updateTop(); },
   brief: el => { const id = el.dataset.id; const L = openLayer('drawer', 'Decision brief', () => briefHTML(id)); L.el.classList.add('wide'); },
   chip: el => { const t = $('#reason'); t.value = el.dataset.text; t.focus(); },
   confirm: el => {
@@ -1830,7 +2111,7 @@ const ACT = {
   'wf-pause': el => { const st = wfState(el.dataset.id); st.auto = false; clearTimeout(st.tm); render(); },
   'wf-reset': el => { wfReset(el.dataset.id); render(); },
   play: () => { S.sim.playing ? simPause() : simPlay(); updateDay(); },
-  hour: () => { S.sim.t = Math.min(840, S.sim.t + 60); fireDay(); updateDay(); updateTop(); },
+  hour: () => { S.sim.t = Math.min(840, S.sim.t + 60); fireDay(); fireRoutines(); updateDay(); updateTop(); },
   restart: () => { simReset(); render(); },
   speed: el => { S.sim.speed = +el.dataset.id; render(); },
   world: el => { if (S.sim.world === el.dataset.id) return; S.sim.world = el.dataset.id; simReset(); simPlay(); S.sim.speed = Math.max(S.sim.speed, 4); render(); toast(el.dataset.id === 'ai' ? 'Replaying the same day in the AI-native world.' : 'Replaying the same day, done by hand.'); },
@@ -1872,6 +2153,51 @@ Object.assign(ACT, {
 CHG.nttpl = el => { const t = TPL[el.value]; if (!t) return; $('#nt-title').value = t[0]; $('#nt-due').value = t[1]; };
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-slackform]'); if (!f) return; e.preventDefault(); const i = $('.scin', f), to = $('#smention', f).value, v = i.value.trim(); if (!v) return; i.value = ''; S.compose = null; const me = S.persona, ch = S.ch; postMsg(ch, { f: PWHO[me], k: 'role', r: me, t: (to ? `@${PWHO[to]} ` : '') + v }); if (to) { const due = /wbr/i.test(v) ? 'Mon 09:00' : 'Today 17:00'; addTask({ role: to, title: v.length > 80 ? v.slice(0, 77) + '...' : v, by: PWHO[me], src: 'slack', due, prio: /urgent|asap|\bnow\b/i.test(v) ? 'high' : 'normal', kind: /wbr/i.test(v) ? 'wbr' : '' }); toast(`Task created on the ${PWHO[to]}'s board.`); setTimeout(() => postMsg(ch, { f: PWHO[to], k: 'role', r: to, to: me, t: ackText(to, v, due) }), reduced ? 0 : 1400); } });
 
+
+Object.assign(ACT, {
+  'brief-q': el => { const id = el.dataset.id; S.btab[id] = 'chat'; const L = openLayer('drawer', 'Decision brief', () => briefHTML(id)); L.el.classList.add('wide'); renderChat('d:' + id); setTimeout(() => { const i = $('.cin', L.el); i && i.focus(); }, 40); },
+  'routine-new': el => { const L = openLayer('modal', 'Daily routine', () => routineHTML({ agent: el.dataset.agent })); setTimeout(() => { const i = $('#rt-text', L.el); i && i.focus(); }, 30); },
+  'routine-create': () => {
+    const text = $('#rt-text').value.trim(), err = $('#rterr'); if (!text) { err.textContent = 'Please describe what the agent should do each day.'; err.hidden = false; $('#rt-text').focus(); return; }
+    const a = $('#rt-agent').value, r = addRoutine({ agent: a, text, time: $('#rt-time').value, days: $('#rt-days').value, out: $('#rt-out').value, to: $('#rt-to').value }); AGM[a].act.unshift(`${clock(S.sim.t)}  New daily routine: ${text} at ${r.time}`);
+    closeLayer(); toast(`${AGM[a].name} will do this ${r.days === 'Daily' ? 'every day' : r.days.toLowerCase()} at ${r.time}.`); render();
+  },
+  'routine-toggle': el => { const r = S.routines.find(x => x.id === el.dataset.id); r.on = !r.on; toast(r.on ? 'Routine resumed.' : 'Routine paused.'); render(); },
+  'routine-run': el => { runRoutine(S.routines.find(x => x.id === el.dataset.id), true); render(); },
+  'routine-del': el => { S.routines = S.routines.filter(x => x.id !== el.dataset.id); toast('Routine removed.'); render(); }
+});
+CHG.rtagent = el => { const t = $('#rt-text'); if (t && !t.value.trim()) t.value = firstS(AGM[el.value].job).replace(/\.$/, ''); const r = $('#rt-to'); if (r && AGM[el.value].role !== 'all') r.value = AGM[el.value].role; };
+Object.assign(ACT, {
+  ttab: el => { S.ttab = el.dataset.id; render(); },
+  'raci-cell': el => { const m = S.raci[el.dataset.k], cur = m[el.dataset.id] || '', nx = RSEQ[(RSEQ.indexOf(cur) + 1) % RSEQ.length]; if (nx === 'A' || nx === 'AR') Object.keys(m).forEach(r => { if (r !== el.dataset.id && (m[r] === 'A' || m[r] === 'AR')) m[r] = m[r] === 'AR' ? 'R' : ''; }); if (nx) m[el.dataset.id] = nx; else delete m[el.dataset.id]; render(); },
+  'raci-reset': () => { RACI_KEYS.forEach(k => { const r = RACI0[k], m = {}; (r.R || []).forEach(x => m[x] = 'R'); (r.C || []).forEach(x => m[x] = 'C'); (r.I || []).forEach(x => m[x] = 'I'); m[r.A] = (m[r.A] === 'R') ? 'AR' : 'A'; S.raci[k] = m; }); toast('RACI reset to the default.'); render(); },
+  'tool-toggle': el => { const t = S.tools[el.dataset.id]; t.on = !t.on; if (t.on) { syncTool(t.id); toast(t.n + ' reconnected. Queued updates were applied.'); } else toast(t.n + ' disconnected. New updates will queue.'); render(); },
+  'tool-sync': el => { syncTool(el.dataset.id); toast('Synced.'); render(); },
+  'tool-new': () => { const L = openLayer('modal', 'Connect a tool', connectToolHTML); setTimeout(() => { const i = $('#tl-name', L.el); i && i.focus(); }, 30); },
+  'tool-add': () => { const n = $('#tl-name').value.trim(), teams = $$('input[name=tl-team]:checked').map(x => x.value), err = $('#tlerr'); if (!n) { err.textContent = 'Please name the tool.'; err.hidden = false; $('#tl-name').focus(); return; } if (!teams.length) { err.textContent = 'Choose at least one team that feeds it.'; err.hidden = false; return; } const id = 'x' + (++S.seq); S.tools[id] = { id, n, d: '', on: true, last: clock(S.sim.t), writes: 0, custom: true, teams }; closeLayer(); toast(n + ' connected.'); render(); }
+});
+CHG.rlens = el => { S.rlens = el.value; render(); };
+
+Object.assign(ACT, {
+  nudge: el => {
+    const role = el.dataset.role, kind = el.dataset.kind; let text = '', why = '', title = '', key = kind + '-' + role, due = 'Today 12:00';
+    if (kind === 'org') { const r = orgRows().find(x => x.role === role); text = orgNudgeText(r); title = 'Reply to the Country head on your team KPIs'; why = r.rec === 'Nudge' ? 'Recommended by the Chief of Staff: several numbers are off target.' : 'Your call: the Chief of Staff rates this team ' + r.rec.toLowerCase() + '.'; }
+    else if (kind === 'kr') { const k = OKRS.flatMap(o => o.krs).find(x => x.n === el.dataset.key); text = `The key result "${k.n}" is ${el.dataset.p}% of the way against about ${Math.round(PACE * 100)}% expected at this point. What is blocking it, and what do you need from me?`; title = `Update on key result: ${k.n}`; key = 'kr-' + k.n; why = 'Key result owner: ' + rname(role); }
+    else { const d = S.deps.find(x => x.id === el.dataset.key); text = `Your approval of "${d.title}" has been waiting ${d.days} days (agreed turnaround ${d.sla}). Each extra day costs: ${d.cost}. Can you decide today?`; title = 'Approval: ' + d.title; key = 'dep-' + d.id; due = 'Today 17:00'; why = 'Delayed approval, ' + depStatus(d).toLowerCase() + '.'; }
+    openLayer('modal', 'Nudge', () => nudgeHTML({ role, text, why, title, key, due }));
+  },
+  'nudge-send': el => {
+    const role = el.dataset.role, text = $('#ng-text').value.trim(), due = $('#ng-due').value, me = S.persona, internal = PERSONAS.some(p => p.id === role), ch = rchan(role);
+    if (!text) { $('#ng-text').focus(); return; }
+    postMsg(ch, { f: PWHO[me], k: 'role', r: me, t: `@${rname(role)} ${text}`, to: internal ? role : undefined });
+    if (internal && $('#ng-task') && $('#ng-task').checked) addTask({ role, title: el.dataset.title, by: PWHO[me], src: 'slack', due, prio: 'high' });
+    setTimeout(() => postMsg(ch, internal ? { f: PWHO[role], k: 'role', r: role, to: me, t: `Thanks for the nudge. I will reply with a plan by ${due}.` } : { f: rname(role), k: 'ext', r: role, to: me, t: `Noted. We will give you an answer by ${due}.` }), reduced ? 0 : 1500);
+    S.nudges[el.dataset.key] = clock(S.sim.t); closeLayer(); toast(`Nudge sent to the ${rname(role)} in Slack.`); render();
+  },
+  'dep-esc': el => { const d = S.deps.find(x => x.id === el.dataset.id); d.esc = true; postMsg('ops', { f: PWHO[S.persona], k: 'role', r: S.persona, t: `Escalation: "${d.title}" has waited ${d.days} days against a ${d.sla}-day turnaround. Asking the ${rname(d.owner)}'s leadership to unblock it today.` }); toast('Escalated in ' + CHANNELS[0].n + '.'); render(); },
+  'dep-ok': el => { const d = S.deps.find(x => x.id === el.dataset.id); d.done = true; if (d.kind === 'wc') toast('Top-up approved: the allocation for the lineup grows by ' + C + ' 500k.'); else if (d.kind === 'mkt') toast('Marketing budget released: blocked campaigns are unblocked.'); else toast('Marked as approved.'); render(); }
+});
+document.addEventListener('input', e => { const el = e.target.closest('[data-input="lint"]'); if (!el) return; S.lint = +el.value; $('#lint-v').textContent = S.lint.toFixed(1) + 'x'; $('#lint-out').innerHTML = wiOut(AN.lineup.wi, S.lint); });
 
 document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-chatform]'); if (!f) return; e.preventDefault(); const i = $('.cin', f); const v = i.value; i.value = ''; chatSend(f.dataset.chatform, v); });
