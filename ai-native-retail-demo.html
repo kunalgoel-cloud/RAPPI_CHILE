@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Native Retail Demo</title>
+<script>
+/* set theme before first paint */
+(function(){var t='light';try{t=localStorage.getItem('ainr-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}document.documentElement.setAttribute('data-theme',t)})();
+</script>
+<style>
+:root{color-scheme:light;--bg:#f5f6f8;--surface:#fff;--surface2:#eef0f4;--ink:#161b22;--ink2:#465061;--ink3:#667182;--line:#dfe3ea;--accent:#2457d6;--accent2:#1c45ad;--on-accent:#fff;--accent-soft:#e6edfc;--good:#14764a;--good-soft:#e1f3ea;--warn:#8a5a00;--warn-soft:#fdf0d2;--crit:#b3261e;--crit-soft:#fbe6e4;--r:12px;--sh:0 1px 2px rgba(16,24,40,.05),0 6px 18px rgba(16,24,40,.05)}
+:root[data-theme=dark]{color-scheme:dark;--bg:#0f1319;--surface:#171c24;--surface2:#202733;--ink:#eaeef5;--ink2:#b0b9c7;--ink3:#8f99a9;--line:#2b3340;--accent:#7ba3ff;--accent2:#a3bfff;--on-accent:#0d1626;--accent-soft:#1c2a47;--good:#4cc790;--good-soft:#14301f;--warn:#f0b84a;--warn-soft:#352a10;--crit:#ff8a80;--crit-soft:#3a1c1a;--sh:none}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+h1,h2,h3,h4,p{margin:0}
+button,select,input,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:var(--on-accent);padding:8px 12px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+.wrap{max-width:1260px;margin:0 auto;padding:0 24px}
+/* top bar */
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:16px;padding-top:10px;padding-bottom:6px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;color:var(--ink);text-decoration:none;font-size:16px}
+.logo{width:22px;height:22px;border-radius:7px;background:var(--accent);position:relative;display:inline-block}
+.logo::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--on-accent)}
+.grow{flex:1}
+.role{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.role select{padding:7px 10px;border-radius:9px;border:1px solid var(--line);background:var(--surface2);font-weight:600;max-width:230px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;padding:4px 10px;border-radius:99px;background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);white-space:nowrap}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;padding-bottom:0;scrollbar-width:thin}
+nav.tabs a{padding:9px 13px;text-decoration:none;color:var(--ink2);font-weight:550;font-size:14px;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs a:hover{color:var(--ink)}
+nav.tabs a[aria-current=page]{color:var(--accent);border-color:var(--accent)}
+.waiting-chip{font-size:13px;font-weight:650;padding:5px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+/* generic */
+main{padding:28px 0 90px;outline:none}
+.h1{font-size:clamp(26px,3.4vw,38px);line-height:1.15;font-weight:700;letter-spacing:-.02em}
+.h2{font-size:21px;font-weight:680;letter-spacing:-.01em}
+.h3{font-size:16px;font-weight:650}
+.muted{color:var(--ink2)}.small{font-size:13px}.faint{color:var(--ink3)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.sec{margin-top:36px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.pad{padding:18px 20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stack>*+*{margin-top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;font-size:14px;line-height:1.2;min-height:40px}
+.btn:hover{border-color:var(--ink3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.pri:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn.bad{color:var(--crit)}
+.btn.sm{padding:6px 11px;min-height:34px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-w{background:var(--surface2);color:var(--ink2)}
+.s-f{background:var(--warn-soft);color:var(--warn)}
+.s-n{background:var(--accent);color:var(--on-accent)}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:7px;background:var(--surface2);color:var(--ink2)}
+.tag.good{background:var(--good-soft);color:var(--good)}.tag.warn{background:var(--warn-soft);color:var(--warn)}.tag.crit{background:var(--crit-soft);color:var(--crit)}.tag.acc{background:var(--accent-soft);color:var(--accent)}
+.chip{border:1px solid var(--line);background:var(--surface2);border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink2)}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+/* hero + north star */
+.hero{padding:34px 0 8px;max-width:900px}
+.hero p{font-size:18px;margin-top:12px;color:var(--ink2);max-width:720px}
+.flowwrap{overflow-x:auto;padding:6px 2px 14px;margin:0 -2px}
+.flow{display:grid;grid-template-columns:repeat(13,minmax(116px,1fr));gap:0;min-width:max-content}
+@media(min-width:1280px){.flow{min-width:0;grid-template-columns:repeat(13,minmax(0,1fr))}.node{padding:10px 8px;margin-right:8px}.node .nm{font-size:13px}.node::after{right:-9px;width:9px}}
+.node{position:relative;margin:0 9px 0 0;padding:12px 11px;border:1px solid var(--line);background:var(--surface);border-radius:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:128px;box-shadow:var(--sh)}
+.node::after{content:"";position:absolute;right:-10px;top:50%;width:10px;height:2px;background:var(--line)}
+.node:last-child::after{display:none}
+.node:hover,.node[aria-pressed=true]{border-color:var(--accent)}
+.node[aria-pressed=true]{background:var(--accent-soft)}
+.node .no{font-size:11px;color:var(--ink3);font-weight:700}
+.node .nm{font-weight:650;font-size:14px;line-height:1.25}
+.node .ct{font-size:12px;color:var(--ink2);margin-top:auto}
+.node .dw{font-size:12px;font-weight:700;color:var(--accent)}
+.node .dw.none{color:var(--ink3);font-weight:600}
+.tagline{font-size:clamp(20px,2.4vw,26px);font-weight:650;letter-spacing:-.01em;margin:6px 0 4px}
+.stat{padding:16px 18px}
+.stat .v{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.stat .l{font-size:13px;color:var(--ink2)}
+/* agent card */
+.agent{position:relative;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.agent:hover{border-color:var(--accent)}
+.stretch{all:unset;cursor:pointer;font-weight:650;font-size:16px;line-height:1.3}
+.stretch::after{content:"";position:absolute;inset:0;border-radius:var(--r)}
+.stretch:focus-visible::after{outline:3px solid var(--accent);outline-offset:2px}
+.agent .job{font-size:13px;color:var(--ink2)}
+.agent .find{font-size:14px;margin-top:2px}
+.agent .meta{margin-top:auto;font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;gap:8px;padding-top:6px}
+/* decision card */
+.dcard{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;background:var(--surface);padding:14px 16px}
+.dcard .ask{margin-top:8px;padding:9px 12px;background:var(--accent-soft);border-radius:8px;font-weight:600;font-size:14px}
+.dcard .why{font-size:13px;color:var(--ink2);margin-top:8px}
+.ev{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--ink2)}
+.ev li{margin:2px 0}
+.done-d{opacity:.8;border-left-color:var(--good)}.done-d.rej{border-left-color:var(--crit)}
+/* kpi */
+.kpi{position:relative;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi:hover{border-color:var(--accent)}
+.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.02em}
+.kpi .l{font-size:13px;color:var(--ink2);font-weight:600}
+.kpi svg{width:100%;height:34px;margin-top:6px}
+.delta{font-size:12px;font-weight:650}
+.delta.good{color:var(--good)}.delta.bad{color:var(--crit)}.delta.flat{color:var(--ink3)}
+.flash{animation:fl 1.4s ease-out}
+@keyframes fl{0%{background:var(--accent-soft)}100%{background:var(--surface)}}
+/* lists */
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:grid;grid-template-columns:54px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.feed li:last-child{border:0}
+.feed time{font-variant-numeric:tabular-nums;color:var(--ink3);font-size:13px;font-weight:600}
+.bul{list-style:none;margin:0;padding:0;counter-reset:b}
+.bul li{counter-increment:b;display:grid;grid-template-columns:28px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.bul li:last-child{border:0}
+.bul li::before{content:counter(b);width:24px;height:24px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--ink2)}
+/* table */
+.tw{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th,.tbl td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:700;white-space:nowrap;background:var(--surface)}
+.tbl th button{all:unset;cursor:pointer;font-weight:700}
+.tbl th button:focus-visible{outline:3px solid var(--accent)}
+.tbl td.n,.tbl th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr.click{cursor:pointer}.tbl tr.click:hover td{background:var(--surface2)}
+/* bars */
+.track{height:10px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.track>i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s}
+.track.good>i{background:var(--good)}
+.cmp{display:grid;grid-template-columns:70px 1fr 70px;gap:10px;align-items:center;font-size:13px}
+.cmp .track>i.bf{background:var(--ink3)}
+/* forms */
+label.f{display:block;font-size:13px;font-weight:650;margin-bottom:4px}
+.in,textarea.in,select.in{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);}
+textarea.in{min-height:84px;resize:vertical}
+.switch{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface2)}
+.switch button{border:0;background:transparent;padding:8px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.switch button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.radio{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:pointer;align-items:flex-start}
+.radio:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.err{color:var(--crit);font-size:13px;font-weight:600;margin-top:6px}
+/* layers */
+.layer{position:fixed;inset:0;z-index:60;display:flex}
+.scrim{position:absolute;inset:0;background:rgba(10,14,20,.5)}
+.layer .panel{position:relative;background:var(--surface);color:var(--ink);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);outline:none}
+.layer.drawer{justify-content:flex-end}
+.layer.drawer .panel{width:min(560px,100%);height:100%;border-left:1px solid var(--line)}
+.layer.modal{align-items:center;justify-content:center;padding:16px}
+.layer.modal .panel{width:min(600px,100%);max-height:92vh;border-radius:16px;border:1px solid var(--line)}
+.pbody{padding:24px 24px 28px}
+.x{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
+.anim .panel{animation:in .2s ease-out}
+@keyframes in{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.layer.drawer.anim .panel{animation:inr .22s ease-out}
+@keyframes inr{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+/* toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%);top:104px;z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:520px}
+.t{pointer-events:auto;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:550;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+/* stepper / workflow */
+.wfgrid{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.wfgrid{grid-template-columns:1fr}}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:8px 0;position:relative;font-size:14px}
+.steps li::before{content:"";position:absolute;left:12px;top:30px;bottom:-8px;width:2px;background:var(--line)}
+.steps li:last-child::before{display:none}
+.steps .dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--ink3);z-index:1}
+.steps li.done .dot{background:var(--good);border-color:var(--good);color:#fff}
+.steps li.cur .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.steps li.wait .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.steps li.todo{color:var(--ink3)}
+.log{font-size:13px;list-style:none;margin:0;padding:0;max-height:260px;overflow:auto}
+.log li{display:grid;grid-template-columns:48px 1fr;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.log time{color:var(--ink3);font-variant-numeric:tabular-nums}
+.who{font-weight:650}
+/* swimlane */
+.lane{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:10px;align-items:center;font-size:12.5px;padding:4px 0}
+.lt{position:relative;height:16px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.lt i{position:absolute;top:0;bottom:0}
+.lt .a{background:var(--warn);opacity:.75}.lt .b{background:var(--accent)}.lt .c{background:var(--good)}
+.lt .cur{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.dtrack{position:relative;height:12px;border-radius:99px;background:var(--surface2)}
+.dtrack>i.p{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:99px}
+.dtrack>b{position:absolute;top:-3px;width:3px;height:18px;border-radius:2px;background:var(--ink3);opacity:.7}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:4px}
+/* tree */
+.tree,.tree ul{list-style:none;margin:0;padding-left:0}
+.tree ul{padding-left:18px;border-left:2px solid var(--line);margin-left:6px}
+.tree li{margin:6px 0}
+.tree details>summary{cursor:pointer;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 10px;border-radius:8px;background:var(--surface2);list-style:none}
+.tree details>summary::-webkit-details-marker{display:none}
+.tree details>summary::before{content:"+";font-weight:700;width:14px;color:var(--ink3)}
+.tree details[open]>summary::before{content:"\2212"}
+.tree .leaf{padding:7px 10px;border-radius:8px;background:var(--surface2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tree .val{font-weight:700;margin-left:auto;font-variant-numeric:tabular-nums}
+/* presenter */
+#presenter{position:fixed;right:16px;bottom:16px;z-index:50;width:min(380px,calc(100% - 32px))}
+.pcard{padding:16px 18px;border:1px solid var(--accent)}
+.dots{display:flex;gap:6px;margin:8px 0}
+.dots i{height:5px;flex:1;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.spot{outline:3px solid var(--accent);outline-offset:4px;border-radius:12px;animation:spot 1.6s ease-in-out 3}
+@keyframes spot{50%{outline-color:transparent}}
+.sc-btn{text-align:left;padding:12px 14px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.sc-btn span{font-weight:400;font-size:12.5px;color:var(--ink2)}
+.pass,.fail{display:inline-flex;gap:6px;align-items:center;font-weight:700;font-size:13px;padding:3px 10px;border-radius:99px}
+.pass{background:var(--good-soft);color:var(--good)}.fail{background:var(--crit-soft);color:var(--crit)}
+.callout{padding:12px 14px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-size:13px;font-weight:550}
+footer{padding:20px 0 40px;color:var(--ink3);font-size:13px}
+@media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <div class="top-in">
+      <a class="brand" href="#/landing"><span class="logo" aria-hidden="true"></span><span>AI Native <span class="cn"></span></span></a>
+      <span class="badge" title="All numbers, names and results in this demo are made up for illustration">Illustrative data</span>
+      <span class="grow"></span>
+      <span class="waiting-chip" id="waiting" aria-live="polite"></span>
+      <label class="role"><span>Viewing as</span><select id="role" aria-label="Switch role"></select></label>
+      <button class="btn sm" id="btn-pres" aria-pressed="false">Presenter mode</button>
+      <button class="btn sm" id="btn-theme" aria-label="Switch between light and dark theme">Dark theme</button>
+    </div>
+    <nav class="tabs" id="nav" aria-label="Main sections"></nav>
+  </div>
+</header>
+<main id="main" tabindex="-1"><div class="wrap" id="view"></div></main>
+<div id="presenter" hidden></div>
+<div id="layers"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* =====================================================================
+   SYNTHETIC DATA BLOCK  -  everything below is made up for illustration.
+   Swap the placeholders in CONFIG / ZONES / SUPPLIERS / CATEGORIES first.
+   Search the file for "BASELINES" to find the figures to replace with
+   measured baselines later.
+   ===================================================================== */
+const CONFIG = { COUNTRY: '[COUNTRY]', CURRENCY: '[CURRENCY]', SEED: 20240611 };
+const ZONES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5', 'Zone 6'];
+const ZONE_SHARE = [0.22, 0.19, 0.17, 0.16, 0.14, 0.12];            // share of GMV, sums to 1
+const SUPPLIERS = ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier D', 'Supplier E', 'Supplier F', 'Supplier G', 'Supplier H', 'Supplier I', 'Supplier J', 'Supplier K', 'Supplier L'];
+const CATEGORIES = ['Fresh produce', 'Dairy and eggs', 'Bakery', 'Meat and fish', 'Packaged food', 'Beverages', 'Household', 'Personal care'];
+const C = CONFIG.CURRENCY;
+const CTRY = CONFIG.COUNTRY;
+const [Z1, Z2, Z3, Z4, Z5, Z6] = ZONES;
+const [SA, SB, SC, SD, SE, SF, SG, SH, SI, SJ, SK, SL] = SUPPLIERS;
+const [CAT_FRESH, CAT_DAIRY, CAT_BAKERY, CAT_MEAT, CAT_PACK, CAT_BEV, CAT_HOME, CAT_CARE] = CATEGORIES;
+
+/* seeded generator so every reload shows the same numbers */
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(CONFIG.SEED);
+const ri = (a, b) => Math.round(a + R() * (b - a));
+
+/* ---------- the chain, supplier to shelf ---------- */
+const STAGES = ['Contract', 'Catalogue', 'Assortment', 'Pricing and margin', 'Forecast', 'Buy', 'Supplier follow-up', 'Inbound', 'Transfer', 'Store', 'Pick and pack', 'Customer', 'Learn'];
+const ST = n => STAGES.indexOf(n);
+
+/* ---------- the people ---------- */
+const PERSONAS = [
+  { id: 'ch', name: 'Country head', who: 'You', blurb: 'Your whole market on one page: what moved, why, and the few things that need you.',
+    kpis: [['Orders expected today', '41,200', '+2.2% vs yesterday'], ['Zones on track', '4 of 6', 'Zones 3 and 5 need attention'], ['Decisions waiting for you', null, 'ranked by money at risk']],
+    happened: [`Zone 3 sales ran 11% below usual yesterday, mostly dairy and fresh stock-outs in the evening.`, `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} prices by 15% for the weekend in three zones.`, `${SD} sent a cost list that takes 14 items below the margin floor.`, `Inventory days are 41 against 36 payment days, 5 days of cash tied up.`, `${SL}'s food licence expires in 12 days and 31 items are missing product data.`] },
+  { id: 'cat', name: 'Commercial lead and Catman', who: 'Commercial lead', blurb: 'Your portfolio, your suppliers, your margin. Agents prepare, you negotiate.',
+    kpis: [['Portfolio margin', '25.3%', 'floor is 21.0%'], ['Items below floor', '14', 'all from one supplier'], ['Supplier meetings this week', '5', 'briefs ready for 4']],
+    happened: [`${SD} price list expires in 2 days, with a 6.5% cost rise on ${CAT_DAIRY}.`, `3 opportunities found in ${CAT_DAIRY}: 6 yoghurt items missing in 4 zones.`, `${SK}'s credit-line pack is 9 of 11 documents complete.`] },
+  { id: 'dp', name: 'Demand planner', who: 'Demand planner', blurb: 'Clean data in, trusted forecasts out. Edits get a reason and a score.',
+    kpis: [['Forecast accuracy', '82%', 'yesterday, all categories'], ['Items with data gaps', '37', 'filled, awaiting your check'], ['Manual edits this week', '19', '12 improved the forecast']],
+    happened: [`${CAT_FRESH} forecast in ${Z1} ran 28% too high for 3 days.`, `37 items had sales gaps after stores closed early.`, `5 manual edits this week had no written reason.`] },
+  { id: 'buy', name: 'Buyer', who: 'Buyer', blurb: 'No blocked plans, no unanswered orders, no surprise holidays.',
+    kpis: [['Buy lines blocked', '27', '19 links, 8 cost prices'], ['Orders confirmed in 24 h', '68%', 'target 90%'], ['Suppliers yet to reply', '4', '1 is critical']],
+    happened: [`27 buy lines are blocked: 19 missing supplier links, 8 missing cost prices.`, `11 purchase orders are not confirmed after 24 hours.`, `${SG} has not replied about the delayed truck.`] },
+  { id: 'wh', name: 'Replenishment and warehouse lead', who: 'Replenishment lead', blurb: 'Moves stock to where customers will want it, on time.',
+    kpis: [['Transfers planned for tomorrow', '62', 'across 4 zones'], ['Trucks due today', '23', '1 delayed'], ['Stock count accuracy', '96.2%', `${Z4} dairy at 91%`]],
+    happened: [`${SG}'s truck is 3 hours late, affecting ${Z2} and ${Z3}.`, `Two trucks booked on the same dock at 10:00.`, `Shelf counts differ from the system by 3.8% for ${Z4} dairy.`] },
+  { id: 'store', name: 'Zone lead and dark-store manager', who: 'Dark-store manager', blurb: 'Your store, your shift, your shelf. Agents tell you what to do next.',
+    kpis: [['Units per picker per hour', '118', 'target 125'], ['Items out of stock now', '6', `store Z3-02`], ['Items expiring tonight', '48', 'bakery']],
+    happened: [`6 items are out of stock in store Z3-02, substitutes are ready.`, `Evening shift in ${Z5} is 2 pickers short from 18:00.`, `48 bakery items expire tonight.`] },
+  { id: 'fin', name: 'Finance lead', who: 'Finance lead', blurb: 'Match the paper, time the cash, free up working capital.',
+    kpis: [['Invoices not matching', '23', `difference ${C} 18,400`], ['Payment days (average)', '36', 'terms vary by supplier'], ['Excess stock above target', `${C} 310k`, 'mostly household']],
+    happened: [`23 invoices do not match goods received, total difference ${C} 18,400.`, `${SK}'s credit-line pack needs your review.`, `Excess stock above target is worth ${C} 310k.`] },
+  { id: 'gro', name: 'Growth lead', who: 'Growth lead', blurb: 'Fill the gaps, move the excess, plan the next campaign.',
+    kpis: [['Neighbourhoods outside 15 min', '4', `in ${Z6}`], ['Campaigns planned', '3', 'one needs approval'], ['Excess stock to move', `${C} 120k`, 'bundle offers ready']],
+    happened: [`Rain from 09:30 in ${Z2} and ${Z3} favours hot food and ready meals.`, `Household excess is 9 days over target.`, `4 neighbourhoods in ${Z6} sit outside the 15-minute delivery area.`] }
+];
+const PNAME = Object.fromEntries(PERSONAS.map(p => [p.id, p.name]));
+const PWHO = Object.fromEntries(PERSONAS.map(p => [p.id, p.who]));
+
+/* ---------- the agents (35): id, owner, name, job, status, stage, finding, why, evidence, decision asked, effect on scorecard, optional edit control ---------- */
+const AG = [];
+function A(id, role, name, job, status, stage, finding, why, ev, ask, effect, edit) {
+  AG.push({ id, role, name, job, status, stage: ST(stage), finding, why, ev, ask, effect: effect || {}, edit: edit || null });
+}
+/* Country head: 10 agents */
+A('chief', 'ch', 'Chief of Staff', 'Writes your morning bulletin: the top 5 things that happened and the top 5 decisions for today.', 'Found something', 'Learn',
+  'Bulletin ready: 5 things happened overnight and 5 decisions are waiting for you.',
+  'It reads what the other nine agents found since 22:00, ranks it by money and customer impact, and drops anything that does not need you.',
+  ['9 agents reported since 22:00', '14 findings ranked, 5 kept', 'Ranked by sales at risk and time left to act'], 'Read the bulletin and confirm the order of priorities.', {});
+A('pulse', 'ch', 'Market Pulse', 'Watches demand, weather, events and seasonality: what is moving in the market.', 'Found something', 'Forecast',
+  `Rain from 09:30 in ${Z2} and ${Z3} usually lifts evening orders by about 12%.`,
+  'It compares today with the last 10 rainy days and with this week\'s events calendar.',
+  ['10 comparable rainy days, orders up 9% to 15%', 'Evening peak moves from 19:00 to 18:00', 'No competing local event found'],
+  `Raise tonight's order forecast for ${Z2} and ${Z3} by 12%?`, { gmv: 21000 });
+A('comp', 'ch', 'Competition Watch', 'Tracks competitor prices, promotions and range moves, and suggests a response.', 'Needs you', 'Pricing and margin',
+  `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} prices by 15% for the weekend in 3 zones.`,
+  'Prices dropped on 38 items we both sell. Our price gap went from +1% to +14% on those items, and these two categories are 21% of sales in those zones.',
+  ['38 matching items checked at 06:10', 'Price gap +14% on 38 items (was +1%)', `${CAT_BEV} and ${CAT_DAIRY} are 21% of sales in those zones`],
+  `Approve a response budget of ${C} 85,000 to match prices on 12 hero items this weekend?`, { gmv: 24000, margin: -0.1 },
+  { type: 'number', label: 'Budget', value: 85000, unit: C });
+A('voice', 'ch', 'Customer Voice', 'Reads repeat orders, complaints and reviews to explain why customers leave.', 'Found something', 'Customer',
+  `Missing-item complaints rose from 3.1% to 4.2% of orders in ${Z3}.`,
+  'It groups complaint reasons and links them to stock-outs. The rise matches the dairy gaps yesterday evening.',
+  ['4.2% of orders had a missing item (was 3.1%)', '"Item unavailable" is 61% of the reasons', '1,150 customers affected yesterday evening'],
+  `Send a ${C} 10 recovery voucher to the 1,150 affected customers (cost ${C} 11,500)?`, { repeat: 0.3 });
+A('tower', 'ch', 'Availability Control Tower', 'Tracks stock-outs by zone and tags the cause: forecast, supplier, transfer or store.', 'Needs you', 'Store',
+  `${CAT_DAIRY} availability in ${Z3} fell to 86%. Main cause: the late truck from ${SG}.`,
+  'Of the lost shelf hours, 55% trace to the supplier, 20% to the forecast, 15% to transfers and 10% to the store.',
+  ['86% available at 07:00 (usual 95%)', '55% supplier, 20% forecast, 15% transfer, 10% store', `${SG} truck due 06:00, now expected 09:00`],
+  `Approve an expedited top-up from ${SG} and a stock move from ${Z2} to ${Z3}?`, { avail: 0.4, gmv: 14000 });
+A('guard', 'ch', 'Margin Guardian', 'Finds margin leaks, price differences and supplier terms below our floor.', 'Needs you', 'Pricing and margin',
+  `${SD}'s new cost list takes 14 items below the margin floor.`,
+  'Cost rises 6.5% from the day after tomorrow. At today\'s shelf prices, margin on these 14 items falls from 24.0% to 19.1%, below the 21.0% floor.',
+  ['14 items affected, all in ' + CAT_DAIRY, 'Margin 24.0% to 19.1% at current prices', `Estimated leak ${C} 6,200 a week if nothing changes`],
+  `Ask the commercial lead to renegotiate with ${SD} before accepting the list?`, { margin: 0.2 });
+A('cash', 'ch', 'Cash and Working Capital', 'Compares inventory days with payment days and flags excess stock and payment timing.', 'Needs you', 'Buy',
+  `Inventory is 41 days against 36 payment days, so 5 days of cash are tied up.`,
+  `Excess sits in ${CAT_HOME} and ${CAT_PACK}. Two suppliers could be paid later without penalty.`,
+  [`Excess stock worth ${C} 310k above target`, `${CAT_HOME} is 9 days over target`, `${SK} allows payment on day 45 (we pay on day 30)`],
+  `Pause new buys on 9 excess items and move ${SK} payment to day 45?`, { wc: -0.4 });
+A('scout', 'ch', 'Growth Scout', 'Finds gaps in coverage, customers reached and range, and candidate areas for new stores.', 'Found something', 'Assortment',
+  `${Z6} carries 18% fewer items than similar zones in ${CAT_FRESH} and ${CAT_CARE}.`,
+  'It compares each zone with its closest look-alikes by customers, basket and weather.',
+  ['3 look-alike zones carry 40 more items', 'Search "no result" rate 6.8% in ' + Z6, '4 neighbourhoods sit outside the 15-minute area'],
+  `Test 40 added items in ${Z6} for four weeks?`, { gmv: 9000 });
+A('ops', 'ch', 'Operations Pulse', 'Watches picker productivity, delivery readiness and staffing by hour.', 'Watching', 'Pick and pack',
+  `Steady at 118 units per picker per hour. Evening staffing in ${Z5} is the one to watch.`,
+  'It compares the order forecast with the shift plan every hour.',
+  ['118 units per picker per hour (target 125)', `${Z5} is 2 pickers short from 18:00`, 'All other zones covered'],
+  `Add 2 pickers to the ${Z5} evening shift?`, { pick: 4 });
+A('risk', 'ch', 'Risk and Compliance', 'Watches supplier and data risks and escalates to the right team.', 'Needs you', 'Contract',
+  `${SL}'s food licence expires in 12 days and 31 items are missing product data.`,
+  'Selling food without a valid licence or complete product data can force items off the shelf.',
+  ['Licence expiry in 12 days', '31 items without allergen data', `${SL} supplies 3.1% of sales`],
+  `Escalate to Legal and the Catalogue team with a 7-day deadline?`, {});
+/* Commercial lead and Catman */
+A('cattask', 'cat', 'Catman Task Manager', 'A daily analyst: opportunities and worries for my portfolio.', 'Found something', 'Assortment',
+  `3 opportunities and 2 worries in ${CAT_DAIRY} today.`,
+  'It scans sales, price gaps, stock and supplier news for your categories every morning.',
+  ['Opportunity: 6 yoghurt items missing in 4 zones', 'Worry: ' + SD + ' cost rise', 'Worry: cheese sales down 4% on competitor offer'],
+  `Approve two follow-ups: renegotiate ${SD} and test 6 new yoghurt items?`, { gmv: 6000 });
+A('negprep', 'cat', 'Supplier Negotiation Prep', 'Prepares the brief before every supplier meeting: asks, give-backs and fall-back.', 'Needs you', 'Contract',
+  `Brief for ${SD} is ready: ask for 3% back-margin and a 60-day price hold.`,
+  'It compares our share of their sales, their price against competitors and what we accepted last year.',
+  [`We are ${SD}'s #3 customer`, 'Their price is 4% above the market on 9 items', 'Last year we accepted +3% with no price hold'],
+  `Approve the negotiation brief for ${SD}?`, { margin: 0.15 });
+A('fit', 'cat', 'Assortment Fit', 'Checks whether the range fits each zone and finds gaps against competitors.', 'Found something', 'Catalogue',
+  `11 items sell below the cut-off in 4 zones and 6 competitor items are missing.`,
+  'It scores every item on sales, margin and substitutes in each zone.',
+  ['11 slow items, 4 zones', '6 competitor items with strong demand', 'Swapping them frees 38 shelf locations'],
+  'Approve swapping 11 slow items for 6 new ones in the 4 zones?', { gmv: 7000 });
+A('pcheck', 'cat', 'Price and Margin Check', 'Checks every price against cost, floor and competitors.', 'Watching', 'Pricing and margin',
+  `412 prices checked since 06:00. 3 are below the floor and already sent to Margin Guardian.`,
+  'It re-checks prices every time a cost or competitor price changes.',
+  ['412 prices checked', '3 below floor', '0 differences between app and shelf label'], 'Nothing needed.', {});
+A('credit', 'cat', 'Credit-Line Document Pack', 'Assembles the papers a supplier needs for a credit line.', 'Needs you', 'Contract',
+  `${SK} pack is 9 of 11 documents complete.`,
+  'It checks each document for validity and date. 2 are missing and 1 expires within 30 days.',
+  ['9 of 11 documents ready', 'Missing: bank letter, insurance certificate', 'Tax certificate expires in 21 days'],
+  `Ask ${SK} for the 2 missing documents and the new tax certificate?`, { wc: -0.1 });
+/* Demand planner */
+A('valid', 'dp', 'Data Validator', 'Checks sales and stock data before it feeds the forecast.', 'Found something', 'Forecast',
+  '37 items have sales gaps after stores closed early; gaps were filled from the last 4 weeks.',
+  'A store closing early looks like low demand unless it is flagged.',
+  ['37 items, 5 stores', 'Filled using same weekday over 4 weeks', 'Largest gap: ' + CAT_BAKERY], 'Confirm the fills so the forecast can use them?', { avail: 0.1 });
+A('fdoc', 'dp', 'Forecast Doctor', 'Detects bad forecasts and explains why.', 'Needs you', 'Forecast',
+  `${CAT_FRESH} forecast in ${Z1} has been 28% too high for 3 days.`,
+  'An old promotion is still counted in the baseline, so every day looks busier than it is.',
+  ['Forecast 28% above sales, 3 days running', 'Promotion ended 12 days ago but still counted', 'Waste in the category up 1.2 points'],
+  'Remove the old promotion from the baseline and re-run the forecast?', { margin: 0.1, avail: 0.1 });
+A('campf', 'dp', 'Campaign Forecast', 'Forecasts demand for promotions and campaigns.', 'Found something', 'Forecast',
+  `Weekend ${CAT_BEV} offer needs about 35% more volume than a normal weekend.`,
+  'It uses the last 6 comparable offers and the competitor price gap.',
+  ['6 comparable offers, +28% to +41%', 'Rain adds +4%', 'Supplier lead time is 3 days'], 'Approve the campaign forecast and pass it to buying?', { gmv: 8000 });
+A('edrev', 'dp', 'Edit Reviewer', 'Scores manual forecast edits and asks for a reason.', 'Found something', 'Forecast',
+  `Of 19 manual edits this week, 12 improved the forecast. 5 made no difference, 2 made it worse.`,
+  'It compares each edit with what happened and checks for a written reason.',
+  ['12 improved, 5 neutral, 2 worse', '5 edits had no reason', 'Worst: +40% on ice cream in rain'], 'Send a reminder to editors who skipped the reason?', {});
+/* Buyer */
+A('unblock', 'buy', 'Plan Unblocker', 'Finds missing supplier links and cost prices that block the buy plan.', 'Needs you', 'Buy',
+  `27 buy lines are blocked: 19 missing supplier links and 8 missing cost prices.`,
+  'Blocked lines drop out of tonight\'s order and become tomorrow\'s stock-outs.',
+  ['19 links can be copied from last month', '8 cost prices need a supplier', 'Tonight\'s order cut-off is 17:00'], 'Approve filling the 19 links from last month\'s matches?', { avail: 0.2 });
+A('pofu', 'buy', 'PO Follow-up', 'Chases supplier confirmation on every purchase order.', 'Found something', 'Supplier follow-up',
+  '11 purchase orders are not confirmed after 24 hours.',
+  'It sends reminders, then flags the ones that put availability at risk.',
+  ['11 unconfirmed, 3 on key items', 'Reminder 1 sent at 08:00', `${SE} unconfirmed 3 days in a row`], 'Escalate the 3 key-item orders to the supplier manager?', { avail: 0.2 });
+A('hday', 'buy', 'Holiday and Delivery Scheduler', 'Adjusts order days and delivery windows around holidays.', 'Watching', 'Supplier follow-up',
+  `Next public holiday in 6 days. 14 supplier orders need to move earlier.`,
+  'It checks supplier calendars and lead times.', ['14 orders to move', '2 suppliers closed 2 days', 'No action needed today'], 'Nothing needed.', {});
+A('reply', 'buy', 'Supplier Reply Tracker', 'Logs what suppliers say and flags promises that are not kept.', 'Needs you', 'Supplier follow-up',
+  `${SG} has not replied about the late truck. 3 others replied with new dates.`,
+  'It reads supplier messages and keeps one record per order.',
+  ['3 new delivery dates logged', `${SG}: no reply in 6 hours`, 'Promised dates kept: 74% this month'], `Call ${SG} now and ask for a firm delivery time?`, { avail: 0.3 });
+/* Replenishment and warehouse */
+A('transfer', 'wh', 'Transfer Planner', 'Builds the daily stock transfer plan and splits it by zone.', 'Needs you', 'Transfer',
+  `Tomorrow's plan is ready: 62 moves across 4 zones.`,
+  'It balances stock against tomorrow\'s forecast, truck space and shelf life.',
+  ['62 moves, 4,380 units', `${Z3} gets the most: 1,150 units`, '2 counts uncertain'], 'Review and release tomorrow\'s transfer plan?', { avail: 0.3 });
+A('inbd', 'wh', 'Inbound Scheduler', 'Books dock slots and keeps trucks from queueing.', 'Found something', 'Inbound',
+  'Two trucks are booked on the same dock at 10:00.',
+  'It matches slots to truck size and unloading time.', ['Dock 2 double-booked', 'Slot at 11:00 is free', 'No change to supplier times needed'], 'Move one truck to 11:00?', { avail: 0.1 });
+A('acc', 'wh', 'Stock Accuracy', 'Compares shelf counts with the system and flags drift.', 'Found something', 'Store',
+  `Shelf counts differ from the system by 3.8% for ${Z4} dairy.`,
+  'Differences make the system think stock exists when the shelf is empty.', ['3.8% gap, 5 stores', 'Likely cause: unrecorded damage', 'Recount of 40 items suggested'], 'Request a recount of 40 dairy items in ' + Z4 + '?', { avail: 0.2 });
+/* Dark-store manager */
+A('coach', 'store', 'Picker Productivity Coach', 'Tracks units per picker per hour, plans the shift and suggests pick paths.', 'Needs you', 'Pick and pack',
+  `Evening plan: move 2 pickers from stock work to picking at 18:00 and use the new pick path.`,
+  'The evening peak arrives earlier because of rain. A shorter walking path saves time on 30% of orders.',
+  ['Orders per hour peak 18:00 to 20:00', 'Walking is 34% of pick time', 'New path saves about 14 seconds per order'], 'Accept the evening shift plan and new pick path?', { pick: 6 });
+A('resp', 'store', 'Stock-out Responder', 'Finds stock-outs in my store and proposes the quickest fix.', 'Needs you', 'Store',
+  '6 items are out of stock in store Z3-02. Substitutes are ready.',
+  'It checks the back room, nearby stores and substitutes in that order.',
+  ['2 items in back room', '3 have a good substitute', '1 needs a transfer tonight'], 'Confirm the fixes for the 6 items?', { avail: 0.3, gmv: 4000 });
+A('waste', 'store', 'Waste and Expiry Watch', 'Flags items about to expire and suggests markdowns.', 'Found something', 'Store',
+  '48 bakery items expire tonight.', 'A 30% markdown after 17:00 usually sells most of them.', ['48 items, 6 products', 'Markdown 30% suggested at 17:00', `Waste cost ${C} 1,900 if unsold`], 'Approve a 30% markdown on 48 bakery items at 17:00?', { margin: 0.05 });
+/* Finance */
+A('inv', 'fin', 'Invoice Match', 'Matches supplier invoices to orders and goods received.', 'Found something', 'Inbound',
+  `23 invoices do not match goods received. Total difference ${C} 18,400.`,
+  'It compares price, quantity and date for every line.', ['14 price differences', '7 quantity differences', '2 duplicates'], 'Hold payment on the 23 invoices until suppliers respond?', { margin: 0.1 });
+A('paytm', 'fin', 'Payment Timing', 'Plans when to pay each supplier within terms.', 'Needs you', 'Supplier follow-up',
+  'Paying 9 invoices on the last allowed day instead of the first would hold cash for 11 more days.',
+  'It reads each supplier\'s terms and any early-payment discount.', ['9 invoices, ' + C + ' 142k', 'No discount lost', 'Largest: ' + SK], 'Approve the new payment dates for 9 invoices?', { wc: -0.3 });
+A('wca', 'fin', 'Working Capital Advisor', 'Shows where cash is tied up and what could release it.', 'Found something', 'Buy',
+  `Excess stock above target is worth ${C} 310k, mostly ${CAT_HOME}.`,
+  'It compares days of stock with target for every item.', [`${CAT_HOME}: ${C} 190k`, `${CAT_PACK}: ${C} 80k`, '9 items cover 70% of the excess'], 'Share the excess list with buyers and the growth lead?', { wc: -0.2 });
+/* Growth */
+A('camp', 'gro', 'Campaign Planner', 'Plans campaigns, offers and the messages that go with them.', 'Needs you', 'Customer',
+  `Rainy-day campaign for ${Z2} and ${Z3}: hot food, ready meals and umbrellas.`,
+  'It matches weather to what sold best on past rainy days.', ['Past rainy days: ready meals +34%', 'Cost ' + C + ' 12,000', 'Starts 11:00'], 'Approve the rainy-day campaign?', { gmv: 16000 });
+A('excess', 'gro', 'Excess Stock Pusher', 'Finds ways to sell excess stock: bundles, offers, placement.', 'Found something', 'Customer',
+  `${CAT_HOME} excess is 9 days over target. 4 bundle offers are ready.`,
+  'It checks price, margin and which items customers buy together.', ['4 bundles, 38 items', 'Margin stays above floor', 'Excess reduced by about ' + C + ' 60k in 2 weeks'], 'Launch the 4 bundle offers?', { wc: -0.2 });
+A('cov', 'gro', 'Coverage Scout', 'Finds neighbourhoods and zones where we could reach more customers.', 'Found something', 'Assortment',
+  `4 neighbourhoods in ${Z6} sit outside the 15-minute delivery area.`,
+  'It maps orders, search demand and drive times.', ['4 areas, ~23,000 homes', 'Search demand 2x the zone average', 'Closest store is at 92% capacity'], 'Add one of them to the expansion candidate review?', { gmv: 5000 });
+
+const AGM = Object.fromEntries(AG.map(a => [a.id, a]));
+
+/* ---------- scorecard: six metrics, 14-day history, drivers ---------- */
+function series(base, vol, trend, n = 14) { let v = base - trend * n; const a = []; for (let i = 0; i < n; i++) { v += trend + (R() - .5) * vol; a.push(v); } a[n - 1] = base; return a; }
+const ORDERS = 41200, BASKET = 58.2, GMV0 = ORDERS * BASKET;                         // 2.40M expected today
+const METRICS = [
+  { k: 'gmv', name: 'GMV (expected today)', good: 'up', base: GMV0, series: series(GMV0, 90000, 4000), fmt: v => `${C} ${(v / 1e6).toFixed(2)}M`, d: v => `${C} ${Math.abs(Math.round(v / 1000))}k`, agents: ['pulse', 'comp', 'tower', 'camp'] },
+  { k: 'avail', name: 'Availability', good: 'up', base: 94.6, series: series(94.6, 0.5, 0.03), fmt: v => v.toFixed(1) + '%', d: v => Math.abs(v).toFixed(1) + ' pts', agents: ['tower', 'fdoc', 'transfer', 'unblock'] },
+  { k: 'repeat', name: 'Repeat rate (30 days)', good: 'up', base: 61.2, series: series(61.2, 0.35, 0.04), fmt: v => v.toFixed(1) + '%', d: v => Math.abs(v).toFixed(1) + ' pts', agents: ['voice', 'tower', 'comp'] },
+  { k: 'margin', name: 'Gross margin', good: 'up', base: 24.8, series: series(24.8, 0.25, -0.01), fmt: v => v.toFixed(1) + '%', d: v => Math.abs(v).toFixed(2) + ' pts', agents: ['guard', 'pcheck', 'waste', 'inv'] },
+  { k: 'wc', name: 'Working capital days', good: 'down', base: 5.0, series: series(5.0, 0.4, 0.03), fmt: v => v.toFixed(1) + ' days', d: v => Math.abs(v).toFixed(1) + ' days', agents: ['cash', 'paytm', 'wca', 'excess'] },
+  { k: 'pick', name: 'Picker productivity', good: 'up', base: 118, series: series(118, 3, 0.2), fmt: v => Math.round(v) + ' units/h', d: v => Math.abs(v).toFixed(1) + ' units/h', agents: ['ops', 'coach', 'resp'] }
+];
+const METRIC = Object.fromEntries(METRICS.map(m => [m.k, m]));
+/* driver trees: {l label, v value, a agents, c children} */
+const zoneGmv = i => `${C} ${Math.round(GMV0 * ZONE_SHARE[i] / 1000)}k`;
+const zoneAv = []; { let t = 0; for (let i = 0; i < 5; i++) { const v = +(94.6 + (R() - .5) * 3).toFixed(1); zoneAv.push(v); t += v; } zoneAv.push(+(94.6 * 6 - t).toFixed(1)); }
+const TREES = {
+  gmv: { l: 'GMV', v: 'expected today', c: [
+    { l: 'Orders', v: '41,200', a: ['pulse', 'camp'], c: [{ l: 'Active customers', v: '118,000' }, { l: 'Orders per customer per week', v: '2.4' }, { l: 'Orders lost to stock-outs', v: '~1,300', a: ['tower', 'resp'] }] },
+    { l: 'Basket size', v: `${C} 58.2`, a: ['scout', 'excess'], c: [{ l: 'Items per basket', v: '9.1' }, { l: 'Average price per item', v: `${C} 6.4` }] },
+    { l: 'By zone', v: 'sums to total', c: ZONES.map((z, i) => ({ l: z, v: zoneGmv(i), a: i === 2 ? ['tower', 'voice'] : null })) }] },
+  avail: { l: 'Availability', v: '94.6%', c: [
+    { l: 'By zone', v: 'average 94.6%', c: ZONES.map((z, i) => ({ l: z, v: zoneAv[i] + '%', a: i === 2 ? ['tower'] : null })) },
+    { l: 'Cause of lost shelf hours', v: '100%', c: [{ l: 'Supplier did not deliver on time', v: '32%', a: ['pofu', 'reply'] }, { l: 'Forecast too low', v: '28%', a: ['fdoc', 'valid'] }, { l: 'Transfer did not arrive', v: '22%', a: ['transfer', 'inbd'] }, { l: 'Store did not shelve or count', v: '18%', a: ['acc', 'resp'] }] }] },
+  repeat: { l: 'Repeat rate', v: '61.2%', c: [
+    { l: 'Customers whose last order was complete', v: '95.8%', a: ['tower'] },
+    { l: 'Complaints per 100 orders', v: '4.2', a: ['voice'], c: [{ l: 'Missing item', v: '2.6' }, { l: 'Late delivery', v: '0.9' }, { l: 'Quality', v: '0.7' }] },
+    { l: 'Price perception vs competitor', v: 'gap +3% on hero items', a: ['comp'] }] },
+  margin: { l: 'Gross margin', v: '24.8%', c: [
+    { l: 'Supplier terms (front margin)', v: '27.9%', a: ['guard', 'negprep'] }, { l: 'Promotion cost', v: '-2.1%', a: ['comp', 'camp'] },
+    { l: 'Waste and expiry', v: '-0.6%', a: ['waste', 'fdoc'] }, { l: 'Leaks and price differences', v: '-0.4%', a: ['guard', 'inv', 'pcheck'] }] },
+  wc: { l: 'Working capital days', v: '5.0 days', c: [
+    { l: 'Inventory days', v: '41', a: ['cash', 'wca'], c: [{ l: CAT_FRESH, v: '4' }, { l: CAT_PACK, v: '58', a: ['wca'] }, { l: CAT_HOME, v: '74', a: ['excess'] }] },
+    { l: 'Payment days (less is added)', v: '-36', a: ['paytm'], c: [{ l: 'Suppliers paid on day 30', v: '7 of 12' }, { l: 'Suppliers paid on day 45', v: '3 of 12' }, { l: 'Other terms', v: '2 of 12' }] }] },
+  pick: { l: 'Units per picker per hour', v: '118', c: [
+    { l: 'Walking and pick path', v: '34% of time', a: ['coach'] }, { l: 'Waiting for orders', v: '12% of time', a: ['ops'] },
+    { l: 'Searching for out-of-stock items', v: '9% of time', a: ['resp', 'tower'] }, { l: 'Pickers on shift vs plan', v: `${Z5} 2 short`, a: ['ops', 'coach'] }] }
+};
+
+/* ---------- day in the life: events from 06:00 to 20:00 ----------
+   BASELINES: nM/dM are minutes to notice and decide by hand; nA/dA with agents.
+   Replace with measured baselines when available. */
+const DAY = [
+  { id: 'e1', t: 0, title: 'Overnight numbers are ready', ag: 'chief', role: 'ch', nM: 210, dM: 60, nA: 0, dA: 15, imp: {}, txt: 'Bulletin published to the country head.', dec: null },
+  { id: 'e2', t: 40, title: `${SD} price list expires in 2 days`, ag: 'guard', role: 'cat', nM: 300, dM: 1500, nA: 5, dA: 95, imp: { margin: -0.15 }, txt: 'Found the expiring list and 14 items below the floor.', dec: { title: `${SD} cost list expires in 2 days`, ask: 'Decide: keep, renegotiate or accept the new cost list.', why: 'Without a decision the buy plan blocks on 14 items.', ev: ['14 items below the margin floor', 'Expires the day after tomorrow'], effect: { margin: 0.1 } } },
+  { id: 'e3', t: 130, title: `${SG} truck is 3 hours late`, ag: 'reply', role: 'wh', nM: 150, dM: 240, nA: 10, dA: 35, imp: { avail: -0.6, gmv: -22000 }, txt: `Spotted the late truck and the ${CAT_DAIRY} stock at risk in ${Z2} and ${Z3}.`, dec: { title: `${SG} truck is 3 hours late`, ask: `Decide: move stock from ${Z2} or wait for the truck.`, why: `${CAT_DAIRY} cover in ${Z3} is under 4 hours.`, ev: ['Truck now expected 09:00', `${Z3} dairy cover 3.5 hours`], effect: { avail: 0.35, gmv: 9000 } } },
+  { id: 'e4', t: 210, title: `Rain starts in ${Z2} and ${Z3}`, ag: 'pulse', role: 'store', nM: 120, dM: 180, nA: 5, dA: 40, imp: { avail: -0.3, pick: -4 }, txt: 'Forecast raised and evening peak moved to 18:00.', dec: { title: 'Rain brings the evening peak forward', ask: 'Decide: add 2 pickers from 18:00.', why: 'Orders per hour will peak 18:00 to 20:00.', ev: ['Past rainy days: orders +9% to +15%'], effect: { pick: 3 } } },
+  { id: 'e5', t: 285, title: 'Competitor X extends its offer to Personal care', ag: 'comp', role: 'ch', nM: 900, dM: 1440, nA: 15, dA: 120, imp: { gmv: -18000, repeat: -0.1 }, txt: 'Found the extension and priced a response.', dec: { title: 'Competitor X extends its weekend offer to Personal care', ask: `Decide: extend the response to ${CAT_CARE} (extra ${C} 18,000)?`, why: '16 more matching items now show a gap above 10%.', ev: ['16 more items, gap +11%'], effect: { gmv: 10000, margin: -0.05 } } },
+  { id: 'e6', t: 360, title: `Forecast error spike in ${CAT_FRESH}, ${Z1}`, ag: 'fdoc', role: 'dp', nM: 1440, dM: 2880, nA: 20, dA: 60, imp: { avail: -0.4, margin: -0.1 }, txt: 'Found an old promotion still counted in the baseline.', dec: { title: `${CAT_FRESH} forecast in ${Z1} is off by 28%`, ask: 'Decide: remove the old promotion and re-run.', why: 'Over-ordering becomes waste.', ev: ['3 days running'], effect: { margin: 0.1, avail: 0.2 } } },
+  { id: 'e7', t: 440, title: `Pick speed dips in ${Z5}`, ag: 'coach', role: 'store', nM: 180, dM: 240, nA: 10, dA: 30, imp: { pick: -6 }, txt: 'Found long walking paths after a layout change.', dec: { title: `Pick speed down to 104 units per hour in ${Z5}`, ask: 'Decide: switch to the suggested pick path.', why: 'Two shelf bays were moved this morning.', ev: ['Walking time up 18%'], effect: { pick: 5 } } },
+  { id: 'e8', t: 495, title: `${SK} credit-line documents have a gap`, ag: 'credit', role: 'fin', nM: 600, dM: 1440, nA: 15, dA: 150, imp: { wc: 0.2 }, txt: 'Found 2 missing documents and 1 expiring.', dec: { title: `${SK} credit-line pack has gaps`, ask: 'Decide: send the request to the supplier.', why: 'Credit line review is due Friday.', ev: ['2 missing, 1 expiring'], effect: { wc: -0.2 } } },
+  { id: 'e9', t: 570, title: `${CAT_DAIRY} stock-out building in ${Z3}`, ag: 'tower', role: 'store', nM: 240, dM: 180, nA: 5, dA: 25, imp: { avail: -0.7, gmv: -26000 }, txt: 'Tagged cause as supplier delay and proposed a fix.', dec: { title: `${CAT_DAIRY} stock-out in store Z3-02`, ask: 'Decide: confirm the fix for 6 items.', why: 'Evening orders will find empty shelves.', ev: ['6 items, 2 in back room'], effect: { avail: 0.5, gmv: 12000 } } },
+  { id: 'e10', t: 660, title: `Bakery stock near expiry in ${Z4}`, ag: 'waste', role: 'gro', nM: 480, dM: 600, nA: 10, dA: 45, imp: { margin: -0.15 }, txt: 'Suggested a 30% markdown after 17:00.', dec: { title: '48 bakery items expire tonight', ask: 'Decide: approve a 30% markdown.', why: `Unsold stock costs ${C} 1,900.`, ev: ['48 items, 6 products'], effect: { margin: 0.1 } } },
+  { id: 'e11', t: 750, title: 'Invoices do not match goods received', ag: 'inv', role: 'fin', nM: 1440, dM: 4320, nA: 30, dA: 180, imp: { margin: -0.1 }, txt: 'Matched 23 invoices and found price differences.', dec: { title: '23 invoices do not match', ask: 'Decide: hold payment until suppliers respond.', why: `Difference ${C} 18,400.`, ev: ['14 price, 7 quantity, 2 duplicate'], effect: { margin: 0.1 } } },
+  { id: 'e12', t: 810, title: "Evening wrap and tomorrow's bulletin", ag: 'chief', role: 'ch', nM: 120, dM: 60, nA: 0, dA: 20, imp: {}, txt: "Drafted tomorrow's bulletin from today's decisions.", dec: null }
+];
+const WORLD = { manual: { tasksPerHour: 9, backlog: 12 }, ai: { tasksPerHour: 3.1, backlog: 3 } };    // BASELINES
+
+/* ---------- scenarios: each runs a chain across 3 or more agents and roles ---------- */
+const SCEN = [
+  { id: 'price', name: 'Supplier price rise', sub: `${SD} announces +6.5%`, manual: { n: 300, d: 1500 }, steps: [
+    { ag: 'pcheck', text: `${SD} sent a new cost list. 14 items would fall below the margin floor.`, status: 'Found something' },
+    { ag: 'guard', text: 'Calculated the leak: about ' + C + ' 6,200 a week if prices stay as they are.', status: 'Found something', imp: { margin: -0.2 } },
+    { ag: 'negprep', text: `Prepared a brief for ${SD}: ask for 3% back-margin and a 60-day hold.`, status: 'Needs you', dec: { role: 'cat', title: `${SD} cost list: keep, renegotiate or accept`, ask: `Approve the brief and start the ${SD} talk?`, why: 'The list takes effect the day after tomorrow.', ev: ['14 items below floor', 'Margin 24.0% to 19.1%'], effect: { margin: 0.2 } } },
+    { ag: 'unblock', text: 'Held the 14 buy lines until the price is decided so no order goes out at the wrong cost.', status: 'Watching' },
+    { ag: 'chief', text: 'Added to the country head bulletin as a margin watch item.', status: 'Found something' }] },
+  { id: 'promo', name: 'Competitor promotion', sub: `Competitor X, ${CAT_BEV}, 20% off`, manual: { n: 900, d: 1440 }, steps: [
+    { ag: 'comp', text: `Competitor X cut ${CAT_BEV} by 20% in 3 zones. Our gap is now +18% on 22 items.`, status: 'Found something' },
+    { ag: 'guard', text: `Priced three options. Matching 10 hero items costs ${C} 48,000 of margin and protects about ${C} 130,000 of sales.`, status: 'Found something' },
+    { ag: 'scout', text: 'Picked the zones where competitor customers overlap most: Zones 1, 3 and 4.', status: 'Found something' },
+    { ag: 'camp', text: 'Drafted a 2-day offer and the customer message.', status: 'Needs you', dec: { role: 'ch', title: `Respond to Competitor X on ${CAT_BEV}`, ask: `Approve a ${C} 48,000 response on 10 hero items?`, why: 'Gap above 15% usually costs orders within 2 days.', ev: ['22 items, gap +18%', 'Margin stays above floor'], effect: { gmv: 30000, margin: -0.12 }, edit: { type: 'number', label: 'Budget', value: 48000, unit: C } } }] },
+  { id: 'rain', name: 'Heavy rain', sub: `${Z2} and ${Z3}, from 09:30`, manual: { n: 120, d: 180 }, steps: [
+    { ag: 'pulse', text: 'Heavy rain forecast. On past rainy days orders rose 9% to 15% and peaked an hour earlier.', status: 'Found something' },
+    { ag: 'campf', text: 'Raised the evening forecast for both zones by 12%.', status: 'Needs you', dec: { role: 'dp', title: `Raise evening forecast for ${Z2} and ${Z3} by 12%`, ask: 'Approve the forecast change?', why: 'Rain lifts orders and slows delivery.', ev: ['10 comparable days'], effect: { avail: 0.2, gmv: 15000 }, edit: { type: 'number', label: 'Increase', value: 12, unit: '%' } } },
+    { ag: 'ops', text: 'Needs 4 more pickers from 18:00 across the two zones.', status: 'Needs you', dec: { role: 'store', title: 'Add pickers for the rainy evening', ask: 'Approve 4 extra pickers from 18:00?', why: 'Without them, delivery time grows by about 6 minutes.', ev: ['Peak 18:00 to 20:00'], effect: { pick: 4 } } },
+    { ag: 'camp', text: 'Drafted a rainy-day campaign: ready meals and hot food.', status: 'Found something' }] },
+  { id: 'truck', name: 'Delayed inbound truck', sub: `${SG}, ${CAT_DAIRY}, 3 hours late`, manual: { n: 150, d: 240 }, steps: [
+    { ag: 'inbd', text: `Truck from ${SG} is 3 hours late. Re-booked the dock for 09:30.`, status: 'Found something', imp: { avail: -0.3 } },
+    { ag: 'tower', text: `${CAT_DAIRY} cover in ${Z3} is 3.5 hours. Tagged the cause: supplier.`, status: 'Found something', imp: { avail: -0.2, gmv: -9000 } },
+    { ag: 'transfer', text: `Found 480 units of dairy in ${Z2} that can move to ${Z3} by 08:00.`, status: 'Needs you', dec: { role: 'wh', title: `Move 480 dairy units from ${Z2} to ${Z3}`, ask: 'Approve the stock move?', why: `Shelves in ${Z3} run empty by 09:00.`, ev: ['Truck space available', '480 units, 3-day shelf life'], effect: { avail: 0.4, gmv: 12000 }, edit: { type: 'number', label: 'Units', value: 480, unit: 'units' } } },
+    { ag: 'resp', text: 'Prepared substitutes for the 6 items still at risk.', status: 'Needs you', dec: { role: 'store', title: 'Switch 6 dairy items to substitutes', ask: 'Confirm substitutes for 6 items?', why: 'Avoids cancelled orders.', ev: ['3 good substitutes found'], effect: { avail: 0.2, gmv: 5000 } } },
+    { ag: 'reply', text: `Asked ${SG} for a firm time and logged the reply.`, status: 'Watching' }] },
+  { id: 'fcst', name: 'Forecast error spike', sub: `${CAT_FRESH}, ${Z1}, 28% too high`, manual: { n: 1440, d: 2880 }, steps: [
+    { ag: 'valid', text: 'Checked the data: sales are correct, nothing missing.', status: 'Watching' },
+    { ag: 'fdoc', text: 'Found the cause: an old promotion still counted in the baseline.', status: 'Needs you', dec: { role: 'dp', title: `${CAT_FRESH} forecast in ${Z1} is 28% too high`, ask: 'Approve removing the old promotion and re-running?', why: 'Waste is up 1.2 points.', ev: ['3 days in a row'], effect: { margin: 0.12, avail: 0.15 } } },
+    { ag: 'edrev', text: 'Checked recent manual edits for the same category: 2 edits added to the error.', status: 'Found something' },
+    { ag: 'unblock', text: 'Paused tonight\'s order for the 9 over-forecast items until the forecast is re-run.', status: 'Watching' },
+    { ag: 'cash', text: 'Added the extra stock to the excess watch list.', status: 'Found something' }] }
+];
+
+/* ---------- ask my agents: six canned questions ---------- */
+const GMVY = METRICS[0].series[12];                                                  // yesterday
+const Z3Lost = Math.round((GMVY * ZONE_SHARE[2]) / 0.89 * 0.11 / 1000) * 1000;      // 11% below usual
+const QA = [
+  { q: 'Why did GMV drop in Zone 3 yesterday?', trail: [
+    ['pulse', 'Rain began at 13:40 and demand ran about 14% above forecast from 17:00.'],
+    ['tower', `${CAT_DAIRY} and ${CAT_FRESH} were out of stock in 9 of 14 stores from 14:00 to 19:00. Main cause: late truck from ${SG}.`],
+    ['voice', 'Missing-item complaints rose from 3.1% to 4.2% and cancelled orders for "item unavailable" doubled.']],
+    ans: `Zone 3 sales were about ${C} ${Math.round(Z3Lost / 1000)}k (11%) below usual. Roughly 70% of the gap came from empty shelves in the evening, the rest from slower deliveries in the rain. The forecast did not include the rain, and ${SG}'s truck was late.`,
+    tasks: [['wh', `Move 480 dairy units from ${Z2} to ${Z3} before 07:00`], ['buy', `Get a firm delivery time from ${SG} and log it`], ['dp', `Add a rain effect to ${Z3} evening forecasts`], ['store', 'Confirm shelf counts for 6 dairy items in store Z3-02']] },
+  { q: 'Which competitor moves should I respond to this week?', trail: [
+    ['comp', `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} by 15% for the weekend on 38 items in 3 zones.`],
+    ['guard', `Matching all 38 would cost ${C} 160k of margin. Matching the 12 hero items costs ${C} 85k and covers 70% of the affected sales.`],
+    ['scout', 'Customers who buy both categories are most exposed; target Zones 1, 3 and 4.']],
+    ans: `Respond on 12 hero items, not 38. This protects most of the exposed sales for about half the cost. Everything else can wait for the weekend read-out.`,
+    tasks: [['cat', 'Prepare matched prices for 12 hero items, with margin check'], ['gro', 'Plan the weekend campaign for Zones 1, 3 and 4'], ['fin', 'Confirm the promotion budget ceiling for the weekend']] },
+  { q: 'Where are we losing margin?', trail: [
+    ['guard', `Three leaks: ${SD}'s new cost list (${C} 6,200 a week), 23 invoices that do not match (${C} 18,400) and 3 items priced below the floor.`],
+    ['waste', `Waste is up 0.2 points, mainly ${CAT_BAKERY} and ${CAT_FRESH} in ${Z1}.`],
+    ['fdoc', `${CAT_FRESH} over-forecast in ${Z1} explains about half the waste rise.`]],
+    ans: 'Margin is 24.8%, about 0.2 points below last week. About half is supplier cost, a third is invoice differences and the rest is waste from one forecast error.',
+    tasks: [['cat', `Renegotiate with ${SD} before accepting the list`], ['fin', 'Resolve the 23 invoice differences'], ['dp', `Fix the ${CAT_FRESH} baseline in ${Z1}`]] },
+  { q: 'Which zones should we expand into next?', trail: [
+    ['scout', `${Z6} has 4 neighbourhoods outside the 15-minute area, about 23,000 homes, with search demand 2x the zone average.`],
+    ['pulse', 'Local growth is above the national average and no competing hub has opened in the area.'],
+    ['ops', `The nearest store in ${Z6} is at 92% capacity at peak, so a new store would also relieve it.`]],
+    ans: `Start with the two ${Z6} neighbourhoods with the strongest demand. Next: ${Z5} east, where deliveries are slowest.`,
+    tasks: [['gro', `Review 4 expansion candidates in ${Z6}`], ['store', 'Check capacity and staffing for the nearest store'], ['fin', 'Build a payback estimate with ranges']] },
+  { q: 'Why are customers leaving?', trail: [
+    ['voice', 'The top reasons are missing items (2.6 per 100 orders), late delivery (0.9) and quality (0.7).'],
+    ['tower', 'Missing items are concentrated in three zones and two categories, dairy and fresh.'],
+    ['comp', 'Competitor X offers are also pulling price-sensitive customers this weekend.']],
+    ans: 'Most lost customers hit an empty shelf first. Price is a smaller, weekend-specific factor. Fixing availability in dairy and fresh is the biggest lever.',
+    tasks: [['wh', 'Close the transfer gap for dairy in Zones 2 and 3'], ['gro', 'Send recovery vouchers to affected customers'], ['buy', 'Confirm orders for dairy and fresh by 24 hours']] },
+  { q: 'Do we have too much stock anywhere?', trail: [
+    ['cash', `Yes: ${C} 310k above target, 9 items cover 70%. ${CAT_HOME} is 9 days over.`],
+    ['waste', `${CAT_BAKERY}: 48 items expire tonight, about ${C} 1,900 at risk.`],
+    ['excess', '4 bundle offers keep margin above floor and move about ' + C + ' 60k in two weeks.']],
+    ans: `Excess is mostly in ${CAT_HOME} and ${CAT_PACK}. Pause buying on 9 items, run the bundles and move ${SK} payment to day 45 to release cash.`,
+    tasks: [['buy', 'Pause new buys on 9 excess items'], ['gro', 'Launch 4 bundle offers'], ['fin', `Move ${SK} payment to day 45`]] }
+];
+
+/* ---------- workflows ----------
+   step: a=actor kind (agent|person|system), w=who, t=title, d=detail, ev=evidence, tb={head,rows}, m=minutes it takes,
+   h=human decision {role, ask, edit:{type,label,options,rec,value,unit}}, imp=scorecard effect */
+const WF = {};
+function W(id, name, tag, trig, who, full, steps, outcome) { WF[id] = { id, name, tag, trig, who, full, steps, outcome }; }
+W('price', 'Supplier price change', 'Contracts and pricing', `A price list from ${SD} expires in 2 days`, ['Price and Margin Check', 'Plan Unblocker', 'Supplier Negotiation Prep', 'Commercial lead'], true, [
+  { a: 'system', w: 'Calendar', t: 'A cost price is about to expire', d: `${SD}'s price list ends in 2 days. 14 ${CAT_DAIRY} items will have no valid cost.`, m: 1 },
+  { a: 'agent', w: 'Plan Unblocker', t: 'Finds the buy lines that will block', d: 'Without a valid cost price, tonight\'s order cannot be placed for these items.', ev: ['14 buy lines', 'Next order cut-off: 17:00'], m: 3 },
+  { a: 'agent', w: 'Price and Margin Check', t: 'Checks margin at the new cost', d: 'Cost rises 6.5%. At today\'s shelf prices the margin falls below the floor on all 14 items.', tb: { head: ['Item', 'Cost now', 'Cost new', 'Margin now', 'Margin new'], rows: [[`Whole milk 1 L`, '1.20', '1.28', '24.0%', '19.1%'], [`Yoghurt 500 g`, '1.55', '1.65', '25.2%', '20.3%'], [`Eggs x12`, '2.10', '2.24', '22.6%', '17.9%'], [`Butter 250 g`, '2.40', '2.56', '23.5%', '18.7%'], ['9 more items', '', '', '', '']] }, m: 5 },
+  { a: 'agent', w: 'Supplier Negotiation Prep', t: 'Proposes three options', d: 'Each option shows what it does to margin and to sales.', ev: ['Keep: ask for a 30-day extension at today\'s price', 'Renegotiate: +3.5% instead of +6.5%, 60-day hold', 'Accept: +6.5%, raise shelf price on 6 items'], m: 6,
+    h: { role: 'cat', ask: 'Which option do you want to take to the supplier?', edit: { type: 'choice', label: 'Option', rec: 'ren', options: [{ id: 'keep', l: 'Keep today\'s price (ask for a 30-day extension)' }, { id: 'ren', l: 'Renegotiate (+3.5%, 60-day hold)' }, { id: 'acc', l: 'Accept the new list and raise 6 shelf prices' }] } }, imp: { margin: 0.2 } },
+  { a: 'agent', w: 'Plan Unblocker', t: 'Loads the decision and unblocks the plan', d: 'Option chosen: {choice}. The 14 buy lines carry the agreed cost and go into tonight\'s order.', ev: ['14 lines released', 'Order goes out at 17:00'], m: 2 },
+  { a: 'agent', w: 'PO Follow-up', t: 'Schedules the supplier reply check', d: `Sends the message to ${SD} for sign-off and checks for a reply after 48 hours.`, m: 2 }],
+  [{ l: 'Time from alert to decision', b: 46, a: 2.2, u: 'hours' }, { l: 'Items that block the buy plan', b: 14, a: 0, u: 'items' }]);
+W('promo', 'Competitor promotion response', 'Pricing and growth', `Competitor X cuts ${CAT_BEV} and ${CAT_DAIRY} prices`, ['Competition Watch', 'Margin Guardian', 'Growth Scout', 'Country head'], true, [
+  { a: 'agent', w: 'Competition Watch', t: 'Spots the promotion', d: 'Competitor X lowered 38 prices we also sell, for the weekend, in 3 zones.', ev: ['Price gap +14% (was +1%)', '21% of sales in those zones'], m: 3 },
+  { a: 'agent', w: 'Margin Guardian', t: 'Prices three responses', d: 'Each response shows margin cost and sales protected.', tb: { head: ['Response', 'Margin cost', 'Sales protected'], rows: [['Do nothing', `${C} 0`, `-${C} 130k at risk`], ['Match 12 hero items', `${C} 85k`, `${C} 92k`], ['Match all 38 items', `${C} 160k`, `${C} 118k`]] }, m: 6 },
+  { a: 'agent', w: 'Growth Scout', t: 'Targets the right customers and zones', d: 'Suggests the 12 hero items in Zones 1, 3 and 4 from Friday to Sunday, with a short message to customers who bought these items before.', m: 5 },
+  { a: 'agent', w: 'Chief of Staff', t: 'Puts the decision in your inbox', d: 'One page: what happened, the three options, the recommendation.', m: 1,
+    h: { role: 'ch', ask: 'Approve a response budget for the weekend?', edit: { type: 'number', label: 'Budget', value: 85000, unit: C } }, imp: { gmv: 24000, margin: -0.1 } },
+  { a: 'agent', w: 'Price and Margin Check', t: 'Loads the prices for the weekend', d: 'Budget approved: {n}. 12 prices set to change Friday 06:00 and return Monday 06:00.', m: 3 },
+  { a: 'agent', w: 'Competition Watch', t: 'Watches the weekend', d: 'Checks competitor prices every 3 hours and flags any change.', m: 1 }],
+  [{ l: 'Time from competitor move to response', b: 30, a: 4, u: 'hours' }, { l: 'Items repriced by hand', b: 38, a: 0, u: 'items' }]);
+W('transfer', 'Daily transfer plan', 'Replenishment', 'Every day at 14:00', ['Transfer Planner', 'Stock Accuracy', 'Replenishment lead'], true, [
+  { a: 'agent', w: 'Transfer Planner', t: 'Builds tomorrow\'s plan', d: 'Balances stock against tomorrow\'s forecast, truck space and shelf life.', ev: ['62 moves', '4,380 units', '4 zones'], m: 8 },
+  { a: 'agent', w: 'Transfer Planner', t: 'Splits the plan by zone', d: 'Each zone gets its own list.', tb: { head: ['Zone', 'Moves', 'Units', 'Main category'], rows: [[Z1, '12', '920', CAT_FRESH], [Z2, '8', '540', CAT_DAIRY], [Z3, '18', '1,150', CAT_DAIRY], [Z4, '9', '690', CAT_PACK], [Z5, '10', '720', CAT_BEV], [Z6, '5', '360', CAT_CARE]] }, m: 4 },
+  { a: 'agent', w: 'Stock Accuracy', t: 'Flags two uncertain counts', d: `${Z3} milk and ${Z4} eggs counts look wrong. Plan uses the safer figure.`, m: 3 },
+  { a: 'person', w: 'Replenishment lead', t: 'Reviews and edits', d: 'You see only the exceptions: 11 of 62 moves.', m: 10,
+    h: { role: 'wh', ask: `Release the plan? You may change the ${Z3} units.`, edit: { type: 'number', label: `${Z3} units`, value: 1150, unit: 'units' } }, imp: { avail: 0.3 } },
+  { a: 'agent', w: 'Inbound Scheduler', t: 'Books trucks and dock slots', d: `Plan released with {n} for ${Z3}. 5 trucks booked between 04:00 and 06:00.`, m: 4 },
+  { a: 'agent', w: 'Stock-out Responder', t: 'Sends the lists to stores', d: 'Each store manager gets a pick list and an expected arrival time.', m: 2 }],
+  [{ l: 'Time to build the plan', b: 95, a: 25, u: 'min' }, { l: 'Plan lines reviewed by a person', b: 100, a: 18, u: '%' }]);
+W('stockout', 'Stock-out in a zone', 'Availability', `${CAT_DAIRY} availability in ${Z3} falls to 86%`, ['Availability Control Tower', 'Transfer Planner', 'PO Follow-up', 'Forecast Doctor', 'Dark-store manager'], true, [
+  { a: 'agent', w: 'Availability Control Tower', t: 'Finds the stock-out', d: `${CAT_DAIRY} availability in ${Z3} fell to 86% at 07:00 (usual 95%).`, m: 1 },
+  { a: 'agent', w: 'Availability Control Tower', t: 'Tags the cause', d: 'Each lost shelf hour is tagged to one cause.', tb: { head: ['Cause', 'Share', 'Fix'], rows: [['Supplier late', '55%', 'Expedite purchase order'], ['Forecast too low', '20%', 'Change forecast'], ['Transfer gap', '15%', 'Move stock'], ['Store', '10%', 'Recount and reshelve']] }, m: 4 },
+  { a: 'agent', w: 'PO Follow-up', t: 'Routes the supplier fix', d: `Asks ${SG} to expedite the order and logs the promised time.`, m: 3 },
+  { a: 'agent', w: 'Transfer Planner', t: 'Routes the stock move', d: `480 dairy units are available in ${Z2}.`, m: 3 },
+  { a: 'agent', w: 'Forecast Doctor', t: 'Proposes a forecast change', d: 'Raise dairy by 8% for Zone 3 for 3 days.', m: 3 },
+  { a: 'person', w: 'Dark-store manager', t: 'Confirms the fixes', d: 'All three fixes are ready.', m: 6,
+    h: { role: 'store', ask: 'Which fixes do you confirm for your stores?', edit: { type: 'choice', label: 'Fixes', rec: 'all', options: [{ id: 'all', l: 'All three: expedite, move stock, change forecast' }, { id: 'two', l: 'Expedite and move stock only' }, { id: 'one', l: 'Move stock only' }] } }, imp: { avail: 0.5, gmv: 14000 } },
+  { a: 'system', w: 'Shelf check', t: 'Availability recovers', d: 'Fixes confirmed: {choice}. Availability back to 95% by 11:00.', m: 20 }],
+  [{ l: 'Time from stock-out to fix', b: 8, a: 1.5, u: 'hours' }, { l: 'Stores with empty shelves at peak', b: 9, a: 3, u: 'stores' }]);
+W('picker', 'Picker productivity', 'Operations', 'Evening peak starts earlier', ['Picker Productivity Coach', 'Operations Pulse', 'Dark-store manager'], true, [
+  { a: 'agent', w: 'Operations Pulse', t: 'Sees the gap between plan and orders', d: `Orders peak at 18:00 in ${Z5}, shift plan expects 19:30.`, m: 2 },
+  { a: 'agent', w: 'Picker Productivity Coach', t: 'Measures units per picker per hour', d: 'By shift and by zone of the store.', tb: { head: ['Shift', 'Pickers', 'Units per hour', 'Target'], rows: [['Morning', '8', '124', '125'], ['Afternoon', '10', '119', '125'], ['Evening', '12', '104', '125']] }, m: 4 },
+  { a: 'agent', w: 'Picker Productivity Coach', t: 'Suggests a shift plan and pick path', d: 'Move 2 pickers from stock work to picking at 18:00. New pick path cuts walking by about 14 seconds per order.', m: 5 },
+  { a: 'person', w: 'Dark-store manager', t: 'Accepts or adjusts', d: 'You know your team; change the number if needed.', m: 4,
+    h: { role: 'store', ask: 'Accept the shift plan?', edit: { type: 'number', label: 'Pickers moved', value: 2, unit: 'pickers' } }, imp: { pick: 6 } },
+  { a: 'agent', w: 'Picker Productivity Coach', t: 'Puts the plan in place', d: '{n} moved to picking. New path loaded on the picker app.', m: 2 },
+  { a: 'agent', w: 'Picker Productivity Coach', t: 'Measures again', d: 'Checks units per picker per hour at 20:00 against 18:00.', m: 120 }],
+  [{ l: 'Units per picker per hour (evening)', b: 104, a: 115, u: 'units/h', up: true }, { l: 'Minutes to plan the shift', b: 40, a: 8, u: 'min' }]);
+W('credit', 'Supplier credit-line pack', 'Finance', `${SK} credit-line review is due`, ['Credit-Line Document Pack', 'Finance lead'], true, [
+  { a: 'agent', w: 'Credit-Line Document Pack', t: 'Lists the papers needed', d: 'Eleven documents are required for a credit line.', tb: { head: ['Document', 'Status'], rows: [['Company registration', 'Ready'], ['Tax certificate', 'Expires in 21 days'], ['Bank letter', 'Missing'], ['Insurance certificate', 'Missing'], ['Last 2 years accounts', 'Ready'], ['5 more documents', 'Ready']] }, m: 5 },
+  { a: 'agent', w: 'Credit-Line Document Pack', t: 'Compiles the pack and the gaps', d: '9 of 11 are ready. 2 are missing, 1 will expire.', m: 4 },
+  { a: 'agent', w: 'Credit-Line Document Pack', t: 'Requests the missing papers', d: `Drafts a request to ${SK} for the bank letter, insurance certificate and renewed tax certificate.`, m: 2 },
+  { a: 'person', w: 'Finance lead', t: 'Reviews the pack', d: 'Check the pack before it goes out.', m: 10,
+    h: { role: 'fin', ask: 'Send the pack?', edit: { type: 'choice', label: 'Send', rec: 'now', options: [{ id: 'now', l: 'Send now with the 2 gaps noted' }, { id: 'wait', l: 'Wait until the gaps are filled' }] } }, imp: { wc: -0.1 } },
+  { a: 'agent', w: 'Credit-Line Document Pack', t: 'Sends and tracks', d: 'Pack sent: {choice}. Reminder in 3 days for the open gaps.', m: 2 }],
+  [{ l: 'Time to assemble a pack', b: 180, a: 25, u: 'min' }, { l: 'Documents found missing after sending', b: 3, a: 0, u: 'docs' }]);
+/* simpler preview flows */
+W('fedit', 'Forecast edit review', 'Preview', 'A planner edits a forecast by hand', ['Edit Reviewer', 'Demand planner'], false, [
+  { a: 'person', w: 'Demand planner', t: 'Raises ice cream forecast by 40%', d: `For ${Z2}, Saturday.`, m: 1 },
+  { a: 'agent', w: 'Edit Reviewer', t: 'Scores the edit', d: 'On 6 similar days this kind of edit improved the forecast 2 times and hurt 4 times. Score: low.', m: 2 },
+  { a: 'person', w: 'Demand planner', t: 'Gives a reason or reverts', d: 'A reason is required.', m: 2, h: { role: 'dp', ask: 'Keep the edit?', edit: { type: 'number', label: 'Increase', value: 15, unit: '%' } } },
+  { a: 'agent', w: 'Edit Reviewer', t: 'Logs the edit and checks later', d: 'Compares with actual sales on Sunday.', m: 1 }],
+  [{ l: 'Edits with a written reason', b: 22, a: 96, u: '%', up: true }]);
+W('pofu', 'PO follow-up', 'Preview', '11 purchase orders unconfirmed after 24 hours', ['PO Follow-up', 'Buyer'], false, [
+  { a: 'agent', w: 'PO Follow-up', t: 'Finds unconfirmed orders', d: '11 orders, 3 on key items.', m: 1 },
+  { a: 'agent', w: 'PO Follow-up', t: 'Sends reminder and logs it', d: 'Reminder to 6 suppliers at 08:00.', m: 1 },
+  { a: 'person', w: 'Buyer', t: 'Decides on the 3 key orders', d: 'Escalate by phone or move to another supplier.', m: 5, h: { role: 'buy', ask: 'How do you handle the 3 key-item orders?', edit: { type: 'choice', label: 'Action', rec: 'call', options: [{ id: 'call', l: 'Call the suppliers today' }, { id: 'alt', l: 'Move the order to another supplier' }] } } },
+  { a: 'agent', w: 'Supplier Reply Tracker', t: 'Tracks replies', d: 'Choice: {choice}. Updates the order record as replies arrive.', m: 1 }],
+  [{ l: 'Orders confirmed within 24 h', b: 68, a: 91, u: '%', up: true }]);
+W('camp', 'Campaign planning', 'Preview', 'Rain forecast in two zones', ['Campaign Planner', 'Campaign Forecast', 'Growth lead'], false, [
+  { a: 'agent', w: 'Campaign Planner', t: 'Proposes a rainy-day campaign', d: 'Ready meals and hot food, 11:00 to 21:00.', m: 3 },
+  { a: 'agent', w: 'Campaign Forecast', t: 'Forecasts demand and stock', d: 'Needs +22% ready meals; stock is sufficient.', m: 2 },
+  { a: 'person', w: 'Growth lead', t: 'Approves the budget', d: 'Cost of offer and messages.', m: 3, h: { role: 'gro', ask: 'Approve the campaign budget?', edit: { type: 'number', label: 'Budget', value: 12000, unit: C } }, imp: { gmv: 16000 } },
+  { a: 'agent', w: 'Campaign Planner', t: 'Schedules and measures', d: 'Budget {n}. Reads results at 22:00.', m: 1 }],
+  [{ l: 'Time to plan a campaign', b: 5, a: 1, u: 'days' }]);
+W('expand', 'Expansion candidate review', 'Preview', `4 neighbourhoods in ${Z6} outside the 15-minute area`, ['Coverage Scout', 'Growth Scout', 'Growth lead'], false, [
+  { a: 'agent', w: 'Coverage Scout', t: 'Ranks the 4 candidates', d: 'By homes reached, demand, and nearby store capacity.', tb: { head: ['Candidate', 'Homes', 'Demand', 'Capacity'], rows: [['North', '8,200', 'High', '92%'], ['East', '6,100', 'High', '88%'], ['South', '5,300', 'Medium', '70%'], ['West', '3,400', 'Low', '65%']] }, m: 4 },
+  { a: 'agent', w: 'Growth Scout', t: 'Adds a range and payback estimate', d: 'Shown as ranges, not a single number.', m: 3 },
+  { a: 'person', w: 'Growth lead', t: 'Shortlists candidates', d: 'Choose which go to full review.', m: 4, h: { role: 'gro', ask: 'Which candidates go to full review?', edit: { type: 'choice', label: 'Shortlist', rec: 'two', options: [{ id: 'two', l: 'North and East' }, { id: 'one', l: 'North only' }, { id: 'all', l: 'All four' }] } } },
+  { a: 'agent', w: 'Chief of Staff', t: 'Adds to the country head agenda', d: 'Shortlist: {choice}.', m: 1 }],
+  [{ l: 'Time to shortlist candidates', b: 21, a: 4, u: 'days' }]);
+
+/* ---------- before / after tests: rule is editable in the page ---------- */
+const BA = [
+  { id: 'transfers', name: 'Daily transfers', rows: [
+    { m: 'Minutes to build the daily plan', b: 95, a: 25, u: 'min', dir: 'lower', rule: 40 },
+    { m: 'Plan lines a person must review', b: 100, a: 18, u: '%', dir: 'lower', rule: 25 },
+    { m: 'Zone-days with stock-outs from transfer gaps (per week)', b: 14, a: 9, u: '', dir: 'lower', rule: 7 }] },
+  { id: 'followup', name: 'Supplier follow-up', rows: [
+    { m: 'Orders confirmed within 24 hours', b: 68, a: 91, u: '%', dir: 'higher', rule: 90 },
+    { m: 'Minutes a buyer spends chasing, per day', b: 120, a: 35, u: 'min', dir: 'lower', rule: 45 },
+    { m: 'Supplier replies logged in the system', b: 41, a: 78, u: '%', dir: 'higher', rule: 85 }] },
+  { id: 'edits', name: 'Forecast edits', rows: [
+    { m: 'Edits with a written reason', b: 22, a: 96, u: '%', dir: 'higher', rule: 90 },
+    { m: 'Edits that improved accuracy', b: 41, a: 52, u: '%', dir: 'higher', rule: 60 },
+    { m: 'Days until an edit is reviewed', b: 7, a: 1, u: 'days', dir: 'lower', rule: 2 }] }
+];
+
+/* ---------- decision log: yesterday's history (seeded) ---------- */
+const LOG0 = [
+  ['cat', 'Price and Margin Check', 'price', 'approved', `Renegotiate ${SB} yoghurt cost`, 'Within floor after 2% back-margin.'],
+  ['wh', 'Transfer Planner', 'transfer', 'edited', `Daily plan, ${Z4} reduced 80 units`, 'Truck space limited on the east route.'],
+  ['dp', 'Edit Reviewer', 'fedit', 'rejected', 'Edit +40% ice cream', 'No similar weekend in the last 6 weeks.'],
+  ['buy', 'PO Follow-up', 'pofu', 'approved', 'Call 3 suppliers on key orders', 'Key items for weekend offer.'],
+  ['ch', 'Competition Watch', 'promo', 'approved', 'Hold price on Personal care', 'Gap under 5%, margin more important.'],
+  ['store', 'Picker Productivity Coach', 'picker', 'edited', 'Move 3 pickers, edited to 2', 'Third picker needed for stock count.'],
+  ['fin', 'Invoice Match', null, 'approved', `Hold payment to ${SH}`, 'Quantity mismatch on 4 lines.'],
+  ['gro', 'Excess Stock Pusher', null, 'approved', 'Bundle offer on cleaning products', 'Margin above floor.'],
+  ['ch', 'Cash and Working Capital', null, 'rejected', `Move ${SI} payment to day 60`, 'Supplier relationship; terms are fixed to day 45.'],
+  ['wh', 'Inbound Scheduler', null, 'approved', 'Move truck to 11:00 slot', 'Dock 2 free.'],
+  ['store', 'Waste and Expiry Watch', null, 'approved', '30% markdown on salads', 'Expires tonight.'],
+  ['cat', 'Assortment Fit', null, 'edited', 'Swap 8 slow items, edited to 6', 'Two items needed for a supplier deal.'],
+  ['buy', 'Plan Unblocker', 'price', 'approved', 'Fill 12 supplier links', 'Matches last month.'],
+  ['ch', 'Customer Voice', null, 'approved', `Recovery voucher in ${Z5}`, 'Cost small against repeat value.']
+];
+
+/* =====================================================================
+   ENGINE: state, helpers, views. No data below this line.
+   ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clock = t => { const m = Math.round(t) + 360; return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+const fmtc = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(Math.round(m) % 60).padStart(2, '0');
+const dur = m => m < 1 ? '0 min' : m < 60 ? Math.round(m) + ' min' : m < 1440 ? Math.floor(m / 60) + ' h' + (Math.round(m) % 60 ? ' ' + Math.round(m % 60) + ' min' : '') : (m / 1440).toFixed(1) + ' days';
+const num = n => Number(n).toLocaleString('en-US');
+const fmtVal = (ed, v) => ed.unit === C ? `${C} ${num(v)}` : `${num(v)} ${ed.unit}`;
+const VERB = { approved: 'Approved', edited: 'Edited and approved', rejected: 'Rejected' };
+
+/* ---------- state ---------- */
+const S = { persona: 'ch', route: 'landing', arg: null, dec: [], log: [], feed: [], adj: {}, adjLog: [], stats: {}, flash: {}, seq: 0,
+  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', stage: null, pres: { on: false, i: 0, did3: false } };
+AG.forEach((a, i) => {
+  a.act = [`05:55  Checked ${ri(300, 1900)} records, nothing else changed`, `05:20  Compared with yesterday and the same weekday last month`];
+  const req = ri(22, 80), acc = Math.round(req * (0.62 + R() * 0.18)), ed = Math.round(req * (0.1 + R() * 0.1));
+  S.stats[a.id] = { req, acc, edit: ed, rej: Math.max(0, req - acc - ed) };
+  a.last = '';
+});
+const stageOfAgent = id => (AGM[id] || {}).stage;
+function addDecision(o) {
+  const d = Object.assign({ id: 'd' + (++S.seq), status: 'open', effect: {}, ev: [], source: 'scenario' }, o);
+  if (d.stage == null) d.stage = stageOfAgent(d.agent || d.sa);
+  S.dec.push(d);
+  const aid = d.agent || d.sa;
+  if (aid && S.stats[aid]) S.stats[aid].req++;
+  if (d.agent) AGM[d.agent].status = 'Needs you';
+  return d;
+}
+AG.filter(a => a.status === 'Needs you').forEach(a => S.dec.push({ id: 'd-' + a.id, status: 'open', agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, stage: a.stage, source: 'agent' }));
+LOG0.forEach((r, i) => S.log.push({ role: r[0], who: PWHO[r[0]], agent: r[1], wf: r[2], kind: r[3], item: r[4], reason: r[5], change: '', time: `Yesterday ${String(8 + Math.floor(i * 0.9)).padStart(2, '0')}:${String(ri(0, 59)).padStart(2, '0')}`, ord: -100 + i }));
+S.log.reverse();
+const openDec = role => S.dec.filter(d => d.status === 'open' && (!role || d.role === role));
+const openFor = id => S.dec.filter(d => d.status === 'open' && d.agent === id);
+
+/* ---------- scorecard maths ---------- */
+function dayEff(k, world, t) {
+  world = world || S.sim.world; t = t == null ? S.sim.t : t; let s = 0;
+  DAY.forEach(e => { const v = e.imp[k]; if (!v || t < e.t) return; const ai = world === 'ai', n = ai ? e.nA : e.nM, d = ai ? e.dA : e.dM; s += v * (ai ? 1 : 1.6) * (t < e.t + n + d ? 1 : (ai ? 0.2 : 0.6)); });
+  return s;
+}
+const mNow = k => METRIC[k].base + (S.adj[k] || 0) + dayEff(k);
+function metricDelta(k) {
+  const m = METRIC[k], diff = mNow(k) - m.series[12];
+  const good = m.good === 'up' ? diff >= 0 : diff <= 0;
+  const flat = Math.abs(diff) < (k === 'gmv' ? 2000 : 0.04);
+  return { txt: flat ? 'flat vs yesterday' : `${diff > 0 ? '+' : '-'}${m.d(diff)} vs yesterday`, cls: flat ? 'flat' : good ? 'good' : 'bad' };
+}
+function spark(k, big) {
+  const m = METRIC[k], a = m.series.slice(0, 13).concat(mNow(k)), mn = Math.min(...a), mx = Math.max(...a), r = mx - mn || 1;
+  const pts = a.map((v, i) => `${(i / (a.length - 1) * 100).toFixed(1)},${(30 - (v - mn) / r * 26).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 100 34" preserveAspectRatio="none" role="img" aria-label="14-day trend for ${m.name}" ${big ? 'style="height:70px"' : ''}><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+
+/* ---------- small ui helpers ---------- */
+const pill = s => `<span class="pill ${s === 'Needs you' ? 's-n' : s === 'Found something' ? 's-f' : 's-w'}">${s}</span>`;
+function toast(msg) { const el = document.createElement('div'); el.className = 't'; el.textContent = msg; const b = $('#toast'); b.appendChild(el); while (b.children.length > 3) b.firstChild.remove(); setTimeout(() => el.remove(), 4200); }
+const chipAgent = id => `<button class="chip" data-act="agent" data-id="${id}">${AGM[id].name}</button>`;
+
+/* ---------- layers (drawer and modal) ---------- */
+const LAY = [];
+function openLayer(kind, label, render) {
+  const el = document.createElement('div');
+  el.className = 'layer ' + kind + (reduced ? '' : ' anim');
+  el.innerHTML = `<div class="scrim" data-act="close-layer"></div><div class="panel" role="dialog" aria-modal="true" aria-label="${esc(label)}" tabindex="-1"><button class="x" data-act="close-layer" aria-label="Close">&times;</button><div class="pbody"></div></div>`;
+  $('#layers').appendChild(el);
+  const L = { el, render, prev: document.activeElement, panel: $('.panel', el), body: $('.pbody', el) };
+  L.refresh = () => { L.body.innerHTML = L.render(); if (!L.panel.contains(document.activeElement)) L.panel.focus(); };
+  L.refresh(); LAY.push(L); L.panel.focus(); document.body.style.overflow = 'hidden';
+  return L;
+}
+function closeLayer() {
+  const L = LAY.pop(); if (!L) return; L.el.remove();
+  if (!LAY.length) document.body.style.overflow = '';
+  const t = L.prev && document.contains(L.prev) ? L.prev : (LAY.length ? LAY[LAY.length - 1].panel : $('#main')); if (t && t.focus) t.focus();
+}
+document.addEventListener('keydown', e => {
+  if (!LAY.length) return;
+  if (e.key === 'Escape') { closeLayer(); return; }
+  if (e.key === 'Tab') {
+    const p = LAY[LAY.length - 1].panel, f = $$('button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])', p).filter(x => !x.disabled && x.offsetParent !== null);
+    if (!f.length) return; const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === p)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+/* ---------- decisions ---------- */
+function decisionCard(d, compact) {
+  const ag = d.agentName ? `<span class="tag acc">${d.agentName}</span>` : '';
+  if (d.status !== 'open') {
+    return `<div class="dcard done-d ${d.status === 'rejected' ? 'rej' : ''}"><div class="row" style="justify-content:space-between"><strong>${d.title}</strong>${ag}</div><p class="why"><b>${VERB[d.status]}</b> by ${PWHO[d.role]} at ${d.at}. Reason: ${esc(d.reason)}${d.changeTxt ? ' Change: ' + esc(d.changeTxt) : ''}</p></div>`;
+  }
+  return `<div class="dcard" data-did="${d.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><strong>${d.title}</strong>${ag}</div>
+    <p class="why">${d.why}</p>${!compact && d.ev && d.ev.length ? `<ul class="ev">${d.ev.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+    <div class="ask">${d.ask}</div>
+    <div class="row" style="margin-top:12px"><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
+}
+const REASONS = { approve: ['Evidence is clear', 'Within our limits', 'Low risk, high value', 'Time is short'], edit: ['Adjusted for local knowledge', 'Right idea, wrong size', 'Needs a smaller first step'], reject: ['Not enough evidence', 'Cost is too high', 'Wrong timing', 'Handle another way'] };
+function decideHTML(d, kind) {
+  const title = { approve: 'Approve', edit: 'Edit and approve', reject: 'Reject' }[kind];
+  let ctl = '';
+  const ed = d.edit;
+  if (kind === 'approve' && ed) ctl = ed.type === 'choice' ? `<div class="callout" style="background:var(--accent-soft);color:var(--accent)">You are approving: <b>${ed.options.find(o => o.id === ed.rec).l}</b></div>` : `<div class="callout" style="background:var(--accent-soft);color:var(--accent)">You are approving: <b>${ed.label} ${fmtVal(ed, ed.value)}</b></div>`;
+  if (kind === 'edit') {
+    if (ed && ed.type === 'choice') { const pre = (ed.options.find(o => o.id !== ed.rec) || ed.options[0]).id; ctl = `<fieldset style="border:0;padding:0;margin:0"><legend class="f">${ed.label}</legend>${ed.options.map(o => `<label class="radio"><input type="radio" name="chg" value="${o.id}" ${o.id === pre ? 'checked' : ''}><span>${o.l}${o.id === ed.rec ? ' <span class="tag acc">Recommended</span>' : ''}</span></label>`).join('')}</fieldset>`; }
+    else if (ed) ctl = `<label class="f" for="chg">${ed.label} (${ed.unit}), proposed ${num(ed.value)}</label><input class="in" id="chg" type="number" value="${ed.value}" min="0" step="any">`;
+    else ctl = `<label class="f" for="chg">What do you want to change?</label><input class="in" id="chg" type="text" placeholder="For example: smaller scope, later date">`;
+  }
+  return `<span class="eyebrow">${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 6px">${title}: ${d.title}</h2>
+    <p class="muted small">${d.ask}</p>
+    <div class="stack" style="margin-top:14px">${ctl}
+    <div><label class="f" for="reason">Reason (required, goes into the decision log)</label>
+    <div class="row" style="margin-bottom:8px">${REASONS[kind].map(r => `<button type="button" class="chip" data-act="chip" data-text="${r}">${r}</button>`).join('')}</div>
+    <textarea class="in" id="reason" placeholder="Why are you deciding this way?"></textarea><div class="err" id="derr" hidden></div></div>
+    <div class="row"><button class="btn pri" data-act="confirm" data-id="${d.id}" data-k="${kind}">Confirm ${kind === 'edit' ? 'edit' : kind}</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`;
+}
+function openDecide(id, kind) { const d = S.dec.find(x => x.id === id); if (!d || d.status !== 'open') return; const L = openLayer('modal', 'Decision: ' + d.title, () => decideHTML(d, kind)); setTimeout(() => { const t = $('#chg', L.el) || $('input[name=chg]:checked', L.el) || $('#reason', L.el); t && t.focus(); }, 30); }
+function decide(id, kind, reason, chg) {
+  const d = S.dec.find(x => x.id === id); if (!d || d.status !== 'open') return;
+  d.status = { approve: 'approved', edit: 'edited', reject: 'rejected' }[kind]; d.reason = reason; d.at = clock(S.sim.t);
+  const ed = d.edit; let vars = {}, txt = '';
+  if (ed && kind !== 'reject') {
+    if (ed.type === 'choice') { const id2 = kind === 'edit' ? chg : ed.rec; const o = ed.options.find(x => x.id === id2) || ed.options[0]; vars.choice = o.l; txt = kind === 'edit' ? o.l : ''; }
+    else { const v = kind === 'edit' ? +chg : ed.value; vars.n = fmtVal(ed, v); txt = kind === 'edit' ? ed.label + ' ' + vars.n : ''; }
+  } else if (kind === 'edit') txt = chg;
+  d.changeTxt = txt; d.vars = vars;
+  const sa = d.agent || d.sa, st = S.stats[sa];
+  if (st) { if (kind === 'approve') st.acc++; else if (kind === 'edit') st.edit++; else st.rej++; }
+  const f = kind === 'approve' ? 1 : kind === 'edit' ? 0.8 : 0;
+  Object.entries(d.effect || {}).forEach(([k, v]) => { if (!f) return; S.adj[k] = (S.adj[k] || 0) + v * f; S.adjLog.unshift({ k, v: v * f, who: d.agentName || 'Decision', t: clock(S.sim.t) }); S.flash[k] = 1; });
+  S.log.unshift({ role: d.role, who: PWHO[d.role], agent: d.agentName || 'Agent', wf: d.wf || (d.source === 'task' ? 'task' : d.source === 'scenario' ? 'scenario' : d.source === 'day' ? 'day' : null), kind: d.status, item: d.title, reason, change: txt, time: 'Today ' + clock(S.sim.t), ord: ++S.seq });
+  if (d.agent) { const a = AGM[d.agent]; a.act.unshift(`${clock(S.sim.t)}  ${VERB[d.status]} by ${PWHO[d.role]}: ${reason}`); a.last = `${VERB[d.status]} ${clock(S.sim.t)}`; if (!openFor(d.agent).length) a.status = 'Watching'; }
+  toast(`${VERB[d.status]}. Logged with your reason.`);
+  if (d.wf) wfAfter(d);
+}
+
+/* ---------- workflow engine ---------- */
+const wfState = id => S.wf[id] || (S.wf[id] = { i: -1, log: [], clk: 540, done: false, closed: false, auto: false, waiting: null, vars: {}, round: 0, tm: null });
+const tok = (s, st) => s.replace('{choice}', st.vars.choice || 'the recommended option').replace('{n}', st.vars.n || 'the proposed figure');
+function wfNext(id) {
+  const w = WF[id], st = wfState(id); if (st.waiting || st.done) return;
+  st.i++; const s = w.steps[st.i]; st.clk += s.m || 3;
+  st.log.push({ t: fmtc(st.clk), a: s.a, w: s.w, x: s.t });
+  if (s.h) {
+    const sa = (AG.find(a => a.name === s.w) || AG.find(a => w.steps.some(x => x.w === a.name)) || {}).id;
+    const d = addDecision({ role: s.h.role, agentName: s.w, sa, title: `${w.name}: ${s.t}`, ask: s.h.ask, why: tok(s.d, st), ev: s.ev || [], effect: s.imp || {}, edit: s.h.edit, wf: id, step: st.i, source: 'workflow' });
+    st.waiting = d.id; st.log.push({ t: fmtc(st.clk), a: 'system', w: 'Inbox', x: `Decision sent to ${PWHO[s.h.role]}` });
+  } else if (st.i === w.steps.length - 1) { st.done = true; st.auto = false; }
+}
+function wfAfter(d) {
+  const st = S.wf[d.wf], w = WF[d.wf], s = w.steps[d.step]; st.waiting = null; st.clk += 2;
+  Object.assign(st.vars, d.vars || {});
+  st.log.push({ t: fmtc(st.clk), a: 'person', w: PWHO[d.role], x: `${VERB[d.status]}. ${d.reason}` });
+  if (d.status === 'rejected') {
+    if (st.round < 1) {
+      st.round++; st.log.push({ t: fmtc(st.clk + 3), a: 'agent', w: s.w, x: 'Prepares a revised proposal using your reason' }); st.clk += 3;
+      const d2 = addDecision({ role: d.role, agentName: s.w, sa: d.sa, title: d.title + ' (revised)', ask: d.ask, why: `Revised after your note: "${d.reason}". ` + tok(s.d, st), ev: s.ev || [], effect: s.imp || {}, edit: s.h.edit, wf: d.wf, step: d.step, source: 'workflow' });
+      st.waiting = d2.id;
+    } else { st.done = true; st.closed = true; st.auto = false; st.log.push({ t: fmtc(st.clk), a: 'system', w: 'Workflow', x: 'Closed without action. No change made.' }); }
+  } else if (d.step === w.steps.length - 1) { st.done = true; st.auto = false; }
+  if (st.auto && !st.done && !st.waiting) wfRun(d.wf);
+}
+function wfRun(id) {
+  const st = wfState(id); st.auto = true; clearTimeout(st.tm);
+  const go = () => { if (!st.auto || st.waiting || st.done) { render(); return; } wfNext(id); render(); st.tm = setTimeout(go, reduced ? 200 : 950); };
+  go();
+}
+function wfReset(id) {
+  const st = S.wf[id]; if (st) { clearTimeout(st.tm); S.dec.forEach(d => { if (d.wf === id && d.status === 'open') d.status = 'withdrawn'; }); }
+  S.dec = S.dec.filter(d => d.status !== 'withdrawn'); delete S.wf[id];
+}
+
+/* ---------- day simulation ---------- */
+function worldStats(world, t) {
+  const ai = world === 'ai', W_ = WORLD[world]; let nS = 0, nC = 0, dS = 0, dC = 0, wait = 0, unseen = 0;
+  DAY.forEach(e => { const n = ai ? e.nA : e.nM, d = ai ? e.dA : e.dM; if (t >= e.t + n) { nS += n; nC++; } if (e.dec && t >= e.t + n + d) { dS += d; dC++; } if (e.dec && t >= e.t && t < e.t + n + d) { wait++; if (t < e.t + n) unseen++; } });
+  return { tasks: Math.round(W_.tasksPerHour * t / 60), notice: nC ? dur(nS / nC) : '-', decide: dC ? dur(dS / dC) : '-', wait: wait + W_.backlog, unseen };
+}
+function milestones() {
+  const w = S.sim.world, t = S.sim.t, out = [];
+  DAY.forEach((e, i) => {
+    const ai = w === 'ai', n = ai ? e.nA : e.nM, d = ai ? e.dA : e.dM;
+    if (t >= e.t) out.push({ t: e.t, o: i * 3, x: `<b>Happened:</b> ${e.title}` });
+    if (t >= e.t + n) out.push({ t: e.t + n, o: i * 3 + 1, x: ai ? `<b>${AGM[e.ag].name}:</b> ${e.txt}` : `<b>Found by hand</b>, ${dur(n)} later: ${e.title}` });
+    if (e.dec && t >= e.t + n + d) out.push({ t: e.t + n + d, o: i * 3 + 2, x: `<b>${PWHO[e.role]}</b> ${ai ? 'decided' : 'finally decided'}, ${dur(d)} after it was ready` });
+  });
+  return out;
+}
+function fireDay() {
+  if (S.sim.world !== 'ai') return;
+  DAY.forEach(e => {
+    if (S.sim.fired[e.id] || S.sim.t < e.t + e.nA) return; S.sim.fired[e.id] = 1;
+    if (e.dec) { addDecision({ sa: e.ag, agentName: AGM[e.ag].name, role: e.role, title: e.dec.title, ask: e.dec.ask, why: e.dec.why, ev: e.dec.ev, effect: e.dec.effect, source: 'day' }); toast(`New decision for ${PNAME[e.role]}: ${e.dec.title}`); }
+  });
+}
+function simTick() {
+  const s = S.sim; s.t = Math.min(840, s.t + s.speed * 3); fireDay();
+  if (s.t >= 840) { simPause(); toast('The day is complete.'); }
+  updateTop(); if (S.route === 'day') updateDay(); else if (S.route === 'home' || S.route === 'score') { /* static until user acts */ }
+}
+function simPlay() { const s = S.sim; if (s.timer) return; if (s.t >= 840) simReset(); s.playing = true; s.timer = setInterval(simTick, 400); }
+function simPause() { const s = S.sim; clearInterval(s.timer); s.timer = null; s.playing = false; if (S.route === 'day') updateDay(); }
+function simReset() { simPause(); const s = S.sim; s.t = 0; s.fired = {}; S.feed = []; S.dec = S.dec.filter(d => !(d.source === 'day' && d.status === 'open')); }
+function inject(id) {
+  const sc = SCEN.find(x => x.id === id);
+  if (S.sim.world !== 'ai') {
+    S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>${sc.name}:</b> no agent is watching. Someone finds it about ${dur(sc.manual.n)} later and a decision takes about ${dur(sc.manual.d)} more.` });
+    toast('Manual world: the event is found later, by hand.'); render(); return;
+  }
+  S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>Event:</b> ${sc.name}, ${sc.sub}` });
+  const roles = new Set(), ags = new Set();
+  sc.steps.forEach((st, i) => setTimeout(() => {
+    const a = AGM[st.ag]; ags.add(st.ag);
+    a.finding = st.text; if (!openFor(st.ag).length || st.status === 'Needs you') a.status = st.status;
+    a.act.unshift(`${clock(S.sim.t)}  ${st.text}`);
+    S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>${a.name}:</b> ${st.text}` });
+    if (st.imp) Object.entries(st.imp).forEach(([k, v]) => { S.adj[k] = (S.adj[k] || 0) + v; S.adjLog.unshift({ k, v, who: a.name, t: clock(S.sim.t) }); S.flash[k] = 1; });
+    if (st.dec) { roles.add(st.dec.role); addDecision({ agent: st.ag, agentName: a.name, role: st.dec.role, title: st.dec.title, ask: st.dec.ask, why: st.dec.why, ev: st.dec.ev, effect: st.dec.effect, edit: st.dec.edit, source: 'scenario' }); toast(`New decision for ${PNAME[st.dec.role]}`); }
+    if (i === sc.steps.length - 1) { S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>Chain complete:</b> ${ags.size} agents worked on it, ${roles.size} roles have a decision waiting.` }); }
+    updateTop(); render();
+  }, reduced ? 120 * i : 1300 * i));
+  toast(`Event injected: ${sc.name}`);
+}
+
+/* ---------- views ---------- */
+const V = {};
+function agentCard(a) {
+  const n = openFor(a.id).length;
+  return `<article class="card agent"><div class="row" style="justify-content:space-between;align-items:flex-start"><button class="stretch" data-act="agent" data-id="${a.id}">${a.name}</button>${pill(a.status)}</div>
+  <div class="job">${a.job}</div><p class="find">${a.finding}</p>
+  <div class="meta"><span>${a.last || STAGES[a.stage]}</span><span>${n ? n + ' decision' + (n > 1 ? 's' : '') + ' waiting' : 'Open details'}</span></div></article>`;
+}
+function stagePanel() {
+  if (S.stage == null) return '<p class="muted small" style="padding:6px 2px">Select a stage to see the agents working there and the decisions waiting.</p>';
+  const i = S.stage, ags = AG.filter(a => a.stage === i), ds = S.dec.filter(d => d.status === 'open' && d.stage === i);
+  return `<div class="card pad"><div class="row" style="justify-content:space-between"><h3 class="h3">${STAGES[i]}: ${ags.length} agents, ${ds.length} decisions waiting</h3><button class="btn sm" data-act="stage" data-id="${i}">Close</button></div>
+  <div class="grid g3" style="margin-top:12px">${ags.map(agentCard).join('')}</div></div>`;
+}
+V.landing = () => {
+  const allOpen = openDec().length;
+  return `<section class="hero"><span class="eyebrow">AI Native ${CTRY}</span><h1 class="h1">One chain from supplier to shelf. Run by agents, decided by people.</h1>
+  <p>This is a walk-through of a day in an AI native retail operation. Agents do the checking and chasing. People decide the exceptions. Every workflow is measured.</p></section>
+  <p class="tagline">Agents do the routine. People decide what matters.</p>
+  <div class="grid g4" style="margin:18px 0 24px">
+    <div class="card stat"><div class="v">${AG.length}</div><div class="l">agents across 8 roles</div></div>
+    <div class="card stat"><div class="v">${allOpen}</div><div class="l">decisions waiting for a person</div></div>
+    <div class="card stat"><div class="v">6 + 4</div><div class="l">workflows to play, plus previews</div></div>
+    <div class="card stat"><div class="v">${STAGES.length}</div><div class="l">stages, contract to learning</div></div></div>
+  <div class="sec-h"><h2 class="h2">The north star</h2><span class="muted small">Select a stage to see who works there</span></div>
+  <div class="flowwrap" tabindex="0" aria-label="Supplier to shelf chain, scroll sideways on small screens"><div class="flow">${STAGES.map((s, i) => {
+    const n = AG.filter(a => a.stage === i).length, w = S.dec.filter(d => d.status === 'open' && d.stage === i).length;
+    return `<button class="node" data-act="stage" data-id="${i}" aria-pressed="${S.stage === i}"><span class="no">${String(i + 1).padStart(2, '0')}</span><span class="nm">${s}</span><span class="ct">${n} agent${n === 1 ? '' : 's'}</span><span class="dw ${w ? '' : 'none'}">${w ? w + ' decision' + (w > 1 ? 's' : '') + ' waiting' : 'nothing waiting'}</span></button>`;
+  }).join('')}</div></div>
+  <div id="stagepanel" style="margin-top:12px">${stagePanel()}</div>
+  <div class="grid g3 sec">
+    <div class="card pad"><h3 class="h3">Agents do the routine</h3><p class="muted" style="margin-top:6px">Checking prices, chasing suppliers, validating data, building plans. Every night, every zone.</p></div>
+    <div class="card pad"><h3 class="h3">People decide what matters</h3><p class="muted" style="margin-top:6px">Each finding arrives with what happened, why, the evidence and the decision needed. Approve, edit or reject.</p></div>
+    <div class="card pad"><h3 class="h3">Every workflow is measured</h3><p class="muted" style="margin-top:6px">Before and after, with a pass or fail test agreed up front. Every decision is logged with a reason.</p></div></div>
+  <div class="row sec"><button class="btn pri" data-act="persona-go" data-id="ch">See the country head's morning</button><button class="btn" data-act="pres-on">Start the 5-minute guided path</button><a class="btn" href="#/day">Run a day in the life</a></div>`;
+};
+function inboxHTML(role, max) {
+  const ds = openDec(role).slice(0, max || 99), done = S.dec.filter(d => d.status !== 'open' && d.status !== 'withdrawn' && d.role === role).slice(-3).reverse();
+  return (ds.length ? ds.map(d => decisionCard(d, !!max)).join('') : `<div class="card pad"><p class="muted">Nothing is waiting for you. Your agents are watching.</p></div>`) + (done.length ? `<h3 class="h3" style="margin-top:18px">Decided today</h3>${done.map(d => decisionCard(d)).join('')}` : '');
+}
+function askHTML() {
+  const a = S.ask;
+  const qs = `<div class="row">${QA.map((q, i) => `<button class="btn sm" data-act="ask" data-id="${i}" aria-pressed="${!!a && a.i === i}">${q.q}</button>`).join('')}</div>`;
+  return `${qs}<div id="ask-out" aria-live="polite" style="margin-top:16px">${askOut()}</div>`;
+}
+function askOut() {
+  const a = S.ask; if (!a) return '<p class="muted small">Pick a question. You will see which agents were asked, what each found, and the tasks they propose.</p>';
+  const q = QA[a.i];
+  let h = `<h3 class="h3">${q.q}</h3><ol class="bul" style="margin-top:8px">${q.trail.slice(0, a.n).map(([id, x]) => `<li><span><button class="chip" data-act="agent" data-id="${id}">${AGM[id].name}</button> ${x}</span></li>`).join('')}</ol>`;
+  if (a.n > q.trail.length) h += `<div class="dcard" style="margin-top:10px"><strong>Answer</strong><p style="margin-top:4px">${q.ans}</p></div>`;
+  if (a.n > q.trail.length + 1) h += `<h3 class="h3" style="margin-top:16px">Proposed tasks</h3><ul class="bul">${q.tasks.map(([r, t], j) => { const k = a.i + '-' + j, done = S.assigned[k]; return `<li><span class="row" style="justify-content:space-between"><span><span class="tag">${PNAME[r]}</span> ${t}</span><button class="btn sm" data-act="assign" data-i="${a.i}" data-j="${j}" ${done ? 'disabled' : ''}>${done ? 'Assigned' : 'Assign'}</button></span></li>`; }).join('')}</ul><div class="row" style="margin-top:8px"><button class="btn pri sm" data-act="assign-all" data-i="${a.i}">Assign all tasks</button></div>`;
+  return h;
+}
+function kpiTile(k) {
+  const m = METRIC[k], d = metricDelta(k);
+  return `<div class="card kpi ${S.flash[k] ? 'flash' : ''}"><button class="stretch" style="font-size:13px;color:var(--ink2)" data-act="metric" data-id="${k}" aria-label="${m.name}: ${m.fmt(mNow(k))}. Open drivers">${m.name}</button><div class="v">${m.fmt(mNow(k))}</div><div class="delta ${d.cls}">${d.txt}</div>${spark(k)}</div>`;
+}
+V.home = () => {
+  const p = PERSONAS.find(x => x.id === S.persona), ag = AG.filter(a => a.role === p.id), top = openDec(p.id);
+  const kp = p.kpis.map(([l, v, n]) => `<div class="card stat"><div class="v">${v == null ? top.length : v}</div><div class="l"><b>${l}</b><br>${n}</div></div>`).join('');
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">${p.id === 'ch' ? 'Morning briefing, 06:00' : 'Your morning briefing'}</span><h1 class="h1">${p.name}</h1><p>${p.blurb}</p></section>
+  <div class="grid g3" style="margin:18px 0">${kp}</div>
+  <div class="grid g2" id="bulletin">
+    <section class="card pad"><h2 class="h2">What happened</h2><ol class="bul" style="margin-top:8px">${p.happened.map(x => `<li><span>${x}</span></li>`).join('')}</ol></section>
+    <section class="card pad"><div class="row" style="justify-content:space-between"><h2 class="h2">Decide today</h2><span class="muted small">${top.length} waiting</span></div><div class="stack" style="margin-top:10px">${inboxHTML(p.id, 5)}</div></section></div>
+  ${p.id === 'ch' ? `<section class="sec"><div class="sec-h"><h2 class="h2">Scorecard</h2><a href="#/score" class="small">Open the full scorecard</a></div><div class="grid g3">${METRICS.map(m => kpiTile(m.k)).join('')}</div></section>` : ''}
+  <section class="sec"><div class="sec-h"><h2 class="h2">${p.id === 'ch' ? 'Your 10 agents' : 'Your agent team (' + ag.length + ')'}</h2><span class="muted small">Select an agent for its finding, evidence and decision</span></div><div class="grid g3">${ag.map(agentCard).join('')}</div></section>
+  ${p.id === 'ch' ? `<section class="sec" id="ask"><div class="sec-h"><h2 class="h2">Ask my agents</h2><span class="muted small">Six pre-written questions</span></div><div class="card pad">${askHTML()}</div></section>` : ''}
+  <section class="sec"><div class="sec-h"><h2 class="h2">Latest from your agents</h2><a href="#/day" class="small">Run the day</a></div><div class="card pad">${feedHTML(6)}</div></section>`;
+};
+function feedItems() { return milestones().map(m => ({ t: m.t, o: m.o, x: m.x })).concat(S.feed).sort((a, b) => b.t - a.t || b.o - a.o); }
+function feedHTML(n) { const it = feedItems().slice(0, n); return it.length ? `<ul class="feed">${it.map(f => `<li><time>${clock(f.t)}</time><span>${f.x}</span></li>`).join('')}</ul>` : '<p class="muted small">Quiet so far. Play the day or inject an event.</p>'; }
+
+V.score = () => `<section class="hero" style="padding-top:6px"><span class="eyebrow">Country head</span><h1 class="h1">Scorecard</h1><p>Six numbers that matter. Select one to see what drives it and which agents are responsible.</p></section>
+  <div class="grid g3" style="margin-top:16px">${METRICS.map(m => kpiTile(m.k)).join('')}</div>
+  <section class="sec"><h2 class="h2" style="margin-bottom:12px">Zones</h2><div class="card tw"><table class="tbl"><thead><tr><th>Zone</th><th class="n">Share of GMV</th><th class="n">GMV expected today</th><th class="n">Availability</th><th>Status</th></tr></thead><tbody>${ZONES.map((z, i) => { const av = zoneAv[i], st = i === 2 || i === 4 ? 'Needs attention' : 'On track'; return `<tr><td><b>${z}</b></td><td class="n">${Math.round(ZONE_SHARE[i] * 100)}%</td><td class="n">${zoneGmv(i)}</td><td class="n">${av}%</td><td><span class="tag ${st === 'On track' ? 'good' : 'warn'}">${st}</span></td></tr>`; }).join('')}</tbody></table></div></section>
+  <section class="sec"><h2 class="h2" style="margin-bottom:12px">Recent movements from decisions and events</h2><div class="card pad">${S.adjLog.length ? `<ul class="feed">${S.adjLog.slice(0, 8).map(x => `<li><time>${x.t}</time><span><b>${METRIC[x.k].name}</b> ${x.v > 0 ? 'up' : 'down'} ${METRIC[x.k].d(x.v)} from ${x.who}</span></li>`).join('')}</ul>` : '<p class="muted small">Nothing yet. Approve a decision or inject an event and watch the numbers move.</p>'}</div></section>`;
+function treeHTML(n, open) {
+  const ag = n.a ? n.a.map(chipAgent).join(' ') : '';
+  if (n.c) return `<li><details ${open ? 'open' : ''}><summary><span>${n.l}</span>${ag}<span class="val">${n.v}</span></summary><ul>${n.c.map(c => treeHTML(c)).join('')}</ul></details></li>`;
+  return `<li><div class="leaf"><span>${n.l}</span>${ag}<span class="val">${n.v}</span></div></li>`;
+}
+function metricHTML(k) {
+  const m = METRIC[k], d = metricDelta(k), mv = S.adjLog.filter(x => x.k === k).slice(0, 4);
+  return `<span class="eyebrow">Driver tree</span><h2 class="h2" style="margin:4px 0">${m.name}</h2><div class="row"><span style="font-size:30px;font-weight:700">${m.fmt(mNow(k))}</span><span class="delta ${d.cls}">${d.txt}</span></div>${spark(k, true)}
+  <h3 class="h3" style="margin-top:16px">Agents that move it</h3><div class="row" style="margin-top:6px">${m.agents.map(chipAgent).join('')}</div>
+  <h3 class="h3" style="margin-top:16px">What it is made of</h3><ul class="tree" style="margin-top:8px">${treeHTML(TREES[k], true)}</ul>
+  ${mv.length ? `<h3 class="h3" style="margin-top:16px">Recent movements</h3><ul class="feed">${mv.map(x => `<li><time>${x.t}</time><span>${x.v > 0 ? 'Up' : 'Down'} ${m.d(x.v)} from ${x.who}</span></li>`).join('')}</ul>` : ''}
+  <p class="muted small" style="margin-top:14px">Illustrative data.</p>`;
+}
+function agentHTML(id) {
+  const a = AGM[id], st = S.stats[id], ds = S.dec.filter(d => d.agent === id || d.sa === id).filter(d => d.status === 'open');
+  let act;
+  if (id === 'chief') {
+    const hap = PERSONAS[0].happened, top = openDec('ch').slice(0, 5);
+    act = `<h3 class="h3">Today's bulletin</h3><p class="small muted">Top 5 things that happened</p><ol class="bul">${hap.map(x => `<li><span>${x}</span></li>`).join('')}</ol><p class="small muted" style="margin-top:12px">Top 5 decisions for today</p><div class="stack" style="margin-top:6px">${top.map(d => `<div class="dcard"><strong>${d.title}</strong><div class="ask">${d.ask}</div><div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`).join('') || '<p class="muted">No decisions waiting.</p>'}</div>
+    <div class="row" style="margin-top:12px">${a.status === 'Found something' ? '<button class="btn" data-act="read-bulletin">Mark bulletin as read</button>' : '<span class="tag good">Bulletin read</span>'}</div>`;
+  } else if (ds.length) act = `<h3 class="h3">Decision needed</h3><div class="stack" style="margin-top:8px">${ds.map(d => decisionCard(d)).join('')}</div>`;
+  else if (a.status === 'Found something') act = `<h3 class="h3">Next step</h3><div class="dcard"><div class="ask">${a.ask}</div><p class="why">This is a finding, not yet a decision. Ask the agent to turn it into a proposal.</p><div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="to-decision" data-id="${id}">Turn into a decision</button></div></div>`;
+  else act = `<h3 class="h3">Nothing needs you</h3><p class="muted small">${a.last ? a.last + '. ' : ''}The agent is watching.</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="recheck" data-id="${id}">Ask for a fresh check</button></div>`;
+  return `<span class="eyebrow">${PNAME[a.role]}'s agent, stage: ${STAGES[a.stage]}</span><h2 class="h2" style="margin:4px 0 8px">${a.name}</h2>${pill(a.status)}
+  <p class="muted" style="margin-top:10px">${a.job}</p><hr>
+  <h3 class="h3">Latest finding</h3><p style="margin-top:4px">${a.finding}</p>
+  <h3 class="h3" style="margin-top:14px">Why</h3><p class="muted" style="margin-top:4px">${a.why}</p>
+  <h3 class="h3" style="margin-top:14px">Evidence</h3><ul class="ev">${a.ev.map(x => `<li>${x}</li>`).join('')}</ul><hr>${act}<hr>
+  <h3 class="h3">Last 30 days (illustrative)</h3><div class="grid g4" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${[['Asked', st.req], ['Accepted', st.acc], ['Edited', st.edit], ['Rejected', st.rej]].map(([l, v]) => `<div class="card stat" style="padding:10px"><div class="v" style="font-size:20px">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+  <h3 class="h3" style="margin-top:16px">Recent activity</h3><ul class="feed">${a.act.slice(0, 6).map(x => `<li><time>${x.slice(0, 5)}</time><span>${esc(x.slice(5).trim())}</span></li>`).join('')}</ul>`;
+}
+V.flows = () => `<section class="hero" style="padding-top:6px"><span class="eyebrow">Workflows</span><h1 class="h1">See a workflow run, step by step</h1><p>Six full workflows you can play, with a progress bar and an audit log. Four previews show the shape of the rest. Where a person must decide, the run stops and waits for you.</p></section>
+  <div class="grid g3" style="margin-top:20px">${Object.values(WF).map(w => { const st = S.wf[w.id], pr = st ? Math.round((st.done ? w.steps.length : st.i + (st.waiting ? 0.5 : 0)) / w.steps.length * 100) : 0;
+    return `<article class="card agent"><div class="row" style="justify-content:space-between"><span class="tag ${w.full ? 'acc' : ''}">${w.full ? 'Playable' : 'Preview'}</span><span class="small faint">${w.steps.length} steps</span></div><a class="stretch" href="#/flow/${w.id}" style="color:var(--ink)">${w.name}</a><div class="job">Starts when: ${w.trig}</div><div class="track" style="margin-top:6px"><i style="width:${pr}%"></i></div><div class="meta"><span>${w.who.slice(0, 2).join(', ')}${w.who.length > 2 ? ' +' + (w.who.length - 2) : ''}</span><span>${st ? (st.done ? (st.closed ? 'Closed' : 'Complete') : 'In progress') : 'Not started'}</span></div></article>`; }).join('')}</div>`;
+V.flow = id => {
+  const w = WF[id]; if (!w) return V.flows();
+  const st = wfState(id), n = w.steps.length, pr = Math.round((st.done ? n : Math.max(0, st.i + (st.waiting ? 0.5 : 0) + (st.i >= 0 ? 0.5 : 0))) / n * 100);
+  const cur = st.i >= 0 ? w.steps[st.i] : null, waitD = st.waiting && S.dec.find(d => d.id === st.waiting);
+  const steps = w.steps.map((s, i) => { const c = i < st.i || (i === st.i && !st.waiting) ? 'done' : i === st.i ? 'wait' : i === st.i + 1 ? 'cur' : 'todo'; return `<li class="${c}"><span class="dot">${c === 'done' ? '&#10003;' : i + 1}</span><span><b>${s.t}</b><br><span class="small faint">${s.a === 'person' ? 'Person' : s.a === 'agent' ? 'Agent' : 'System'}: ${s.w}</span></span></li>`; }).join('');
+  let detail = '';
+  if (cur) {
+    detail = `<div class="card pad"><div class="row" style="justify-content:space-between"><span class="tag ${cur.a === 'agent' ? 'acc' : ''}">${cur.a === 'person' ? 'Person' : cur.a === 'agent' ? 'Agent' : 'System'}: ${cur.w}</span><span class="small faint">Step ${st.i + 1} of ${n}</span></div><h2 class="h2" style="margin-top:8px">${cur.t}</h2><p class="muted" style="margin-top:6px">${tok(cur.d, st)}</p>
+    ${cur.ev ? `<ul class="ev">${cur.ev.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+    ${cur.tb ? `<div class="tw" style="margin-top:10px"><table class="tbl"><thead><tr>${cur.tb.head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${cur.tb.rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : ''}
+    ${waitD ? `<div style="margin-top:14px">${decisionCard(waitD)}</div>` : ''}</div>`;
+  } else detail = `<div class="card pad"><span class="eyebrow">Trigger</span><h2 class="h2" style="margin:4px 0">${w.trig}</h2><p class="muted">${w.full ? 'This workflow is fully playable.' : 'This is a shorter preview.'} Press Run to watch it, or Step to go one step at a time. People involved: ${w.who.join(', ')}.</p></div>`;
+  let out = '';
+  if (st.done) out = st.closed ? `<div class="card pad" style="margin-top:16px"><h3 class="h3">Closed without action</h3><p class="muted small">You rejected the revised proposal. The reason is in the decision log.</p></div>` :
+    `<div class="card pad" style="margin-top:16px"><div class="row" style="justify-content:space-between"><h3 class="h3">Before and after</h3><span class="tag warn">Illustrative, to be replaced by measured baselines</span></div><div class="stack" style="margin-top:10px">${w.outcome.map(o => { const mx = Math.max(o.b, o.a) || 1; return `<div><div class="small"><b>${o.l}</b> (${o.u})</div><div class="cmp"><span class="small faint">By hand</span><div class="track"><i class="bf" style="width:${o.b / mx * 100}%;background:var(--ink3)"></i></div><b>${o.b}</b></div><div class="cmp"><span class="small faint">With agents</span><div class="track good"><i style="width:${o.a / mx * 100}%"></i></div><b>${o.a}</b></div></div>`; }).join('')}</div></div>`;
+  return `<p class="small"><a href="#/flows">&larr; All workflows</a></p>
+  <div class="sec-h" style="margin-top:8px"><div><span class="eyebrow">${w.full ? 'Playable workflow' : 'Preview'}</span><h1 class="h1" style="font-size:30px">${w.name}</h1></div>
+  <div class="row"><button class="btn pri" data-act="wf-run" data-id="${id}" ${st.done || st.waiting ? 'disabled' : ''}>${st.auto ? 'Running...' : st.i >= 0 ? 'Continue' : 'Run workflow'}</button><button class="btn" data-act="wf-step" data-id="${id}" ${st.done || st.waiting ? 'disabled' : ''}>Step</button><button class="btn" data-act="wf-pause" data-id="${id}" ${st.auto ? '' : 'disabled'}>Pause</button><button class="btn" data-act="wf-reset" data-id="${id}">Reset</button></div></div>
+  <div class="card pad" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><span class="small"><b>Progress</b></span><span class="small muted">${st.done ? (st.closed ? 'Closed' : 'Complete') : st.waiting ? 'Waiting for a person' : pr + '%'}</span></div><div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pr}" aria-label="Workflow progress" style="margin-top:6px"><i style="width:${pr}%"></i></div></div>
+  <div class="wfgrid"><div class="card pad"><h3 class="h3" style="margin-bottom:8px">Steps</h3><ol class="steps">${steps}</ol></div>
+  <div>${detail}<div class="card pad" style="margin-top:16px"><h3 class="h3">Audit log</h3>${st.log.length ? `<ul class="log" style="margin-top:6px">${st.log.slice().reverse().map(l => `<li><time>${l.t}</time><span><span class="who">${l.w}</span> ${esc(l.x)}</span></li>`).join('')}</ul>` : '<p class="muted small" style="margin-top:6px">Nothing yet. Every step and decision will be listed here.</p>'}</div>${out}</div></div>`;
+};
+V.day = () => {
+  const s = S.sim;
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Simulation</span><h1 class="h1">A day in the life, 06:00 to 20:00</h1><p>Press play. Events happen, agents react, decisions land in people's inboxes and the numbers move. Switch the world to replay the same day done by hand.</p></section>
+  <div class="card pad" style="margin-top:16px">
+   <div class="row" style="justify-content:space-between;align-items:flex-end">
+    <div class="row"><button class="btn pri" id="d-play" data-act="play">Play</button><button class="btn" data-act="hour">+1 hour</button><button class="btn" data-act="restart">Restart day</button>
+     <span class="row" role="group" aria-label="Speed">${[1, 2, 4, 8].map(x => `<button class="btn sm" data-act="speed" data-id="${x}" aria-pressed="${s.speed === x}">${x}x</button>`).join('')}</span></div>
+    <div role="group" aria-label="Which world to replay"><span class="small muted">World </span><span class="switch"><button data-act="world" data-id="manual" aria-pressed="${s.world === 'manual'}">Manual world</button><button data-act="world" data-id="ai" aria-pressed="${s.world === 'ai'}">AI-native world</button></span></div></div>
+   <div style="margin-top:16px"><div class="row" style="justify-content:space-between"><b style="font-size:22px;font-variant-numeric:tabular-nums" id="d-clock">06:00</b><span class="small muted" id="d-state"></span></div>
+   <div class="dtrack" style="margin-top:8px"><i class="p" id="d-prog" style="width:0"></i>${DAY.map(e => `<b style="left:${e.t / 840 * 100}%" title="${clock(e.t)} ${e.title}"></b>`).join('')}</div>
+   <div class="ticks">${[6, 8, 10, 12, 14, 16, 18, 20].map(h => `<span>${String(h).padStart(2, '0')}:00</span>`).join('')}</div></div></div>
+  <div class="grid g2" style="margin-top:16px;align-items:start">
+   <section class="card pad"><h2 class="h2">What is happening</h2><div id="d-feed" style="margin-top:6px"></div></section>
+   <div class="stack"><section class="card pad" id="d-world"></section><section class="card pad"><h2 class="h2" style="margin-bottom:10px">Scorecard now</h2><div id="d-score" class="grid" style="grid-template-columns:repeat(2,1fr);gap:8px"></div></section></div></div>
+  <section class="sec" id="d-scen"><div class="sec-h"><h2 class="h2">Inject an event</h2><span class="muted small">Each one sets off a chain across several agents and roles</span></div><div class="grid g4">${SCEN.map(c => `<button class="btn sc-btn" data-act="inject" data-id="${c.id}"><b>${c.name}</b><span>${c.sub}</span></button>`).join('')}</div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">Time to notice and time to decide</h2><span class="muted small">Warning color: waiting to be noticed. Blue: waiting for a decision. Green: decided. Line: now</span></div><div class="card pad" id="d-lanes"></div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">Inbox: ${PNAME[S.persona]}</h2><span class="muted small">Switch role at the top to see someone else's inbox</span></div><div id="d-inbox" class="stack"></div></section>`;
+};
+function updateDay() {
+  const s = S.sim, w = s.world; if (!$('#d-clock')) return;
+  $('#d-clock').textContent = clock(s.t); $('#d-prog').style.width = (s.t / 840 * 100) + '%';
+  $('#d-state').textContent = s.t >= 840 ? 'Day complete' : s.playing ? 'Playing' : 'Paused';
+  $('#d-play').textContent = s.playing ? 'Pause' : s.t >= 840 ? 'Replay' : 'Play';
+  const fh = feedHTML(14); if ($('#d-feed').dataset.sig !== fh) { $('#d-feed').innerHTML = fh; $('#d-feed').dataset.sig = fh; }
+  const a = worldStats('manual', s.t), b = worldStats('ai', s.t);
+  const row = (l, x, y) => `<tr><td>${l}</td><td class="n" ${w === 'manual' ? 'style="font-weight:700"' : ''}>${x}</td><td class="n" ${w === 'ai' ? 'style="font-weight:700"' : ''}>${y}</td></tr>`;
+  $('#d-world').innerHTML = `<div class="row" style="justify-content:space-between"><h2 class="h2">Manual world vs AI-native world</h2></div><div class="tw"><table class="tbl" style="margin-top:6px"><thead><tr><th></th><th class="n">By hand${w === 'manual' ? ' (shown)' : ''}</th><th class="n">AI-native${w === 'ai' ? ' (shown)' : ''}</th></tr></thead><tbody>${row('Routine tasks done by hand so far', a.tasks, b.tasks)}${row('Average time to notice a problem', a.notice, b.notice)}${row('Average time to decide', a.decide, b.decide)}${row('Decisions waiting now', a.wait, b.wait)}</tbody></table></div><p class="callout" style="margin-top:10px">Illustrative, to be replaced by measured baselines.</p>`;
+  $('#d-score').innerHTML = METRICS.map(m => { const d = metricDelta(m.k); return `<div class="card kpi" style="padding:10px 12px"><div class="l small">${m.name}</div><div class="v" style="font-size:19px">${m.fmt(mNow(m.k))}</div><div class="delta ${d.cls}">${d.txt}</div></div>`; }).join('');
+  $('#d-lanes').innerHTML = DAY.map(e => { const ai = w === 'ai', n = ai ? e.nA : e.nM, d = e.dec ? (ai ? e.dA : e.dM) : 0, p = x => Math.min(100, x / 840 * 100); const end = e.t + n + d;
+    return `<div class="lane"><span>${clock(e.t)} ${e.title}</span><div class="lt"><i class="a" style="left:${p(e.t)}%;width:${Math.max(0, p(e.t + n) - p(e.t))}%"></i>${e.dec ? `<i class="b" style="left:${p(e.t + n)}%;width:${Math.max(0, p(end) - p(e.t + n))}%"></i>` : ''}<span class="cur" style="left:${p(s.t)}%"></span></div></div>`; }).join('') + `<p class="small muted" style="margin-top:8px">${w === 'manual' ? 'Many problems are only noticed hours later and decided the next day or later. Bars run past 20:00.' : 'Agents notice within minutes; people spend their time deciding, not looking.'}</p>`;
+  const ib = $('#d-inbox'), ds = w === 'ai' ? openDec(S.persona) : [], sig = ds.map(d => d.id).join(',') + w;
+  if (ib.dataset.sig !== sig) { ib.dataset.sig = sig; ib.innerHTML = w === 'ai' ? (ds.length ? ds.map(d => decisionCard(d, true)).join('') : '<div class="card pad"><p class="muted">Nothing waiting for this role yet. Play the day or inject an event.</p></div>') : '<div class="card pad"><p class="muted">In the manual world nothing arrives in an inbox. Problems are found by people checking spreadsheets and chat messages, and the decision waits for a meeting.</p></div>'; }
+}
+V.agents = () => {
+  const rows = AG.filter(a => S.pflt === 'all' || a.role === S.pflt).map(a => { const st = S.stats[a.id]; return { a, name: a.name, role: PNAME[a.role], status: ['Needs you', 'Found something', 'Watching'].indexOf(a.status), req: st.req, acc: st.acc, edit: st.edit, rej: st.rej, rate: st.acc / Math.max(1, st.req) }; });
+  const k = S.sort.k; rows.sort((x, y) => (typeof x[k] === 'string' ? x[k].localeCompare(y[k]) : x[k] - y[k]) * S.sort.d);
+  const tot = rows.reduce((t, r) => (t.req += r.req, t.acc += r.acc, t.edit += r.edit, t.rej += r.rej, t), { req: 0, acc: 0, edit: 0, rej: 0 });
+  const th = (key, l, n) => `<th class="${n ? 'n' : ''}" aria-sort="${S.sort.k === key ? (S.sort.d > 0 ? 'ascending' : 'descending') : 'none'}"><button data-act="sort" data-id="${key}">${l}${S.sort.k === key ? (S.sort.d > 0 ? ' &#9650;' : ' &#9660;') : ''}</button></th>`;
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Agent portfolio</span><h1 class="h1">Every agent, who owns it, and how it is doing</h1><p>Requests, accepted, edited and rejected over the last 30 days. Illustrative data; the counts also move when you decide in this demo.</p></section>
+  <div class="grid g4" style="margin:18px 0">${[['Agents', rows.length], ['Decisions requested', tot.req], ['Accepted', Math.round(tot.acc / Math.max(1, tot.req) * 100) + '%'], ['Edited or rejected', Math.round((tot.edit + tot.rej) / Math.max(1, tot.req) * 100) + '%']].map(([l, v]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+  <div class="row" style="margin-bottom:10px"><label class="small" for="pf"><b>Owner role</b></label><select class="in" id="pf" style="width:auto" data-change="pflt"><option value="all">All roles</option>${PERSONAS.map(p => `<option value="${p.id}" ${S.pflt === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
+  <div class="card tw"><table class="tbl"><thead><tr>${th('name', 'Agent')}${th('role', 'Owner role')}${th('status', 'Status')}${th('req', 'Requested', 1)}${th('acc', 'Accepted', 1)}${th('edit', 'Edited', 1)}${th('rej', 'Rejected', 1)}${th('rate', 'Accept rate', 1)}</tr></thead><tbody>${rows.map(r => `<tr><td><button class="chip" data-act="agent" data-id="${r.a.id}">${r.name}</button></td><td>${r.role}</td><td>${pill(r.a.status)}</td><td class="n">${r.req}</td><td class="n">${r.acc}</td><td class="n">${r.edit}</td><td class="n">${r.rej}</td><td class="n">${Math.round(r.rate * 100)}%</td></tr>`).join('')}</tbody></table></div>`;
+};
+V.log = () => {
+  const wfs = [...new Set(S.log.map(l => l.wf).filter(Boolean))];
+  const rows = S.log.filter(l => (S.flt.role === 'all' || l.role === S.flt.role) && (S.flt.wf === 'all' || (S.flt.wf === 'none' ? !l.wf : l.wf === S.flt.wf))).sort((a, b) => b.ord - a.ord);
+  const wname = w => w ? (WF[w] ? WF[w].name : { task: 'Task from Ask my agents', scenario: 'Injected event', day: 'Day in the life' }[w] || w) : 'Routine';
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Decision log</span><h1 class="h1">Who decided what, when, and why</h1><p>Every approve, edit and reject is recorded with a reason. Yesterday's entries are illustrative; today's are yours.</p></section>
+  <div class="row" style="margin:18px 0"><label class="small" for="lr"><b>Role</b></label><select class="in" id="lr" style="width:auto" data-change="lrole"><option value="all">All roles</option>${PERSONAS.map(p => `<option value="${p.id}" ${S.flt.role === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
+  <label class="small" for="lw"><b>Workflow</b></label><select class="in" id="lw" style="width:auto" data-change="lwf"><option value="all">All</option><option value="none" ${S.flt.wf === 'none' ? 'selected' : ''}>Routine (no workflow)</option>${wfs.map(w => `<option value="${w}" ${S.flt.wf === w ? 'selected' : ''}>${wname(w)}</option>`).join('')}</select>
+  <span class="grow"></span><button class="btn sm" data-act="csv">Download as CSV</button></div>
+  <div class="card tw"><table class="tbl"><thead><tr><th>When</th><th>Who</th><th>Decision</th><th>Item</th><th>Workflow</th><th>Reason</th></tr></thead><tbody>${rows.map(l => `<tr><td class="faint" style="white-space:nowrap">${l.time}</td><td>${l.who}</td><td><span class="tag ${l.kind === 'rejected' ? 'crit' : l.kind === 'edited' ? 'warn' : 'good'}">${VERB[l.kind]}</span></td><td>${l.item}<div class="small faint">${l.agent}${l.change ? ' | ' + esc(l.change) : ''}</div></td><td>${wname(l.wf)}</td><td>${esc(l.reason)}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">No decisions match these filters.</td></tr>'}</tbody></table></div>`;
+};
+function baPass(r, v) { v = +v; return r.dir === 'lower' ? r.a <= v : r.a >= v; }
+V.compare = () => `<section class="hero" style="padding-top:6px"><span class="eyebrow">Before and after</span><h1 class="h1">Did it work? Each workflow has a test.</h1><p>For each workflow we agree what to measure and the pass mark in advance. Change a pass mark to see the result flip. Figures are illustrative, to be replaced by measured baselines.</p></section>
+  <div class="stack" id="ba" style="margin-top:20px">${BA.map((g, gi) => `<section class="card pad"><h2 class="h2">${g.name}</h2><div class="stack" style="margin-top:10px">${g.rows.map((r, ri_) => { const key = gi + '-' + ri_, rule = S.ba[key] != null ? S.ba[key] : r.rule, mx = Math.max(r.a, r.b) || 1, ok = baPass(r, rule);
+    return `<div class="grid" style="grid-template-columns:minmax(180px,1.2fr) 2fr minmax(210px,1fr);gap:16px;align-items:center;border-top:1px solid var(--line);padding-top:12px"><div><b>${r.m}</b><div class="small faint">${r.dir === 'lower' ? 'Lower is better' : 'Higher is better'}</div></div>
+    <div><div class="cmp"><span class="small faint">Before</span><div class="track"><i style="width:${r.b / mx * 100}%;background:var(--ink3)"></i></div><b>${r.b}${r.u}</b></div><div class="cmp"><span class="small faint">After</span><div class="track good"><i style="width:${r.a / mx * 100}%"></i></div><b>${r.a}${r.u}</b></div></div>
+    <div class="row"><label class="small" for="r${key}">Pass if ${r.dir === 'lower' ? 'at most' : 'at least'}</label><input class="in" style="width:80px" id="r${key}" type="number" step="any" value="${rule}" data-input="rule" data-g="${gi}" data-r="${ri_}"><span id="res${key}" class="${ok ? 'pass' : 'fail'}">${ok ? 'Pass' : 'Fail'}</span></div></div>`; }).join('')}</div></section>`).join('')}</div>
+  <p class="callout" style="margin-top:16px">One test is shown failing on purpose. A demo where everything passes is not believable; the failing tests are the ones to improve first.</p>`;
+
+/* ---------- presenter ---------- */
+const PSTEPS = [
+  { t: '1. Landing: the north star', time: '0:00 to 0:45', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
+  { t: '2. Country head: morning bulletin', time: '0:45 to 1:45', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
+  { t: '3. Play one scenario', time: '1:45 to 3:00', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
+  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Approve the Availability Control Tower proposal: expedite the top-up and move stock. A reason is required, and it goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open this decision', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
+  { t: '5. Before and after', time: '3:45 to 4:30', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
+  { t: '6. Close on the north star', time: '4:30 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
+];
+function presHTML() {
+  const i = S.pres.i, p = PSTEPS[i];
+  return `<div class="card pcard" role="region" aria-label="Presenter panel"><div class="row" style="justify-content:space-between"><span class="eyebrow">Presenter mode</span><span class="small faint">${p.time}</span></div>
+  <h2 class="h3" style="margin-top:4px">${p.t}</h2><div class="dots" aria-hidden="true">${PSTEPS.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>
+  <p class="small muted">${p.say}</p>
+  <div class="row" style="margin-top:10px"><button class="btn sm" data-act="pres-back" ${i === 0 ? 'disabled' : ''}>Back</button><button class="btn pri sm" data-act="pres-next">${i === PSTEPS.length - 1 ? 'Finish' : 'Next'}</button>${p.action ? `<button class="btn sm" data-act="pres-action">${p.action[0]}</button>` : ''}<span class="grow"></span><button class="btn sm" data-act="pres-off" aria-label="Close presenter">Close</button></div></div>`;
+}
+function presRender() { const el = $('#presenter'); el.hidden = !S.pres.on; $('#btn-pres').setAttribute('aria-pressed', S.pres.on); if (S.pres.on) el.innerHTML = presHTML(); }
+function presGo() { const p = PSTEPS[S.pres.i]; p.go(); presRender(); setTimeout(() => { const t = $(p.spot); if (t) { t.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); t.classList.add('spot'); setTimeout(() => t.classList.remove('spot'), 5200); } }, 350); }
+
+/* ---------- shell: routing, render, events ---------- */
+const NAV = [['landing', 'North star'], ['home', 'Home'], ['score', 'Scorecard'], ['flows', 'Workflows'], ['day', 'Day in the life'], ['agents', 'Agent portfolio'], ['log', 'Decision log'], ['compare', 'Before and after']];
+function nav(r, arg) { const h = '#/' + r + (arg ? '/' + arg : ''); if (location.hash === h) route(); else location.hash = h; }
+function route() { const m = location.hash.replace(/^#\/?/, '').split('/'); S.route = V[m[0]] ? m[0] : 'landing'; S.arg = m[1] || null; window.scrollTo(0, 0); render(); document.title = 'AI Native Retail Demo'; }
+function updateTop() {
+  $('#role').value = S.persona; const n = openDec(S.persona).length; const w = $('#waiting'); if (w) w.textContent = `${n} decision${n === 1 ? '' : 's'} waiting for you`;
+}
+function render() {
+  const f = document.activeElement, key = f && f.dataset && f.dataset.act ? f : null;
+  const sy = window.scrollY;
+  $('#nav').innerHTML = NAV.map(([r, l]) => `<a href="#/${r}" ${(S.route === r || (r === 'flows' && S.route === 'flow')) ? 'aria-current="page"' : ''}>${l}</a>`).join('');
+  $('#view').innerHTML = (V[S.route] || V.landing)(S.arg) + `<footer>All data in this demo is illustrative and synthetic. Placeholders such as ${CTRY}, ${C}, zones and suppliers are set at the top of the file. <button class="btn sm" data-act="reset-demo">Reset demo</button></footer>`;
+  S.flash = {}; updateTop(); LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); presRender();
+  if (S.route === 'day') { ['#d-feed', '#d-inbox'].forEach(s => { const e = $(s); e && delete e.dataset.sig; }); updateDay(); }
+  window.scrollTo(0, sy);
+  if (key && !LAY.length) { let sel = `[data-act="${key.dataset.act}"]`; if (key.dataset.id != null) sel += `[data-id="${key.dataset.id}"]`; if (key.dataset.k != null) sel += `[data-k="${key.dataset.k}"]`; const el = $(sel); if (el && !el.disabled) el.focus({ preventScroll: true }); }
+}
+const ACT = {
+  'close-layer': () => closeLayer(),
+  stage: el => { S.stage = S.stage === +el.dataset.id ? null : +el.dataset.id; render(); },
+  agent: el => { const id = el.dataset.id; openLayer('drawer', AGM[id].name, () => agentHTML(id)); },
+  metric: el => { const k = el.dataset.id; openLayer('drawer', METRIC[k].name + ' drivers', () => metricHTML(k)); },
+  decide: el => openDecide(el.dataset.id, el.dataset.k),
+  chip: el => { const t = $('#reason'); t.value = el.dataset.text; t.focus(); },
+  confirm: el => {
+    const reason = $('#reason').value.trim(), kind = el.dataset.k, err = $('#derr'); let chg = '';
+    if (kind === 'edit') { const c = $('#chg'); chg = c ? c.value.trim() : ($('input[name=chg]:checked') || {}).value || ''; if (!chg) { err.textContent = 'Please enter your change.'; err.hidden = false; (c || $('#reason')).focus(); return; } }
+    if (!reason) { err.textContent = 'A reason is required so the decision log is useful later.'; err.hidden = false; $('#reason').focus(); return; }
+    decide(el.dataset.id, kind, reason, chg); closeLayer(); render();
+  },
+  'persona-go': el => { S.persona = el.dataset.id; $('#role').value = S.persona; nav('home'); },
+  'pres-on': () => { S.pres.on = true; S.pres.i = 0; presGo(); },
+  'pres-off': () => { S.pres.on = false; presRender(); },
+  'pres-next': () => { if (S.pres.i >= PSTEPS.length - 1) { S.pres.on = false; presRender(); toast('Guided path finished.'); } else { S.pres.i++; presGo(); } },
+  'pres-back': () => { if (S.pres.i > 0) { S.pres.i--; presGo(); } },
+  'pres-action': () => PSTEPS[S.pres.i].action[1](),
+  'read-bulletin': () => { AGM.chief.status = 'Watching'; AGM.chief.last = 'Bulletin read ' + clock(S.sim.t); AGM.chief.act.unshift(`${clock(S.sim.t)}  Bulletin read by the Country head`); toast('Bulletin marked as read.'); render(); },
+  'to-decision': el => { const a = AGM[el.dataset.id]; addDecision({ agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, source: 'agent' }); a.act.unshift(`${clock(S.sim.t)}  Turned the finding into a proposal`); toast('Proposal created and sent to ' + PNAME[a.role] + '.'); render(); },
+  recheck: el => { const a = AGM[el.dataset.id]; a.act.unshift(`${clock(S.sim.t)}  Checked ${200 + (a.act.length * 137 + a.id.length * 53) % 1700} records, nothing new`); toast(a.name + ' checked again: nothing new.'); render(); },
+  ask: el => { const i = +el.dataset.id, q = QA[i]; clearInterval(S.askT); S.ask = { i, n: reduced ? q.trail.length + 2 : 0 }; render(); if (!reduced) { S.askT = setInterval(() => { S.ask.n++; const o = $('#ask-out'); if (o) o.innerHTML = askOut(); if (S.ask.n >= q.trail.length + 2) clearInterval(S.askT); }, 700); } },
+  assign: el => assignTask(+el.dataset.i, +el.dataset.j),
+  'assign-all': el => { QA[+el.dataset.i].tasks.forEach((_, j) => assignTask(+el.dataset.i, j, true)); toast('All tasks assigned.'); render(); },
+  'wf-run': el => wfRun(el.dataset.id), 'wf-step': el => { wfNext(el.dataset.id); render(); },
+  'wf-pause': el => { const st = wfState(el.dataset.id); st.auto = false; clearTimeout(st.tm); render(); },
+  'wf-reset': el => { wfReset(el.dataset.id); render(); },
+  play: () => { S.sim.playing ? simPause() : simPlay(); updateDay(); },
+  hour: () => { S.sim.t = Math.min(840, S.sim.t + 60); fireDay(); updateDay(); updateTop(); },
+  restart: () => { simReset(); render(); },
+  speed: el => { S.sim.speed = +el.dataset.id; render(); },
+  world: el => { if (S.sim.world === el.dataset.id) return; S.sim.world = el.dataset.id; simReset(); simPlay(); S.sim.speed = Math.max(S.sim.speed, 4); render(); toast(el.dataset.id === 'ai' ? 'Replaying the same day in the AI-native world.' : 'Replaying the same day, done by hand.'); },
+  inject: el => inject(el.dataset.id),
+  sort: el => { const k = el.dataset.id; S.sort = { k, d: S.sort.k === k ? -S.sort.d : 1 }; render(); },
+  csv: () => { const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; const t = ['When,Who,Decision,Item,Agent,Workflow,Reason,Change'].concat(S.log.map(l => [l.time, l.who, VERB[l.kind], l.item, l.agent, l.wf || '', l.reason, l.change].map(q).join(','))).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/csv' })); a.download = 'decision-log.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); },
+  'reset-demo': () => location.reload()
+};
+function assignTask(i, j, quiet) {
+  const k = i + '-' + j; if (S.assigned[k]) return; S.assigned[k] = 1; const [r, t] = QA[i].tasks[j];
+  addDecision({ role: r, agentName: 'Country head', title: 'Task from the country head: ' + t, ask: 'Accept this task?', why: `Raised from the question "${QA[i].q}" after a short review by your agents.`, ev: QA[i].trail.map(([id, x]) => AGM[id].name + ': ' + x).slice(0, 2), source: 'task' });
+  if (!quiet) { toast('Task sent to ' + PNAME[r] + '.'); render(); }
+}
+const CHG = {
+  pflt: el => { S.pflt = el.value; render(); }, lrole: el => { S.flt.role = el.value; render(); }, lwf: el => { S.flt.wf = el.value; render(); }
+};
+document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
+document.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && CHG[el.dataset.change]) CHG[el.dataset.change](el); });
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-input="rule"]'); if (!el) return;
+  const g = +el.dataset.g, r = +el.dataset.r, v = el.value, row = BA[g].rows[r]; S.ba[g + '-' + r] = v; const ok = baPass(row, v), res = $('#res' + g + '-' + r);
+  res.className = ok ? 'pass' : 'fail'; res.textContent = ok ? 'Pass' : 'Fail';
+});
+window.addEventListener('hashchange', route);
+$('#role').innerHTML = PERSONAS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+$('#role').addEventListener('change', e => { S.persona = e.target.value; if (S.route === 'landing' || S.route === 'flow') nav('home'); else render(); });
+$('#btn-pres').addEventListener('click', () => { S.pres.on ? ACT['pres-off']() : ACT['pres-on'](); });
+function setTheme(t) { document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('ainr-theme', t); } catch (e) { } $('#btn-theme').textContent = t === 'dark' ? 'Light theme' : 'Dark theme'; }
+$('#btn-theme').addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+setTheme(document.documentElement.getAttribute('data-theme'));
+$$('.cn').forEach(e => e.textContent = CTRY);
+document.addEventListener('visibilitychange', () => { if (document.hidden && S.sim.playing) simPause(); });
+route();
+</script>
+</body>
+</html>
