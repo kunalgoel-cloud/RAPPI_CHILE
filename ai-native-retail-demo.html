@@ -230,6 +230,21 @@ details.qa{border:1px solid var(--line);border-radius:10px;padding:0 14px;margin
 input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:640px){.two{grid-template-columns:1fr}}
 .imp{font-size:13px;color:var(--ink2);margin-top:8px}
+.agent.shared{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.btabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:16px 0 0}
+.btab{border:0;background:transparent;padding:10px 14px;font-weight:600;cursor:pointer;color:var(--ink2);border-bottom:3px solid transparent;font-size:14px}
+.btab[aria-selected=true]{color:var(--accent);border-color:var(--accent)}
+.chat{display:flex;flex-direction:column;gap:12px}
+.clog{max-height:calc(100vh - 390px);min-height:200px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px}
+.mu{align-self:flex-end;background:var(--accent);color:var(--on-accent);padding:9px 13px;border-radius:14px 14px 4px 14px;max-width:85%}
+.ma{align-self:flex-start;background:var(--surface2);border-radius:14px 14px 14px 4px;padding:10px 13px;max-width:94%;border-left:3px solid var(--ink3);font-size:14px}
+.ma.shared{border-left-color:var(--accent);background:var(--accent-soft)}
+.mh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;margin-bottom:4px}
+.csug{display:flex;gap:8px;flex-wrap:wrap}.csug .chip{padding:7px 12px;font-size:13px;text-align:left;border-radius:14px}
+.cform{display:flex;gap:8px}.cform .in{flex:1}
+.dots3 i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink3);margin-left:4px;animation:bl 1.2s infinite}.dots3 i:nth-child(2){animation-delay:.2s}.dots3 i:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@media(max-width:1500px){.role>span{display:none}}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -244,6 +259,7 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
       <span class="grow"></span>
       <span class="waiting-chip" id="waiting" aria-live="polite"></span>
       <label class="role"><span>Viewing as</span><select id="role" aria-label="Switch role"></select></label>
+      <button class="btn sm pri" id="btn-chat">Ask the team</button>
       <button class="btn sm" id="btn-pres" aria-pressed="false">Presenter mode</button>
       <button class="btn sm" id="btn-theme" aria-label="Switch between light and dark theme">Dark theme</button>
     </div>
@@ -311,6 +327,7 @@ const PERSONAS = [
 ];
 const PNAME = Object.fromEntries(PERSONAS.map(p => [p.id, p.name]));
 const PWHO = Object.fromEntries(PERSONAS.map(p => [p.id, p.who]));
+PNAME.all = 'Every role'; PWHO.all = 'Program team';
 
 /* ---------- the agents (35): id, owner, name, job, status, stage, finding, why, evidence, decision asked, effect on scorecard, optional edit control ---------- */
 const AG = [];
@@ -318,10 +335,14 @@ function A(id, role, name, job, status, stage, finding, why, ev, ask, effect, ed
   AG.push({ id, role, name, job, status, stage: ST(stage), finding, why, ev, ask, effect: effect || {}, edit: edit || null });
 }
 /* Country head: 10 agents */
-A('chief', 'ch', 'Chief of Staff', 'Writes your morning bulletin: the top 5 things that happened and the top 5 decisions for today.', 'Found something', 'Learn',
+A('chief', 'all', 'Chief of Staff', 'Shared by every role. Writes each person\'s morning bulletin: what happened, the decisions for today, and routes questions to the right agents.', 'Found something', 'Learn',
   'Bulletin ready: 5 things happened overnight and 5 decisions are waiting for you.',
   'It reads what the other nine agents found since 22:00, ranks it by money and customer impact, and drops anything that does not need you.',
   ['9 agents reported since 22:00', '14 findings ranked, 5 kept', 'Ranked by sales at risk and time left to act'], 'Read the bulletin and confirm the order of priorities.', {});
+A('analyst', 'all', 'Business Analyst', 'Shared by every role. Answers any why, what-if or how-much question across all areas, using the same data and method for everyone.', 'Watching', 'Learn',
+  'Ready for questions. Latest: Zone 3 sales gap explained (about 70% empty shelves, 30% rain-slowed deliveries).',
+  'It breaks a number into its drivers, tests what-ifs, and compares options. It works the same way whoever asks, and brings in functional agents when the answer needs their expertise.',
+  ['Driver trees for all six scorecard numbers', 'What-if calculators on 6 decision types', 'Uses the same illustrative data as every other agent'], 'Nothing needed.', {});
 A('pulse', 'ch', 'Market Pulse', 'Watches demand, weather, events and seasonality: what is moving in the market.', 'Found something', 'Forecast',
   `Rain from 09:30 in ${Z2} and ${Z3} usually lifts evening orders by about 12%.`,
   'It compares today with the last 10 rainy days and with this week\'s events calendar.',
@@ -471,6 +492,9 @@ A('cov', 'gro', 'Coverage Scout', 'Finds neighbourhoods and zones where we could
   'It maps orders, search demand and drive times.', ['4 areas, ~23,000 homes', 'Search demand 2x the zone average', 'Closest store is at 92% capacity'], 'Add one of them to the expansion candidate review?', { gmv: 5000 });
 
 const AGM = Object.fromEntries(AG.map(a => [a.id, a]));
+/* shared agents are the same for every role (built once by the program team); functional agents are built and owned by the function that has the expertise */
+const TEAM = { chief: 'Program team', analyst: 'Program team', pulse: 'Demand planning team', comp: 'Commercial team', voice: 'Customer team', tower: 'Supply chain team', guard: 'Commercial team', cash: 'Finance team', scout: 'Growth team', ops: 'Store operations team', risk: 'Risk and Compliance team', cattask: 'Commercial team', negprep: 'Commercial team', fit: 'Commercial team', pcheck: 'Commercial team', credit: 'Finance team', valid: 'Demand planning team', fdoc: 'Demand planning team', campf: 'Demand planning team', edrev: 'Demand planning team', unblock: 'Procurement team', pofu: 'Procurement team', hday: 'Procurement team', reply: 'Procurement team', transfer: 'Supply chain team', inbd: 'Supply chain team', acc: 'Supply chain team', coach: 'Store operations team', resp: 'Store operations team', waste: 'Store operations team', inv: 'Finance team', paytm: 'Finance team', wca: 'Finance team', camp: 'Growth team', excess: 'Growth team', cov: 'Growth team' };
+AG.forEach(a => { a.team = TEAM[a.id]; a.kind = a.role === 'all' ? 'shared' : 'functional'; });
 
 /* ---------- scorecard: six metrics, 14-day history, drivers ---------- */
 function series(base, vol, trend, n = 14) { let v = base - trend * n; const a = []; for (let i = 0; i < n; i++) { v += trend + (R() - .5) * vol; a.push(v); } a[n - 1] = base; return a; }
@@ -932,7 +956,7 @@ const VERB = { approved: 'Approved', edited: 'Edited and approved', rejected: 'R
 
 /* ---------- state ---------- */
 const S = { persona: 'ch', route: 'landing', arg: null, dec: [], log: [], feed: [], adj: {}, adjLog: [], stats: {}, flash: {}, seq: 0,
-  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', stage: null, wiVal: {}, pres: { on: false, i: 0, did3: false } };
+  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', tflt: 'all', stage: null, wiVal: {}, chat: {}, btab: {}, pres: { on: false, i: 0, did3: false } };
 AG.forEach((a, i) => {
   a.act = [`05:55  Checked ${ri(300, 1900)} records, nothing else changed`, `05:20  Compared with yesterday and the same weekday last month`];
   const req = ri(22, 80), acc = Math.round(req * (0.62 + R() * 0.18)), ed = Math.round(req * (0.1 + R() * 0.1));
@@ -987,7 +1011,16 @@ function openLayer(kind, label, render) {
   el.innerHTML = `<div class="scrim" data-act="close-layer"></div><div class="panel" role="dialog" aria-modal="true" aria-label="${esc(label)}" tabindex="-1"><button class="x" data-act="close-layer" aria-label="Close">&times;</button><div class="pbody"></div></div>`;
   $('#layers').appendChild(el);
   const L = { el, render, prev: document.activeElement, panel: $('.panel', el), body: $('.pbody', el) };
-  L.refresh = () => { L.body.innerHTML = L.render(); if (!L.panel.contains(document.activeElement)) L.panel.focus(); };
+  L.refresh = () => {
+    const a = document.activeElement, inb = a && L.body.contains(a);
+    const draft = inb && a.classList && a.classList.contains('cin') ? { v: a.value, s: a.selectionStart } : null;
+    let sel = null; if (inb && a.dataset && a.dataset.act) { sel = `[data-act="${a.dataset.act}"]`; if (a.dataset.id != null) sel += `[data-id="${a.dataset.id}"]`; if (a.dataset.k != null) sel += `[data-k="${a.dataset.k}"]`; }
+    L.body.innerHTML = L.render();
+    $$('.clog', L.body).forEach(e => { e.scrollTop = e.scrollHeight; });
+    const n = draft && $('.cin', L.body);
+    if (n) { n.value = draft.v; n.focus(); try { n.setSelectionRange(draft.s, draft.s); } catch (e) { } }
+    else { const t = sel && $(sel, L.body); if (t) t.focus({ preventScroll: true }); else if (!L.panel.contains(document.activeElement)) L.panel.focus(); }
+  };
   L.refresh(); LAY.push(L); L.panel.focus(); document.body.style.overflow = 'hidden';
   return L;
 }
@@ -1088,27 +1121,199 @@ function barSVG(c) {
 function wiOut(wi, v) { return wi.f(v).map(([l, x, t]) => `<div class="${t || ''}">${l}<b>${x}</b></div>`).join(''); }
 function briefHTML(id) {
   const d = S.dec.find(x => x.id === id); if (!d) return '<p>This decision is no longer available.</p>';
-  const an = analysisFor(d) || genAn(d), ag = d.agent || d.sa, st = ag && S.stats[ag];
+  const an = analysisFor(d) || genAn(d), ag = d.agent || d.sa, st = ag && S.stats[ag], tab = S.btab[id] || 'glance';
   const imp = Object.entries(d.effect || {}), wv = S.wiVal[d.id] != null ? S.wiVal[d.id] : (an.wi ? an.wi.value : 0);
-  const factsList = an.facts.every(f => !f[1]);
+  const rec = an.opts.find(o => o.rec) || an.opts[0], factsList = an.facts.every(f => !f[1]);
   const rate = st ? `${st.req} proposals in the last 30 days: ${Math.round(st.acc / st.req * 100)}% accepted, ${Math.round(st.edit / st.req * 100)}% edited, ${Math.round(st.rej / st.req * 100)}% rejected.` : '';
+  const acc = (t, body, open) => `<details class="qa" ${open ? 'open' : ''}><summary>${t}</summary><div style="padding-bottom:12px">${body}</div></details>`;
+  const tabs = [['glance', 'At a glance'], ['detail', 'Full detail'], ['chat', 'Ask the team']];
+  let body = '';
+  if (tab === 'glance') {
+    body = `<div class="dcard" style="margin-top:14px"><b>Decision needed:</b> ${d.ask}</div>
+    <h3 class="h3">Recommendation</h3><p>${an.sum}</p>
+    <div class="grid g3" style="margin-top:12px">
+      <div class="card stat" style="box-shadow:none"><div class="l">Confidence</div><div class="v">${an.conf.p}%</div><div class="meter" style="margin-top:6px"><i style="width:${an.conf.p}%"></i></div></div>
+      <div class="card stat" style="box-shadow:none"><div class="l">Expected effect</div><div class="small" style="margin-top:4px">${imp.length ? imp.map(([k, v]) => `<b>${METRIC[k].name}</b> ${v > 0 ? '+' : '-'}${METRIC[k].d(v)}`).join('<br>') : 'No scorecard change'}</div></div>
+      <div class="card stat" style="box-shadow:none"><div class="l">If we do nothing</div><div class="small" style="margin-top:4px">${firstS(an.noact)}</div></div></div>
+    <h3 class="h3">Options at a glance</h3><div class="tw card"><table class="tbl"><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b>${o.rec ? ' <span class="tag acc">Recommended</span>' : ''}</td><td>${o.net || o.gain}</td></tr>`).join('')}</tbody></table></div>
+    <h3 class="h3">Main risk</h3><p>${an.risks[0]}</p>
+    <div class="row" style="margin-top:14px"><button class="btn" data-act="btab" data-id="${id}" data-k="detail">See full detail</button><button class="btn" data-act="btab" data-id="${id}" data-k="chat">Ask the team a question</button></div>`;
+  } else if (tab === 'detail') {
+    body = `<div style="margin-top:12px">` +
+      acc('Key numbers' + (an.chart ? ' and chart' : ''), (factsList ? `<ul class="ev">${an.facts.map(f => `<li>${f[0]}</li>`).join('')}</ul>` : `<div class="tw card"><table class="tbl"><tbody>${an.facts.map(f => `<tr><td>${f[0]}</td><td class="n"><b>${f[1]}</b></td><td class="faint">${f[2] || ''}</td></tr>`).join('')}</tbody></table></div>`) + (an.chart ? `<p class="small muted" style="margin:12px 0 4px"><b>${an.chart.t}</b></p>${barSVG(an.chart)}` : ''), true) +
+      acc('Options compared in full', `<div class="tw card"><table class="tbl"><thead><tr><th>Option</th><th>Cost</th><th>Gain</th><th>Main risk</th><th>Net</th></tr></thead><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b></td><td>${o.cost}</td><td>${o.gain}</td><td>${o.risk}</td><td>${o.net || ''}</td></tr>`).join('')}</tbody></table></div>`) +
+      (an.wi ? acc('Try it: change the number', `<label class="f" for="wi">${an.wi.label}: <b id="wi-v">${fmtVal({ unit: an.wi.u }, wv)}</b></label><input type="range" id="wi" min="${an.wi.min}" max="${an.wi.max}" step="${an.wi.step}" value="${wv}" data-input="wi" data-id="${d.id}"><div class="wiout" id="wi-out" aria-live="polite">${wiOut(an.wi, wv)}</div><p class="small muted" style="margin-top:10px">${an.wi.note || ''} Edit starts from this value. You can also ask the team "what if" in your own words.</p>`, true) : '') +
+      acc('Expected effect range', imp.length ? `<table class="tbl"><thead><tr><th></th><th class="n">Low</th><th class="n">Expected</th><th class="n">High</th></tr></thead><tbody>${imp.map(([k, v]) => { const m = METRIC[k], sg = x => `${x > 0 ? '+' : '-'}${m.d(x)}`; return `<tr><td>${m.name}</td><td class="n">${sg(v * 0.5)}</td><td class="n"><b>${sg(v)}</b></td><td class="n">${sg(v * 1.4)}</td></tr>`; }).join('')}</tbody></table>` : 'No scorecard change expected.') +
+      acc('Assumptions and risks', `<div class="two"><div><b>We assumed</b><ul class="ev">${an.assume.map(x => `<li>${x}</li>`).join('')}</ul></div><div><b>What could go wrong</b><ul class="ev">${an.risks.map(x => `<li>${x}</li>`).join('')}</ul></div></div>`) +
+      acc('What happens next if you approve', `<ol class="bul">${an.next.map(x => `<li><span>${x}</span></li>`).join('')}</ol>`) +
+      acc('Where the numbers come from', `<ul class="ev">${an.src.map(x => `<li>${x}</li>`).join('')}${rate ? `<li>Track record of this agent: ${rate}</li>` : ''}</ul><p class="small muted">Confidence ${an.conf.p}%: ${an.conf.why}</p>`) + `</div>`;
+  } else body = `<div style="margin-top:14px">${chatHTML('d:' + id)}</div>`;
   return `<div class="brief"><span class="eyebrow">Decision brief &middot; ${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 8px">${d.title}</h2>
   <div class="row"><span class="tag acc">${d.agentName || 'Agent'}</span><span class="tag">Illustrative data</span></div>
-  <div class="ask dcard" style="margin-top:12px;border-left-color:var(--accent)"><b>Decision needed:</b> ${d.ask}</div>
-  <h3 class="h3">What the agent recommends, and the logic</h3><p>${an.sum}</p>
-  <div class="two" style="margin-top:12px"><div><div class="small muted">Confidence in the estimate</div><div class="row" style="gap:10px;flex-wrap:nowrap"><div class="meter" style="flex:1" role="img" aria-label="Confidence ${an.conf.p} percent"><i style="width:${an.conf.p}%"></i></div><b>${an.conf.p}%</b></div><div class="small muted" style="margin-top:4px">${an.conf.why}</div></div>
-  <div><div class="small muted">Expected effect on the scorecard</div>${imp.length ? `<table class="tbl" style="margin-top:4px"><thead><tr><th></th><th class="n">Low</th><th class="n">Expected</th><th class="n">High</th></tr></thead><tbody>${imp.map(([k, v]) => { const m = METRIC[k], sg = x => `${x > 0 ? '+' : '-'}${m.d(x)}`; return `<tr><td>${m.name}</td><td class="n">${sg(v * 0.5)}</td><td class="n"><b>${sg(v)}</b></td><td class="n">${sg(v * 1.4)}</td></tr>`; }).join('')}</tbody></table>` : '<p class="small" style="margin-top:4px">No scorecard change expected.</p>'}</div></div>
-  <h3 class="h3">Key numbers</h3>${factsList ? `<ul class="ev">${an.facts.map(f => `<li>${f[0]}</li>`).join('')}</ul>` : `<div class="tw card"><table class="tbl"><tbody>${an.facts.map(f => `<tr><td>${f[0]}</td><td class="n"><b>${f[1]}</b></td><td class="faint">${f[2] || ''}</td></tr>`).join('')}</tbody></table></div>`}
-  ${an.chart ? `<h3 class="h3">${an.chart.t}</h3><div class="card pad" style="box-shadow:none">${barSVG(an.chart)}</div>` : ''}
-  <h3 class="h3">Options compared</h3><div class="tw card"><table class="tbl"><thead><tr><th>Option</th><th>What it costs</th><th>What we gain</th><th>Main risk</th><th>Net result</th></tr></thead><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b>${o.rec ? '<br><span class="tag acc">Agent recommends</span>' : ''}</td><td>${o.cost}</td><td>${o.gain}</td><td>${o.risk}</td><td>${o.net || ''}</td></tr>`).join('')}</tbody></table></div>
-  ${an.wi ? `<h3 class="h3">Try it: change the number and see the result</h3><div class="card pad" style="box-shadow:none"><label class="f" for="wi">${an.wi.label}: <b id="wi-v">${fmtVal({ unit: an.wi.u }, wv)}</b></label><input type="range" id="wi" min="${an.wi.min}" max="${an.wi.max}" step="${an.wi.step}" value="${wv}" data-input="wi" data-id="${d.id}"><div class="wiout" id="wi-out" aria-live="polite">${wiOut(an.wi, wv)}</div><p class="small muted" style="margin-top:10px">${an.wi.note || ''} If you choose Edit, this value is your starting point.</p></div>` : ''}
-  <div class="two"><div><h3 class="h3">What we assumed</h3><ul class="ev">${an.assume.map(x => `<li>${x}</li>`).join('')}</ul></div><div><h3 class="h3">What could go wrong</h3><ul class="ev">${an.risks.map(x => `<li>${x}</li>`).join('')}</ul></div></div>
-  <h3 class="h3">If we do nothing</h3><p>${an.noact}</p>
-  <h3 class="h3">What happens next if you approve</h3><ol class="bul">${an.next.map(x => `<li><span>${x}</span></li>`).join('')}</ol>
-  <h3 class="h3">Where the numbers come from</h3><ul class="ev">${an.src.map(x => `<li>${x}</li>`).join('')}${rate ? `<li>Track record of this agent: ${rate}</li>` : ''}</ul>
-  <h3 class="h3">Questions you may want to ask the agent</h3>${an.qa.concat([['What happens if I reject this?', 'The agent logs your reason and does not act. You can ask it for a revised proposal, and the same finding stays visible in the next bulletin.']]).map(([q, a]) => `<details class="qa"><summary>${q}</summary><p>${a}</p></details>`).join('')}
+  <div class="btabs" role="tablist" aria-label="Brief sections">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" class="btab" data-act="btab" data-id="${id}" data-k="${k}">${l}</button>`).join('')}</div>${body}
   <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
 }
+/* ---------- team chat: free-text questions, any agent can join ----------
+   The demo assistant answers from the illustrative data and a prepared knowledge base (KB). No live AI. */
+const STOP = new Set('the a an and or of to in on for is are was were be it this that with what how why who when do does did we i you my our can could should would if about from at as by me us'.split(' '));
+const toks = s => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w && !STOP.has(w));
+const firstS = s => { const m = String(s).match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(s)).trim(); };
+const pv = k => METRIC[k].fmt(mNow(k));
+const DL = k => metricDelta(k).txt;
+const KB = [];
+function K(id, rx, voices, follow, lever, tasks) { KB.push({ id, rx, voices, follow: follow || [], lever, tasks: tasks || [] }); }
+const T = (role, text) => ({ role, text });
+const QAtasks = i => QA[i].tasks.map(([r, t]) => T(r, t));
+K('q0', /(zone ?3|zone three).*(gmv|sales|drop|fell|fall|down|revenue)|(gmv|sales|revenue).*(drop|fell|fall|down|decline)|why did gmv/g, QA[0].trail.map(([id, x]) => [id, () => x]), ['Why is dairy in Zone 3 out of stock?', 'Which supplier is most responsible?', 'Assign the fixes'], QA[0].ans, QAtasks(0));
+K('q1', /competit|rival|their price|price war/g, QA[1].trail.map(([id, x]) => [id, () => x]), ['What if we match all 38 items?', 'Does this hurt margin?', 'Assign the response'], QA[1].ans, QAtasks(1));
+K('q2', /margin|profit|leak|losing|lose money|lost money/g, QA[2].trail.map(([id, x]) => [id, () => x]), ['What is driving margin?', 'What is the price rise from Supplier D going to cost?', 'Assign the fixes'], QA[2].ans, QAtasks(2));
+K('q3', /expan|new store|new zone|where should we (open|grow)|growth area|candidate/g, QA[3].trail.map(([id, x]) => [id, () => x]), ['Is the nearest store at capacity?', 'What would a new store need?', 'Assign the review'], QA[3].ans, QAtasks(3));
+K('q4', /(customers?).*(leav|churn|lost|drop)|why .*leav|churn|retention|complain|repeat rate|review/g, QA[4].trail.map(([id, x]) => [id, () => x]), ['Which customers should get a voucher?', 'What is driving the repeat rate?', 'Assign the fixes'], QA[4].ans, QAtasks(4));
+K('q5', /too much stock|excess|overstock|inventory|working capital|cash tied|expir|waste|payment days/g, QA[5].trail.map(([id, x]) => [id, () => x]), ['What are the 9 excess items?', 'Can we move Supplier K to day 45?', 'Assign the actions'], QA[5].ans, QAtasks(5));
+K('z3cause', /(why|cause|reason).*(zone ?3|dairy)|(zone ?3|dairy).*(cause|reason|why)/g, [
+  ['tower', () => `Of the lost shelf hours in ${Z3} dairy: 55% supplier, 20% forecast, 15% transfers, 10% store. Availability is 86% against a usual 95%.`],
+  ['reply', () => `${SG}'s truck was due 06:00 and is now expected 09:00. They have been on time 74% this month, target 90%.`],
+  ['pulse', () => 'Rain from 09:30 adds about 12% demand, which makes the gap bigger this evening.']], ['What fixes are available?', 'What if we do nothing?', 'Assign the fixes'], 'Fix the supplier delay first: it explains more than half of the gap.', [T('wh', `Move 480 dairy units from ${Z2} to ${Z3} before 07:00`), T('buy', `Get a firm delivery time from ${SG}`)]);
+K('avail', /stock.?out|availab|empty shelf|out of stock|on.?shelf|shelves/g, [
+  ['tower', () => `Availability is ${pv('avail')} today (${DL('avail')}). The weak spot is ${CAT_DAIRY} in ${Z3} at 86%. Lost shelf hours overall: 32% supplier, 28% forecast, 22% transfers, 18% store.`],
+  ['resp', () => 'In store Z3-02, 6 items are out: 2 in the back room, 3 with accepted substitutes, 1 needing tonight\'s transfer.']], ['Why is dairy in Zone 3 out of stock?', 'What does it cost us in sales?', 'Which supplier is most at risk?'], 'Fix the supplier delay and the transfer gap first: together they explain 54% of lost shelf hours.', [T('wh', `Move 480 dairy units from ${Z2} to ${Z3}`), T('store', 'Confirm fixes for the 6 items in store Z3-02')]);
+K('supplier', /supplier|truck|\blate\b|delay|purchase order|\bpo\b|inbound|dock|delivery time|on.?time/g, [
+  ['reply', () => `${SG} has not replied for 6 hours and is on time 74% of the time this month (target 90%). 3 other suppliers gave new dates.`],
+  ['pofu', () => `11 purchase orders are unconfirmed after 24 hours, 3 on key items. ${SE} has not confirmed 3 days in a row.`],
+  ['inbd', () => 'Dock 2 is double-booked at 10:00. Moving one truck to 11:00 is free.']], ['Which supplier is most at risk?', 'Draft a message to Supplier G', 'What is the cost of a late truck?'], `Get firm times from ${SG} and unconfirmed key-item suppliers today.`, [T('buy', `Call ${SG} for a firm delivery time`), T('buy', 'Escalate the 3 unconfirmed key-item orders')]);
+K('forecast', /forecast|predict|demand plan|accuracy|baseline|edit review|planner/g, [
+  ['fdoc', () => `${CAT_FRESH} forecast in ${Z1} is 28% too high for 3 days because a finished promotion is still in the baseline. Re-running without it brings the error to 6%.`],
+  ['pulse', () => 'Rain tonight in two zones should lift orders about 12%.'],
+  ['edrev', () => 'Of 19 manual edits this week, 12 improved the forecast, 5 made no difference, 2 made it worse. 5 had no reason.']], ['What if we remove the old promotion?', 'Which edits made it worse?', 'What does over-forecasting cost?'], 'Remove the old promotion from the baseline and re-run.', [T('dp', `Remove the old promotion and re-run ${CAT_FRESH} in ${Z1}`)]);
+K('price', /price|pricing|cost list|cost rise|floor|renegot|negotiat|back.?margin|supplier terms/g, [
+  ['pcheck', () => '412 prices checked since 06:00. 3 are below the floor and already sent to Margin Guardian.'],
+  ['guard', () => `${SD}'s new cost list takes 14 items from 24.0% to 19.1% margin, below the 21.0% floor. That is about ${C} 6.2k a week.`],
+  ['negprep', () => 'The brief is ready: open at +3.5% with a 60-day hold, offer 8% more yoghurt volume, and settle up to +5% if the hold is 90 days.']], ['What if we accept the list and raise 6 prices?', 'What do we offer in return?', 'What if they refuse?'], `Renegotiate with ${SD} before accepting the list.`, [T('cat', `Lead the ${SD} negotiation using the brief`)]);
+K('weather', /\brain|weather|storm|season|temperature/g, [
+  ['pulse', () => 'Heavy rain from 09:30 in two zones. On the last 10 rainy days orders rose 9% to 15%, with the peak an hour earlier.'],
+  ['ops', () => `The evening shift in ${Z5} is 2 pickers short from 18:00, and rain makes it worse.`],
+  ['camp', () => 'A rainy-day campaign on ready meals and hot food costs about ' + C + ' 4.5k and is expected to add about ' + C + ' 38k of sales.']], ['Should we raise tonight\'s forecast?', 'How many extra pickers do we need?', 'What does the campaign return?'], 'Raise the evening forecast, add pickers from 18:00 and run the rainy-day campaign.', [T('dp', 'Raise the evening forecast for two zones by 12%'), T('store', 'Add 2 pickers from 18:00'), T('gro', 'Approve the rainy-day campaign')]);
+K('picker', /picker|picking|productiv|shift|staffing|labou?r|walking|pick path|units per/g, [
+  ['coach', () => `Evening productivity is 104 units per picker per hour against a target of 125. Walking is 34% of pick time; the new path saves about 14 seconds an order.`],
+  ['ops', () => `Overall ${pv('pick')}. ${Z5} is 2 pickers short from 18:00.`]], ['What if we move 3 pickers?', 'Will shelf filling suffer?', 'How do we measure the result?'], 'Move 2 pickers to picking at 18:00 and use the new path.', [T('store', 'Accept the evening shift plan and new pick path')]);
+K('transfer', /transfer|rebalanc|move stock|replenish|warehouse|truck space/g, [
+  ['transfer', () => `Tomorrow's plan has 62 moves, 4,380 units across 4 zones; truck space is 91% used. ${Z3} gets the most, 1,150 units.`],
+  ['acc', () => `Two counts look wrong (${Z3} milk, ${Z4} eggs). The plan uses the safer figure. ${Z4} dairy shelf counts differ from the system by 3.8%.`]], ['What if we cap Zone 3 at 900 units?', 'Which 11 moves need review?', 'What does the plan cost?'], 'Release the plan: only 11 of 62 moves need a person.', [T('wh', "Review and release tomorrow's transfer plan")]);
+K('invoice', /invoice|payment timing|pay (the )?supplier|early.?payment|goods received/g, [
+  ['inv', () => `23 invoices do not match goods received, difference ${C} 18,400: 14 price, 7 quantity, 2 duplicates.`],
+  ['paytm', () => `Paying 9 invoices (${C} 142k) on the last allowed day holds cash 11 days longer, with no discount lost.`]], ['Which supplier has most differences?', 'Can we hold payment?', 'Assign the follow-up'], 'Hold payment on mismatched invoices and shift timing on the 9 invoices.', [T('fin', 'Hold payment on the 23 mismatched invoices')]);
+K('compliance', /credit.?line|document|licen[cs]e|compliance|legal|allergen|regulat|audit/g, [
+  ['credit', () => `${SK}'s credit-line pack is 9 of 11 complete. Missing: bank letter and insurance certificate. Tax certificate expires in 21 days.`],
+  ['risk', () => `${SL}'s food licence expires in 12 days and 31 items lack allergen data. ${SL} is 3.1% of sales, about ${C} 74k a day.`]], ['What is the legal exposure?', 'Who should be escalated to?', 'Assign the follow-up'], 'Request the missing documents now and escalate the licence with a 7-day deadline.', [T('fin', `Request the 2 missing documents from ${SK}`), T('cat', `Escalate ${SL}'s licence with a 7-day deadline`)]);
+K('campaign', /campaign|promo|offer|voucher|bundle|marketing|message customers/g, [
+  ['camp', () => 'The rainy-day campaign (ready meals, hot food) costs ' + C + ' 4.5k and is expected to add about ' + C + ' 38k of sales, range ' + C + ' 24k to 52k.'],
+  ['excess', () => `4 bundle offers on ${CAT_HOME} keep margin above the floor and could move about ${C} 60k in two weeks.`],
+  ['voice', () => `A ${C} 10 voucher to the 1,150 customers who met a missing item costs up to ${C} 11.5k and is expected to return about ${C} 15.9k.`]], ['Which campaign returns the most?', 'What if rain does not come?', 'Assign the campaign'], 'Run the rainy-day campaign and the bundles; both pay back above their cost.', [T('gro', 'Approve the rainy-day campaign and bundle offers')]);
+K('assort', /assortment|range|catalogue|catalog|\bsku|listing|items? (missing|slow)|new items/g, [
+  ['fit', () => '11 items sell below the cut-off in 4 zones and 6 competitor items with strong demand are missing. A swap frees 38 shelf locations.'],
+  ['scout', () => `${Z6} carries 18% fewer items than similar zones in ${CAT_FRESH} and ${CAT_CARE}. Test 40 added items for four weeks.`]], ['Which items are slow?', 'What would the swap cost?', 'Assign the range review'], 'Swap slow items for the 6 missing competitor items and test 40 items in Zone 6.', [T('cat', 'Approve swapping 11 slow items for 6 new ones')]);
+K('data', /data (quality|gap|issue)|missing (link|cost|data)|blocked|validat|unblock/g, [
+  ['valid', () => '37 items have sales gaps after stores closed early; gaps were filled from the same weekday over 4 weeks.'],
+  ['unblock', () => '27 buy lines are blocked: 19 missing supplier links (17 high-confidence matches) and 8 missing cost prices. Order cut-off is 17:00.']], ['What if the links are wrong?', 'How much is blocked?', 'Assign the cost prices'], 'Fill the 19 links from last month; the buyer chases the 8 cost prices.', [T('buy', 'Chase the 8 missing cost prices')]);
+K('metric', /scorecard|kpi|numbers|how are we doing|where are we|status|dashboard/g, [['analyst', () => METRICS.map(m => `${m.name} ${pv(m.k)} (${DL(m.k)})`).join('; ') + '.']], ['What is driving availability?', 'What is driving margin?', 'Which metric needs attention?'], '', []);
+K('drivers', /driver|breakdown|what makes up|decompos|what moved|explain.*(gmv|availab|margin|repeat|working|picker|productiv)|why (is|are|did).*(gmv|availab|margin|repeat|working capital|picker)/g, [['analyst', cx => { const k = detectMetric(cx.low), m = METRIC[k], tr = TREES[k]; return `${m.name} is ${pv(k)} (${DL(k)}). It is made of: ${tr.c.map(c => `${c.l} ${c.v}`).join('; ')}. Agents responsible: ${[...new Set(m.agents)].map(i => AGM[i].name).join(', ')}.`; }]], ['What is driving availability?', 'What is driving margin?', 'What is driving working capital?'], '', []);
+K('priorities', /priorit|what should i|what matters|brief me|catch me up|top decisions|morning|today|decision has|most impact|most important|biggest/g, [['chief', cx => { const ds = openDec(cx.persona).slice(0, 3); return ds.length ? `For the ${PWHO[cx.persona]}: ${openDec(cx.persona).length} decisions are waiting. Top: ` + ds.map((d, i) => `${i + 1}. ${d.title} (${impactLine(d).replace('Expected effect: ', '')})`).join(' ') : `Nothing is waiting for the ${PWHO[cx.persona]} right now. Agents are watching.`; }]], ['Which decision has the most impact?', 'Where are we losing margin?', 'Why did GMV drop in Zone 3 yesterday?'], '', []);
+K('assign', /assign|delegate|\btask|follow.?up|remind/g, [['chief', (cx, st) => { const t = cx.d ? ctxTasks(cx.d) : (st.tasks || []); cx.tasks = t; return t.length ? 'I can create these tasks. Select one to send it to that role\'s inbox.' : 'Ask me a question first, then I can turn the answer into tasks for the right roles.'; }]], [], '', []);
+K('draft', /draft|write|e-?mail|script|compose/g, [['reply', cx => `Draft for ${cx.d && /day|supplier|truck/i.test(cx.d.title) ? SG : SG}: "Hello, our order for ${CAT_DAIRY} was due at 06:00 and has not arrived. Please confirm a dispatch time and truck registration by 08:00 so we can plan the dock. Thank you." The Buyer reviews it before it is sent.`]], ['What do we offer in return?', 'What if they cannot deliver today?', 'Assign the call'], '', []);
+K('simple', /\bsimple|plain|eli5|in short|in a nutshell|summar(y|ise|ize) (this|it)/g, [['analyst', cx => cx.d ? `In plain words: ${firstS((analysisFor(cx.d) || genAn(cx.d)).sum)} If we do nothing: ${firstS((analysisFor(cx.d) || genAn(cx.d)).noact)}` : 'Open a decision, then ask me again and I will explain it in plain words.']], [], '', []);
+K('help', /what can you|how does this work|\bhelp\b|who are you|what do you do/g, [['chief', () => 'I coordinate. Ask in your own words about stock, suppliers, price and margin, forecasts, cash, customers, stores or growth, and I bring in the right agents. The Business Analyst joins for "why", "what if" and "how much" questions. I can also turn answers into tasks for a role.']], ['Brief me on today', 'Where are we losing margin?', 'Why did GMV drop in Zone 3 yesterday?'], '', []);
+function detectMetric(l) { return /availab|stock/.test(l) ? 'avail' : /repeat|retention|churn/.test(l) ? 'repeat' : /margin|profit/.test(l) ? 'margin' : /working|cash|inventory/.test(l) ? 'wc' : /pick|productiv/.test(l) ? 'pick' : 'gmv'; }
+const roleOfText = (t, dflt) => { const a = AG.find(x => x.role !== 'all' && t.includes(x.name)); return a ? a.role : dflt; };
+function ctxTasks(d) { const an = analysisFor(d) || genAn(d); return an.next.slice(0, 3).map(t => T(roleOfText(t, d.role), t)); }
+const IMPACT_AGENT = { avail: 'tower', margin: 'guard', wc: 'cash', repeat: 'voice', gmv: 'pulse', pick: 'ops' };
+const IMPACT_RX = { avail: /availab|stock|shelf/, margin: /margin|profit|price/, wc: /cash|working|inventory/, repeat: /customer|repeat|retention/, gmv: /gmv|sales|revenue/, pick: /pick|ops|operation|team|staff/ };
+function ctxIntents(cx, add, ctxData) {
+  const { d, an, low } = cx, lead = d.agent || d.sa || 'analyst', rec = an.opts.find(o => o.rec) || an.opts[0], fu = [];
+  const hit = rx => rx.test(low);
+  if (hit(/alternativ|options?|instead|other ways?|choices?|compare|which is best|best option/)) { add('analyst', 'Options compared: ' + an.opts.map(o => `${o.n} (${o.net || o.gain})`).join('; ') + `. Recommended: ${rec.n}.`); fu.push('What if we do nothing?', 'What could go wrong?'); }
+  if (hit(/nothing|not do|ignore|\bwait\b|if we don.?t|skip|reject/)) add(lead, 'If we do nothing: ' + an.noact);
+  if (hit(/risk|wrong|danger|downside|fail|worst/)) { add(lead, 'What could go wrong: ' + an.risks.join('; ') + '.'); fu.push('What are you assuming?'); }
+  if (hit(/assum|depend|based on|rely/)) add(lead, 'We assumed: ' + an.assume.join('; ') + '.');
+  if (hit(/confiden|\bsure\b|certain|accura|trust|reliab|track record/)) { const st = S.stats[lead]; add(lead, `Confidence ${an.conf.p}%. ${an.conf.why}` + (st ? ` This agent's last 30 days: ${st.req} proposals, ${Math.round(st.acc / st.req * 100)}% accepted, ${Math.round(st.edit / st.req * 100)}% edited, ${Math.round(st.rej / st.req * 100)}% rejected.` : '')); }
+  if (hit(/\bcost|budget|spend|invest|how much|expens|price tag/)) add('analyst', `Recommended: ${rec.n} costs ${rec.cost}. Others: ` + an.opts.filter(o => o !== rec).map(o => `${o.n}: ${o.cost}`).join('; ') + '.');
+  if (hit(/\bwho\b|owner|responsib|\bwhen\b|timeline|next step|happens? next|execute|do the work|who acts/)) { add('chief', 'If you approve: ' + an.next.map((n, i) => `${i + 1}. ${n}`).join(' ')); cx.tasks = ctxTasks(d); }
+  if (hit(/\bdata\b|source|evidence|proof|numbers come|where.*figure/)) add(lead, 'Sources: ' + an.src.join('; ') + '.');
+  if (hit(/\bwhy\b|reason|logic|rationale|justify|recommend/) && !hit(/zone ?3|gmv|margin|availab/)) add(lead, an.sum);
+  if (hit(/(affect|impact|effect|hurt|help|touch|downstream).*(margin|cash|customer|availab|team|other|scorecard|sales|gmv|picker|stock)|(margin|cash|customer|availab|sales).*(impact|effect|affect)|how does this affect/)) {
+    const ks = Object.keys(IMPACT_RX).filter(k => IMPACT_RX[k].test(low) || (d.effect || {})[k] !== undefined).slice(0, 3);
+    (ks.length ? ks : ['gmv']).forEach(k => { const v = (d.effect || {})[k], m = METRIC[k]; add(IMPACT_AGENT[k], v ? `This decision moves ${m.name} by ${v > 0 ? '+' : '-'}${m.d(v)} (range ${v > 0 ? '+' : '-'}${m.d(v * 0.5)} to ${v > 0 ? '+' : '-'}${m.d(v * 1.4)}). ${m.name} is ${pv(k)} today.` : `No direct effect on ${m.name} is expected. ${m.name} is ${pv(k)} today; indirect effects are small.`); });
+    fu.push('Who needs to act, and when?');
+  }
+  return fu;
+}
+function chatCtx(key) { return { key, d: key.startsWith('d:') ? S.dec.find(x => x.id === key.slice(2)) : null, persona: S.persona }; }
+function chatState(key) {
+  if (!S.chat[key]) { const cx = chatCtx(key); S.chat[key] = { msgs: [{ w: 'a', a: 'chief', t: cx.d ? `You are looking at "${cx.d.title}". Ask me anything about it, or beyond it. Other agents join when the question touches their area.` : 'Hello. Ask me anything about your business in your own words. I bring in whichever agents are needed, from supply and pricing to cash and customers. Answers come from this demo\'s illustrative data and a prepared knowledge base, not from live systems.' }], follow: null, asked: [], tasks: [], typing: null }; }
+  return S.chat[key];
+}
+function ctxSuggest(cx) {
+  if (!cx.d) return ['Brief me on today', 'Why did GMV drop in Zone 3 yesterday?', 'Where are we losing margin?', 'Do we have too much stock anywhere?', 'What is driving availability?'];
+  const an = analysisFor(cx.d) || genAn(cx.d), out = ['What are the alternatives?', 'What if we do nothing?', 'How does this affect margin and cash?', 'What could go wrong?', 'Who needs to act, and when?'];
+  if (an.wi) { const w = an.wi, v = Math.min(w.max, Math.max(w.min, Math.round(w.value * 1.5 / w.step) * w.step)); out.splice(2, 0, `What if ${w.label.toLowerCase()} were ${w.u === C ? num(v) : v}?`); }
+  return out;
+}
+function chatReply(cx, text, st) {
+  const low = ' ' + text.toLowerCase() + ' '; cx.low = low; cx.text = text; cx.tasks = null;
+  const d = cx.d, an = d && (analysisFor(d) || genAn(d)); cx.an = an;
+  const voices = [], follow = []; let lever = '', tasks = [];
+  const add = (a, t) => { const v = voices.find(x => x.a === a); if (v) { if (!v.t.includes(t)) v.t += ' ' + t; } else voices.push({ a, t }); };
+  const lead = d ? (d.agent || d.sa || 'analyst') : 'analyst';
+  if (d) {
+    const nums = [...low.matchAll(/(\d[\d,]*\.?\d*)\s*(k|m)?\b/g)].map(m => { let v = parseFloat(m[1].replace(/,/g, '')); if (m[2] === 'k') v *= 1000; if (m[2] === 'm') v *= 1e6; return v; }).filter(v => !isNaN(v));
+    if (an.wi && nums.length && /what if|try|set|make it|if we|instead|how about|suppose|raise|move|spend|pay|agree|use|were|was/.test(low)) {
+      const w = an.wi; let v = nums[0]; const cl = Math.min(w.max, Math.max(w.min, v)); S.wiVal[d.id] = cl;
+      add('analyst', `With ${w.label.toLowerCase()} at ${fmtVal({ unit: w.u }, cl)}${cl !== v ? ` (limited to the range ${fmtVal({ unit: w.u }, w.min)} to ${fmtVal({ unit: w.u }, w.max)})` : ''}: ` + w.f(cl).map(([l, x]) => `${l} ${x}`).join('; ') + `. ${w.note || ''} I have set the slider in the brief to this value, and Edit will start from it.`);
+      follow.push('What are the alternatives?', 'What could go wrong?');
+    }
+    an.qa.forEach(([q, a]) => { const tq = toks(q), tt = toks(text), c = tq.filter(w => tt.includes(w)).length; if (c >= 2 && c / tq.length >= 0.5) add(lead, a); });
+    an.opts.forEach(o => { const tq = toks(o.n).filter(w => !/option|items?|the|only/.test(w)), tt = toks(text), c = tq.filter(w => tt.includes(w)).length; if (c >= 2 || (c >= 1 && tq.length <= 2 && /why not|what about|tell me about/.test(low))) { const rec = an.opts.find(x => x.rec); add('analyst', `${o.n}: costs ${o.cost}; gain ${o.gain}; main risk ${o.risk}; result ${o.net || '-'}.` + (o.rec ? ' This is the recommended option.' : rec ? ` Not recommended because ${rec.n.toLowerCase()} gives a better result: ${rec.net || rec.gain}.` : '')); } });
+    follow.push(...ctxIntents(cx, add));
+  }
+  const ctxHas = d && voices.length > 0;
+  const scored = KB.filter(k => !(ctxHas && /^q\d/.test(k.id))).map(k => ({ k, n: (low.match(k.rx) || []).length })).filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, ctxHas ? 1 : 3);
+  scored.forEach((s, i) => { s.k.voices.forEach(([a, f]) => { if (!(ctxHas && voices.some(v => v.a === a))) add(a, f(cx, st)); }); follow.push(...s.k.follow); if (!lever && s.k.lever) lever = s.k.lever; if (!tasks.length && s.k.tasks.length) tasks = s.k.tasks; });
+  AG.forEach(a => { if (low.includes(a.name.toLowerCase())) add(a.id, `${a.finding} Why: ${a.why} It asks: ${a.ask}`); });
+  if (cx.tasks) tasks = cx.tasks;
+  const msgs = [];
+  if (!voices.length) {
+    msgs.push({ w: 'a', a: 'chief', t: 'I do not have a prepared analysis for that in this demo. Tell me the area (stock, suppliers, price and margin, forecasts, cash, customers, stores, growth) or pick one of the suggestions, and I will bring in the right agents.' });
+    return { msgs, follow: ctxSuggest(cx), tasks: [] };
+  }
+  const vs = voices.slice(0, 4);
+  if (vs.length >= 2) msgs.push({ w: 'a', a: 'chief', t: `This crosses areas, so I am bringing in ${vs.map(v => AGM[v.a].name).filter(n => n !== 'Chief of Staff').join(', ')}.` });
+  vs.forEach(v => { if (!(vs.length >= 2 && v.a === 'chief' && false)) msgs.push({ w: 'a', a: v.a, t: v.t }); });
+  if (vs.length >= 2 && !vs.some(v => v.a === 'analyst') && (lever || an)) msgs.push({ w: 'a', a: 'analyst', t: 'Putting it together: ' + (lever || (an.opts.find(o => o.rec) ? `${an.opts.find(o => o.rec).n} remains the recommended route. Open question: ${an.risks[0]}` : an.sum)) });
+  if (tasks.length) { msgs[msgs.length - 1].acts = tasks.map(t => ({ role: t.role, text: t.text, done: false })); if (!/tasks/.test(msgs[msgs.length - 1].t)) msgs[msgs.length - 1].t += ' <span class="small faint">I can turn this into tasks below.</span>'; }
+  const asked = st.asked;
+  const fl = [...new Set(follow)].filter(q => !asked.includes(q.toLowerCase()));
+  return { msgs, follow: (fl.length ? fl : ctxSuggest(cx)).slice(0, 4), tasks };
+}
+function chatSend(key, text) {
+  text = String(text || '').trim(); if (!text) return;
+  const st = chatState(key), cx = chatCtx(key); st.msgs.push({ w: 'u', t: text }); st.asked.push(text.toLowerCase()); st.follow = [];
+  const r = chatReply(cx, text, st), names = [...new Set(r.msgs.map(m => AGM[m.a].name))];
+  st.typing = names.join(', ') + ' working on it'; renderChat(key);
+  r.msgs.forEach((m, i) => setTimeout(() => { st.msgs.push(m); if (i === r.msgs.length - 1) { st.typing = null; st.follow = r.follow; st.tasks = r.tasks; } renderChat(key); }, reduced ? 0 : 750 * (i + 1)));
+}
+function msgHTML(m, i, key) {
+  if (m.w === 'u') return `<div class="mu">${esc(m.t)}</div>`;
+  const a = AGM[m.a], tag = a.kind === 'shared' ? 'Shared agent' : 'Functional agent &middot; ' + a.team;
+  return `<div class="ma ${a.kind}"><div class="mh"><b>${a.name}</b><span class="tag ${a.kind === 'shared' ? 'acc' : ''}">${tag}</span></div><div>${m.t}</div>${m.acts ? `<div class="row" style="margin-top:8px">${m.acts.map((x, j) => `<button class="btn sm" data-act="chat-act" data-ctx="${key}" data-i="${i}" data-j="${j}" ${x.done ? 'disabled' : ''}>${x.done ? 'Assigned to ' + PNAME[x.role] : 'Assign to ' + PNAME[x.role] + ': ' + x.text}</button>`).join('')}</div>` : ''}</div>`;
+}
+function chatLog(key) { const st = chatState(key); return st.msgs.map((m, i) => msgHTML(m, i, key)).join('') + (st.typing ? `<div class="ma typing"><span class="small muted">${st.typing}</span><span class="dots3" aria-hidden="true"><i></i><i></i><i></i></span></div>` : ''); }
+function chatSug(key) { const st = chatState(key), cx = chatCtx(key), list = st.follow === null ? ctxSuggest(cx) : st.follow; return list.map(q => `<button class="chip" data-act="chat-q" data-ctx="${key}" data-q="${esc(q)}">${esc(q)}</button>`).join(''); }
+function chatHTML(key) {
+  return `<div class="chat" data-chat="${key}"><div class="clog" role="log" aria-live="polite" aria-label="Conversation with the team">${chatLog(key)}</div><div class="csug" aria-label="Suggested questions">${chatSug(key)}</div>
+  <form class="cform" data-chatform="${key}"><input class="in cin" type="text" autocomplete="off" aria-label="Ask the team a question" placeholder="Ask anything, in your own words"><button class="btn pri" type="submit">Send</button></form></div>`;
+}
+function renderChat(key) { $$('.chat[data-chat="' + key + '"]').forEach(c => { const l = $('.clog', c); l.innerHTML = chatLog(key); l.scrollTop = l.scrollHeight; $('.csug', c).innerHTML = chatSug(key); }); }
+function chatPanelHTML(key) { return `<span class="eyebrow">Ask the team</span><h2 class="h2" style="margin:4px 0 6px">One conversation, every agent</h2><p class="small muted">Type a question or pick a suggestion. The Chief of Staff routes it to the functional agents who know the area, and the Business Analyst joins for the numbers. <span class="tag warn">Demo assistant: prepared answers on illustrative data</span></p><div style="margin-top:14px">${chatHTML(key)}</div>`; }
+function openChat(seed) { const L = openLayer('drawer', 'Ask the team', () => chatPanelHTML('g')); renderChat('g'); if (seed) chatSend('g', seed); else setTimeout(() => { const i = $('.cin', L.el); i && i.focus(); }, 30); }
 
 /* ---------- workflow engine ---------- */
 const wfState = id => S.wf[id] || (S.wf[id] = { i: -1, log: [], clk: 540, done: false, closed: false, auto: false, waiting: null, vars: {}, round: 0, tm: null });
@@ -1200,9 +1405,10 @@ function inject(id) {
 
 /* ---------- views ---------- */
 const V = {};
+const typeTag = a => a.kind === 'shared' ? '<span class="tag acc">Shared agent</span> <span class="small faint">same for every role</span>' : `<span class="tag">Functional agent</span> <span class="small faint">built by ${a.team}</span>`;
 function agentCard(a) {
   const n = openFor(a.id).length;
-  return `<article class="card agent"><div class="row" style="justify-content:space-between;align-items:flex-start"><button class="stretch" data-act="agent" data-id="${a.id}">${a.name}</button>${pill(a.status)}</div>
+  return `<article class="card agent ${a.kind}"><div class="row" style="justify-content:space-between;align-items:flex-start"><button class="stretch" data-act="agent" data-id="${a.id}">${a.name}</button>${pill(a.status)}</div><div>${typeTag(a)}</div>
   <div class="job">${a.job}</div><p class="find">${a.finding}</p>
   <div class="meta"><span>${a.last || STAGES[a.stage]}</span><span>${n ? n + ' decision' + (n > 1 ? 's' : '') + ' waiting' : 'Open details'}</span></div></article>`;
 }
@@ -1218,10 +1424,11 @@ V.landing = () => {
   <p>This is a walk-through of a day in an AI native retail operation. Agents do the checking and chasing. People decide the exceptions. Every workflow is measured.</p></section>
   <p class="tagline">Agents do the routine. People decide what matters.</p>
   <div class="grid g4" style="margin:18px 0 24px">
-    <div class="card stat"><div class="v">${AG.length}</div><div class="l">agents across 8 roles</div></div>
+    <div class="card stat"><div class="v">${AG.length}</div><div class="l">agents: 2 shared, ${AG.length - 2} functional</div></div>
     <div class="card stat"><div class="v">${allOpen}</div><div class="l">decisions waiting for a person</div></div>
     <div class="card stat"><div class="v">6 + 4</div><div class="l">workflows to play, plus previews</div></div>
     <div class="card stat"><div class="v">${STAGES.length}</div><div class="l">stages, contract to learning</div></div></div>
+  <div class="grid g2" style="margin-bottom:24px"><div class="card pad" style="background:var(--accent-soft)"><span class="tag acc">Shared agents: ${AG.filter(a => a.kind === 'shared').length}</span><h3 class="h3" style="margin-top:8px">Chief of Staff and Business Analyst</h3><p class="muted small" style="margin-top:4px">The same for every role. Built once, they brief you each morning, answer any why or what-if question, and route work to the right functional agent.</p></div><div class="card pad"><span class="tag">Functional agents: ${AG.filter(a => a.kind === 'functional').length}</span><h3 class="h3" style="margin-top:8px">Built by the function that has the expertise</h3><p class="muted small" style="margin-top:4px">Commercial, Supply chain, Procurement, Demand planning, Finance, Growth, Store operations and more. Each team owns the scope, rules and checks of its agents.</p></div></div>
   <div class="sec-h"><h2 class="h2">The north star</h2><span class="muted small">Select a stage to see who works there</span></div>
   <div class="flowwrap" tabindex="0" aria-label="Supplier to shelf chain, scroll sideways on small screens"><div class="flow">${STAGES.map((s, i) => {
     const n = AG.filter(a => a.stage === i).length, w = S.dec.filter(d => d.status === 'open' && d.stage === i).length;
@@ -1264,8 +1471,9 @@ V.home = () => {
     <section class="card pad"><h2 class="h2">What happened</h2><ol class="bul" style="margin-top:8px">${p.happened.map(x => `<li><span>${x}</span></li>`).join('')}</ol></section>
     <section class="card pad"><div class="row" style="justify-content:space-between"><h2 class="h2">Decide today</h2><span class="muted small">${top.length} waiting</span></div><div class="stack" style="margin-top:10px">${inboxHTML(p.id, 5)}</div></section></div>
   ${p.id === 'ch' ? `<section class="sec"><div class="sec-h"><h2 class="h2">Scorecard</h2><a href="#/score" class="small">Open the full scorecard</a></div><div class="grid g3">${METRICS.map(m => kpiTile(m.k)).join('')}</div></section>` : ''}
-  <section class="sec"><div class="sec-h"><h2 class="h2">${p.id === 'ch' ? 'Your 10 agents' : 'Your agent team (' + ag.length + ')'}</h2><span class="muted small">Select an agent for its finding, evidence and decision</span></div><div class="grid g3">${ag.map(agentCard).join('')}</div></section>
-  ${p.id === 'ch' ? `<section class="sec" id="ask"><div class="sec-h"><h2 class="h2">Ask my agents</h2><span class="muted small">Six pre-written questions</span></div><div class="card pad">${askHTML()}</div></section>` : ''}
+  <section class="sec"><div class="sec-h"><h2 class="h2">Shared agents</h2><span class="muted small">Same for every role</span></div><p class="muted small" style="margin:-4px 0 12px">Built once by the program team. They work the same way whoever asks and tailor what they show to your role. Use them for the daily bulletin and for any "why", "what if" or "how much" question.</p><div class="grid g2">${AG.filter(a => a.kind === 'shared').map(agentCard).join('')}</div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">Functional agents (${ag.length})</h2><span class="muted small">Built and owned by the team that knows the work</span></div>${[...new Set(ag.map(a => a.team))].map(t => `<h3 class="h3" style="margin:14px 0 4px">${t}</h3><p class="small muted" style="margin:0 0 10px">The ${t} sets what these agents check, their rules and their limits.</p><div class="grid g3">${ag.filter(a => a.team === t).map(agentCard).join('')}</div>`).join('')}</section>
+  <section class="sec" id="ask"><div class="sec-h"><h2 class="h2">Ask the team</h2><span class="muted small">Any question, in your own words</span></div><div class="card pad"><p class="muted small" style="margin-bottom:10px">Type a question or start from one below. The Chief of Staff brings in the functional agents who know the area, and the Business Analyst joins for the numbers. The conversation can go anywhere, and each answer suggests what to ask next.</p><div class="row">${(p.id === 'ch' ? QA.map(q => q.q) : ['Brief me on today', 'Which decision has the most impact?', 'What is driving availability?', 'Where are we losing margin?']).map(q => `<button class="chip" data-act="chat-open" data-q="${esc(q)}">${esc(q)}</button>`).join('')}<button class="btn pri sm" data-act="chat-open">Open the chat</button></div></div></section>
   <section class="sec"><div class="sec-h"><h2 class="h2">Latest from your agents</h2><a href="#/day" class="small">Run the day</a></div><div class="card pad">${feedHTML(6)}</div></section>`;
 };
 function feedItems() { return milestones().map(m => ({ t: m.t, o: m.o, x: m.x })).concat(S.feed).sort((a, b) => b.t - a.t || b.o - a.o); }
@@ -1292,17 +1500,18 @@ function agentHTML(id) {
   const a = AGM[id], st = S.stats[id], ds = S.dec.filter(d => d.agent === id || d.sa === id).filter(d => d.status === 'open');
   let act;
   if (id === 'chief') {
-    const hap = PERSONAS[0].happened, top = openDec('ch').slice(0, 5);
-    act = `<h3 class="h3">Today's bulletin</h3><p class="small muted">Top 5 things that happened</p><ol class="bul">${hap.map(x => `<li><span>${x}</span></li>`).join('')}</ol><p class="small muted" style="margin-top:12px">Top 5 decisions for today</p><div class="stack" style="margin-top:6px">${top.map(d => `<div class="dcard"><strong>${d.title}</strong><div class="ask">${d.ask}</div><div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`).join('') || '<p class="muted">No decisions waiting.</p>'}</div>
+    const pr = PERSONAS.find(x => x.id === S.persona), hap = pr.happened, top = openDec(S.persona).slice(0, 5);
+    act = `<h3 class="h3">Today's bulletin for the ${pr.who}</h3><p class="small muted">What happened</p><ol class="bul">${hap.map(x => `<li><span>${x}</span></li>`).join('')}</ol><p class="small muted" style="margin-top:12px">Decisions for today</p><div class="stack" style="margin-top:6px">${top.map(d => `<div class="dcard"><strong>${d.title}</strong><div class="ask">${d.ask}</div><div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`).join('') || '<p class="muted">No decisions waiting.</p>'}</div>
     <div class="row" style="margin-top:12px">${a.status === 'Found something' ? '<button class="btn" data-act="read-bulletin">Mark bulletin as read</button>' : '<span class="tag good">Bulletin read</span>'}</div>`;
-  } else if (ds.length) act = `<h3 class="h3">Decision needed</h3><div class="stack" style="margin-top:8px">${ds.map(d => decisionCard(d)).join('')}</div>`;
+  } else if (id === 'analyst') act = `<h3 class="h3">Ask the Business Analyst</h3><p class="muted small">Same analyst for every role. It breaks numbers into drivers, tests what-ifs and compares options, and calls in functional agents when it needs their expertise.</p><div class="row" style="margin-top:8px"><button class="btn pri sm" data-act="chat-open" data-q="What is driving availability?">Ask a question</button></div>`;
+  else if (ds.length) act = `<h3 class="h3">Decision needed</h3><div class="stack" style="margin-top:8px">${ds.map(d => decisionCard(d)).join('')}</div>`;
   else if (a.status === 'Found something') act = `<h3 class="h3">Next step</h3><div class="dcard"><div class="ask">${a.ask}</div><p class="why">This is a finding, not yet a decision. Ask the agent to turn it into a proposal.</p><div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="to-decision" data-id="${id}">Turn into a decision</button></div></div>`;
   else act = `<h3 class="h3">Nothing needs you</h3><p class="muted small">${a.last ? a.last + '. ' : ''}The agent is watching.</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="recheck" data-id="${id}">Ask for a fresh check</button></div>`;
-  return `<span class="eyebrow">${PNAME[a.role]}'s agent, stage: ${STAGES[a.stage]}</span><h2 class="h2" style="margin:4px 0 8px">${a.name}</h2>${pill(a.status)}
+  return `<span class="eyebrow">${a.kind === 'shared' ? 'Shared agent, same for every role' : 'Functional agent, built by the ' + a.team}, stage: ${STAGES[a.stage]}</span><h2 class="h2" style="margin:4px 0 8px">${a.name}</h2>${pill(a.status)}
   <p class="muted" style="margin-top:10px">${a.job}</p><hr>
   <h3 class="h3">Latest finding</h3><p style="margin-top:4px">${a.finding}</p>
   <h3 class="h3" style="margin-top:14px">Why</h3><p class="muted" style="margin-top:4px">${a.why}</p>
-  <h3 class="h3" style="margin-top:14px">Evidence</h3><ul class="ev">${a.ev.map(x => `<li>${x}</li>`).join('')}</ul><hr>${act}<hr>
+  <h3 class="h3" style="margin-top:14px">Evidence</h3><ul class="ev">${a.ev.map(x => `<li>${x}</li>`).join('')}</ul><hr>${act}<div class="row" style="margin-top:12px"><button class="btn sm" data-act="chat-open" data-q="Tell me about ${a.name}">Discuss this with the team</button></div><hr>
   <h3 class="h3">Last 30 days (illustrative)</h3><div class="grid g4" style="grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px">${[['Asked', st.req], ['Accepted', st.acc], ['Edited', st.edit], ['Rejected', st.rej]].map(([l, v]) => `<div class="card stat" style="padding:10px"><div class="v" style="font-size:20px">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
   <h3 class="h3" style="margin-top:16px">Recent activity</h3><ul class="feed">${a.act.slice(0, 6).map(x => `<li><time>${x.slice(0, 5)}</time><span>${esc(x.slice(5).trim())}</span></li>`).join('')}</ul>`;
 }
@@ -1365,19 +1574,20 @@ function updateDay() {
   if (ib.dataset.sig !== sig) { ib.dataset.sig = sig; ib.innerHTML = w === 'ai' ? (ds.length ? ds.map(d => decisionCard(d, true)).join('') : '<div class="card pad"><p class="muted">Nothing waiting for this role yet. Play the day or inject an event.</p></div>') : '<div class="card pad"><p class="muted">In the manual world nothing arrives in an inbox. Problems are found by people checking spreadsheets and chat messages, and the decision waits for a meeting.</p></div>'; }
 }
 V.agents = () => {
-  const rows = AG.filter(a => S.pflt === 'all' || a.role === S.pflt).map(a => { const st = S.stats[a.id]; return { a, name: a.name, role: PNAME[a.role], status: ['Needs you', 'Found something', 'Watching'].indexOf(a.status), req: st.req, acc: st.acc, edit: st.edit, rej: st.rej, rate: st.acc / Math.max(1, st.req) }; });
+  const rows = AG.filter(a => (S.pflt === 'all' || a.role === S.pflt) && (S.tflt === 'all' || a.kind === S.tflt)).map(a => { const st = S.stats[a.id]; return { a, name: a.name, kind: a.kind, team: a.team, role: PNAME[a.role], status: ['Needs you', 'Found something', 'Watching'].indexOf(a.status), req: st.req, acc: st.acc, edit: st.edit, rej: st.rej, rate: st.acc / Math.max(1, st.req) }; });
   const k = S.sort.k; rows.sort((x, y) => (typeof x[k] === 'string' ? x[k].localeCompare(y[k]) : x[k] - y[k]) * S.sort.d);
   const tot = rows.reduce((t, r) => (t.req += r.req, t.acc += r.acc, t.edit += r.edit, t.rej += r.rej, t), { req: 0, acc: 0, edit: 0, rej: 0 });
   const th = (key, l, n) => `<th class="${n ? 'n' : ''}" aria-sort="${S.sort.k === key ? (S.sort.d > 0 ? 'ascending' : 'descending') : 'none'}"><button data-act="sort" data-id="${key}">${l}${S.sort.k === key ? (S.sort.d > 0 ? ' &#9650;' : ' &#9660;') : ''}</button></th>`;
-  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Agent portfolio</span><h1 class="h1">Every agent, who owns it, and how it is doing</h1><p>Requests, accepted, edited and rejected over the last 30 days. Illustrative data; the counts also move when you decide in this demo.</p></section>
-  <div class="grid g4" style="margin:18px 0">${[['Agents', rows.length], ['Decisions requested', tot.req], ['Accepted', Math.round(tot.acc / Math.max(1, tot.req) * 100) + '%'], ['Edited or rejected', Math.round((tot.edit + tot.rej) / Math.max(1, tot.req) * 100) + '%']].map(([l, v]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
-  <div class="row" style="margin-bottom:10px"><label class="small" for="pf"><b>Owner role</b></label><select class="in" id="pf" style="width:auto" data-change="pflt"><option value="all">All roles</option>${PERSONAS.map(p => `<option value="${p.id}" ${S.pflt === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
-  <div class="card tw"><table class="tbl"><thead><tr>${th('name', 'Agent')}${th('role', 'Owner role')}${th('status', 'Status')}${th('req', 'Requested', 1)}${th('acc', 'Accepted', 1)}${th('edit', 'Edited', 1)}${th('rej', 'Rejected', 1)}${th('rate', 'Accept rate', 1)}</tr></thead><tbody>${rows.map(r => `<tr><td><button class="chip" data-act="agent" data-id="${r.a.id}">${r.name}</button></td><td>${r.role}</td><td>${pill(r.a.status)}</td><td class="n">${r.req}</td><td class="n">${r.acc}</td><td class="n">${r.edit}</td><td class="n">${r.rej}</td><td class="n">${Math.round(r.rate * 100)}%</td></tr>`).join('')}</tbody></table></div>`;
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Agent portfolio</span><h1 class="h1">Every agent, who built it, and how it is doing</h1><p>Shared agents work the same for every role. Functional agents are built and owned by the team with the expertise. Counts are illustrative and also move when you decide in this demo.</p></section>
+  <div class="grid g4" style="margin:18px 0">${[['Shared agents', AG.filter(a => a.kind === 'shared').length], ['Functional agents', AG.filter(a => a.kind === 'functional').length], ['Accepted', Math.round(tot.acc / Math.max(1, tot.req) * 100) + '%'], ['Edited or rejected', Math.round((tot.edit + tot.rej) / Math.max(1, tot.req) * 100) + '%']].map(([l, v]) => `<div class="card stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>
+  <div class="row" style="margin-bottom:10px"><label class="small" for="tf"><b>Type</b></label><select class="in" id="tf" style="width:auto" data-change="tflt"><option value="all">All</option><option value="shared" ${S.tflt === 'shared' ? 'selected' : ''}>Shared agents</option><option value="functional" ${S.tflt === 'functional' ? 'selected' : ''}>Functional agents</option></select>
+  <label class="small" for="pf"><b>Used by</b></label><select class="in" id="pf" style="width:auto" data-change="pflt"><option value="all">All roles</option>${PERSONAS.map(p => `<option value="${p.id}" ${S.pflt === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
+  <div class="card tw"><table class="tbl"><thead><tr>${th('name', 'Agent')}${th('kind', 'Type')}${th('team', 'Built by')}${th('role', 'Used by')}${th('status', 'Status')}${th('req', 'Requested', 1)}${th('acc', 'Accepted', 1)}${th('edit', 'Edited', 1)}${th('rej', 'Rejected', 1)}${th('rate', 'Accept rate', 1)}</tr></thead><tbody>${rows.map(r => `<tr><td><button class="chip" data-act="agent" data-id="${r.a.id}">${r.name}</button></td><td><span class="tag ${r.kind === 'shared' ? 'acc' : ''}">${r.kind === 'shared' ? 'Shared' : 'Functional'}</span></td><td>${r.team}</td><td>${r.role}</td><td>${pill(r.a.status)}</td><td class="n">${r.req}</td><td class="n">${r.acc}</td><td class="n">${r.edit}</td><td class="n">${r.rej}</td><td class="n">${Math.round(r.rate * 100)}%</td></tr>`).join('')}</tbody></table></div>`;
 };
 V.log = () => {
   const wfs = [...new Set(S.log.map(l => l.wf).filter(Boolean))];
   const rows = S.log.filter(l => (S.flt.role === 'all' || l.role === S.flt.role) && (S.flt.wf === 'all' || (S.flt.wf === 'none' ? !l.wf : l.wf === S.flt.wf))).sort((a, b) => b.ord - a.ord);
-  const wname = w => w ? (WF[w] ? WF[w].name : { task: 'Task from Ask my agents', scenario: 'Injected event', day: 'Day in the life' }[w] || w) : 'Routine';
+  const wname = w => w ? (WF[w] ? WF[w].name : { task: 'Task from the team chat', scenario: 'Injected event', day: 'Day in the life' }[w] || w) : 'Routine';
   return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Decision log</span><h1 class="h1">Who decided what, when, and why</h1><p>Every approve, edit and reject is recorded with a reason. Yesterday's entries are illustrative; today's are yours.</p></section>
   <div class="row" style="margin:18px 0"><label class="small" for="lr"><b>Role</b></label><select class="in" id="lr" style="width:auto" data-change="lrole"><option value="all">All roles</option>${PERSONAS.map(p => `<option value="${p.id}" ${S.flt.role === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select>
   <label class="small" for="lw"><b>Workflow</b></label><select class="in" id="lw" style="width:auto" data-change="lwf"><option value="all">All</option><option value="none" ${S.flt.wf === 'none' ? 'selected' : ''}>Routine (no workflow)</option>${wfs.map(w => `<option value="${w}" ${S.flt.wf === w ? 'selected' : ''}>${wname(w)}</option>`).join('')}</select>
@@ -1397,7 +1607,7 @@ const PSTEPS = [
   { t: '1. Landing: the north star', time: '0:00 to 0:45', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
   { t: '2. Country head: morning bulletin', time: '0:45 to 1:45', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
   { t: '3. Play one scenario', time: '1:45 to 3:00', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
-  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, a what-if slider, assumptions and questions you can ask. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
+  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
     action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
   { t: '5. Before and after', time: '3:45 to 4:30', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
   { t: '6. Close on the north star', time: '4:30 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
@@ -1435,6 +1645,10 @@ const ACT = {
   agent: el => { const id = el.dataset.id; openLayer('drawer', AGM[id].name, () => agentHTML(id)); },
   metric: el => { const k = el.dataset.id; openLayer('drawer', METRIC[k].name + ' drivers', () => metricHTML(k)); },
   decide: el => openDecide(el.dataset.id, el.dataset.k),
+  btab: el => { S.btab[el.dataset.id] = el.dataset.k; LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); },
+  'chat-open': el => openChat(el.dataset.q),
+  'chat-q': el => chatSend(el.dataset.ctx, el.dataset.q),
+  'chat-act': el => { const st = chatState(el.dataset.ctx), x = st.msgs[+el.dataset.i].acts[+el.dataset.j]; if (x.done) return; x.done = true; addDecision({ role: x.role, agentName: 'Chief of Staff', title: 'Task: ' + x.text, ask: 'Accept this task?', why: 'Raised in a conversation with the team.', ev: [], source: 'task' }); toast('Task sent to ' + PNAME[x.role] + '.'); renderChat(el.dataset.ctx); updateTop(); },
   brief: el => { const id = el.dataset.id; const L = openLayer('drawer', 'Decision brief', () => briefHTML(id)); L.el.classList.add('wide'); },
   chip: el => { const t = $('#reason'); t.value = el.dataset.text; t.focus(); },
   confirm: el => {
@@ -1475,9 +1689,10 @@ function assignTask(i, j, quiet) {
   if (!quiet) { toast('Task sent to ' + PNAME[r] + '.'); render(); }
 }
 const CHG = {
-  pflt: el => { S.pflt = el.value; render(); }, lrole: el => { S.flt.role = el.value; render(); }, lwf: el => { S.flt.wf = el.value; render(); }
+  pflt: el => { S.pflt = el.value; render(); }, tflt: el => { S.tflt = el.value; render(); }, lrole: el => { S.flt.role = el.value; render(); }, lwf: el => { S.flt.wf = el.value; render(); }
 };
 document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
+document.addEventListener('submit', e => { const f = e.target.closest('form[data-chatform]'); if (!f) return; e.preventDefault(); const i = $('.cin', f); const v = i.value; i.value = ''; chatSend(f.dataset.chatform, v); });
 document.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && CHG[el.dataset.change]) CHG[el.dataset.change](el); });
 document.addEventListener('input', e => {
   const el = e.target.closest('[data-input="rule"]'); if (!el) return;
@@ -1492,6 +1707,7 @@ document.addEventListener('input', e => {
 window.addEventListener('hashchange', route);
 $('#role').innerHTML = PERSONAS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 $('#role').addEventListener('change', e => { S.persona = e.target.value; if (S.route === 'landing' || S.route === 'flow') nav('home'); else render(); });
+$('#btn-chat').addEventListener('click', () => openChat());
 $('#btn-pres').addEventListener('click', () => { S.pres.on ? ACT['pres-off']() : ACT['pres-on'](); });
 function setTheme(t) { document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('ainr-theme', t); } catch (e) { } $('#btn-theme').textContent = t === 'dark' ? 'Light theme' : 'Dark theme'; }
 $('#btn-theme').addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
