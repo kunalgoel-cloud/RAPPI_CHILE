@@ -219,6 +219,17 @@ textarea.in{min-height:84px;resize:vertical}
 .pass{background:var(--good-soft);color:var(--good)}.fail{background:var(--crit-soft);color:var(--crit)}
 .callout{padding:12px 14px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-size:13px;font-weight:550}
 footer{padding:20px 0 40px;color:var(--ink3);font-size:13px}
+.layer.drawer.wide .panel{width:min(780px,100%)}
+.brief{margin-bottom:-28px}.brief h3.h3{margin:26px 0 8px}
+.meter{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}.meter i{display:block;height:100%;background:var(--accent)}
+tr.rec td{background:var(--accent-soft)}
+.bactions{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:14px 0;margin-top:26px;display:flex;gap:10px;flex-wrap:wrap;z-index:2}
+details.qa{border:1px solid var(--line);border-radius:10px;padding:0 14px;margin-top:8px}details.qa summary{cursor:pointer;padding:11px 0;font-weight:600}details.qa p{margin:0 0 12px;color:var(--ink2)}
+.wiout{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}.wiout>div{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink2)}.wiout b{display:block;font-size:18px;color:var(--ink)}
+.wiout .good b{color:var(--good)}.wiout .crit b{color:var(--crit)}
+input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:640px){.two{grid-template-columns:1fr}}
+.imp{font-size:13px;color:var(--ink2);margin-top:8px}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -320,8 +331,8 @@ A('comp', 'ch', 'Competition Watch', 'Tracks competitor prices, promotions and r
   `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} prices by 15% for the weekend in 3 zones.`,
   'Prices dropped on 38 items we both sell. Our price gap went from +1% to +14% on those items, and these two categories are 21% of sales in those zones.',
   ['38 matching items checked at 06:10', 'Price gap +14% on 38 items (was +1%)', `${CAT_BEV} and ${CAT_DAIRY} are 21% of sales in those zones`],
-  `Approve a response budget of ${C} 85,000 to match prices on 12 hero items this weekend?`, { gmv: 24000, margin: -0.1 },
-  { type: 'number', label: 'Budget', value: 85000, unit: C });
+  `Approve a response budget of ${C} 38,000 to match prices on 12 hero items this weekend?`, { gmv: 60000, margin: -0.1 },
+  { type: 'number', label: 'Budget', value: 38000, unit: C });
 A('voice', 'ch', 'Customer Voice', 'Reads repeat orders, complaints and reviews to explain why customers leave.', 'Found something', 'Customer',
   `Missing-item complaints rose from 3.1% to 4.2% of orders in ${Z3}.`,
   'It groups complaint reasons and links them to stock-outs. The rise matches the dairy gaps yesterday evening.',
@@ -336,7 +347,7 @@ A('guard', 'ch', 'Margin Guardian', 'Finds margin leaks, price differences and s
   `${SD}'s new cost list takes 14 items below the margin floor.`,
   'Cost rises 6.5% from the day after tomorrow. At today\'s shelf prices, margin on these 14 items falls from 24.0% to 19.1%, below the 21.0% floor.',
   ['14 items affected, all in ' + CAT_DAIRY, 'Margin 24.0% to 19.1% at current prices', `Estimated leak ${C} 6,200 a week if nothing changes`],
-  `Ask the commercial lead to renegotiate with ${SD} before accepting the list?`, { margin: 0.2 });
+  `Ask the commercial lead to renegotiate with ${SD} before accepting the list?`, { margin: 0.04 });
 A('cash', 'ch', 'Cash and Working Capital', 'Compares inventory days with payment days and flags excess stock and payment timing.', 'Needs you', 'Buy',
   `Inventory is 41 days against 36 payment days, so 5 days of cash are tied up.`,
   `Excess sits in ${CAT_HOME} and ${CAT_PACK}. Two suppliers could be paid later without penalty.`,
@@ -367,7 +378,7 @@ A('negprep', 'cat', 'Supplier Negotiation Prep', 'Prepares the brief before ever
   `Brief for ${SD} is ready: ask for 3% back-margin and a 60-day price hold.`,
   'It compares our share of their sales, their price against competitors and what we accepted last year.',
   [`We are ${SD}'s #3 customer`, 'Their price is 4% above the market on 9 items', 'Last year we accepted +3% with no price hold'],
-  `Approve the negotiation brief for ${SD}?`, { margin: 0.15 });
+  `Approve the negotiation brief for ${SD}?`, { margin: 0.03 });
 A('fit', 'cat', 'Assortment Fit', 'Checks whether the range fits each zone and finds gaps against competitors.', 'Found something', 'Catalogue',
   `11 items sell below the cut-off in 4 zones and 6 competitor items are missing.`,
   'It scores every item on sales, margin and substitutes in each zone.',
@@ -381,7 +392,7 @@ A('credit', 'cat', 'Credit-Line Document Pack', 'Assembles the papers a supplier
   `${SK} pack is 9 of 11 documents complete.`,
   'It checks each document for validity and date. 2 are missing and 1 expires within 30 days.',
   ['9 of 11 documents ready', 'Missing: bank letter, insurance certificate', 'Tax certificate expires in 21 days'],
-  `Ask ${SK} for the 2 missing documents and the new tax certificate?`, { wc: -0.1 });
+  `Ask ${SK} for the 2 missing documents and the new tax certificate?`, {});
 /* Demand planner */
 A('valid', 'dp', 'Data Validator', 'Checks sales and stock data before it feeds the forecast.', 'Found something', 'Forecast',
   '37 items have sales gaps after stores closed early; gaps were filled from the last 4 weeks.',
@@ -391,7 +402,7 @@ A('fdoc', 'dp', 'Forecast Doctor', 'Detects bad forecasts and explains why.', 'N
   `${CAT_FRESH} forecast in ${Z1} has been 28% too high for 3 days.`,
   'An old promotion is still counted in the baseline, so every day looks busier than it is.',
   ['Forecast 28% above sales, 3 days running', 'Promotion ended 12 days ago but still counted', 'Waste in the category up 1.2 points'],
-  'Remove the old promotion from the baseline and re-run the forecast?', { margin: 0.1, avail: 0.1 });
+  'Remove the old promotion from the baseline and re-run the forecast?', { margin: 0.05, avail: 0.1 });
 A('campf', 'dp', 'Campaign Forecast', 'Forecasts demand for promotions and campaigns.', 'Found something', 'Forecast',
   `Weekend ${CAT_BEV} offer needs about 35% more volume than a normal weekend.`,
   'It uses the last 6 comparable offers and the competitor price gap.',
@@ -441,20 +452,20 @@ A('waste', 'store', 'Waste and Expiry Watch', 'Flags items about to expire and s
 /* Finance */
 A('inv', 'fin', 'Invoice Match', 'Matches supplier invoices to orders and goods received.', 'Found something', 'Inbound',
   `23 invoices do not match goods received. Total difference ${C} 18,400.`,
-  'It compares price, quantity and date for every line.', ['14 price differences', '7 quantity differences', '2 duplicates'], 'Hold payment on the 23 invoices until suppliers respond?', { margin: 0.1 });
+  'It compares price, quantity and date for every line.', ['14 price differences', '7 quantity differences', '2 duplicates'], 'Hold payment on the 23 invoices until suppliers respond?', { margin: 0.03 });
 A('paytm', 'fin', 'Payment Timing', 'Plans when to pay each supplier within terms.', 'Needs you', 'Supplier follow-up',
   'Paying 9 invoices on the last allowed day instead of the first would hold cash for 11 more days.',
-  'It reads each supplier\'s terms and any early-payment discount.', ['9 invoices, ' + C + ' 142k', 'No discount lost', 'Largest: ' + SK], 'Approve the new payment dates for 9 invoices?', { wc: -0.3 });
+  'It reads each supplier\'s terms and any early-payment discount.', ['9 invoices, ' + C + ' 142k', 'No discount lost', 'Largest: ' + SK], 'Approve the new payment dates for 9 invoices?', { wc: -0.08 });
 A('wca', 'fin', 'Working Capital Advisor', 'Shows where cash is tied up and what could release it.', 'Found something', 'Buy',
   `Excess stock above target is worth ${C} 310k, mostly ${CAT_HOME}.`,
-  'It compares days of stock with target for every item.', [`${CAT_HOME}: ${C} 190k`, `${CAT_PACK}: ${C} 80k`, '9 items cover 70% of the excess'], 'Share the excess list with buyers and the growth lead?', { wc: -0.2 });
+  'It compares days of stock with target for every item.', [`${CAT_HOME}: ${C} 190k`, `${CAT_PACK}: ${C} 80k`, '9 items cover 70% of the excess'], 'Share the excess list with buyers and the growth lead?', { wc: -0.05 });
 /* Growth */
 A('camp', 'gro', 'Campaign Planner', 'Plans campaigns, offers and the messages that go with them.', 'Needs you', 'Customer',
   `Rainy-day campaign for ${Z2} and ${Z3}: hot food, ready meals and umbrellas.`,
-  'It matches weather to what sold best on past rainy days.', ['Past rainy days: ready meals +34%', 'Cost ' + C + ' 12,000', 'Starts 11:00'], 'Approve the rainy-day campaign?', { gmv: 16000 });
+  'It matches weather to what sold best on past rainy days.', ['Past rainy days: ready meals +34%', 'Cost ' + C + ' 4,500', 'Starts 11:00'], 'Approve the rainy-day campaign?', { gmv: 16000 });
 A('excess', 'gro', 'Excess Stock Pusher', 'Finds ways to sell excess stock: bundles, offers, placement.', 'Found something', 'Customer',
   `${CAT_HOME} excess is 9 days over target. 4 bundle offers are ready.`,
-  'It checks price, margin and which items customers buy together.', ['4 bundles, 38 items', 'Margin stays above floor', 'Excess reduced by about ' + C + ' 60k in 2 weeks'], 'Launch the 4 bundle offers?', { wc: -0.2 });
+  'It checks price, margin and which items customers buy together.', ['4 bundles, 38 items', 'Margin stays above floor', 'Excess reduced by about ' + C + ' 60k in 2 weeks'], 'Launch the 4 bundle offers?', { wc: -0.03 });
 A('cov', 'gro', 'Coverage Scout', 'Finds neighbourhoods and zones where we could reach more customers.', 'Found something', 'Assortment',
   `4 neighbourhoods in ${Z6} sit outside the 15-minute delivery area.`,
   'It maps orders, search demand and drive times.', ['4 areas, ~23,000 homes', 'Search demand 2x the zone average', 'Closest store is at 92% capacity'], 'Add one of them to the expansion candidate review?', { gmv: 5000 });
@@ -504,16 +515,16 @@ const TREES = {
    Replace with measured baselines when available. */
 const DAY = [
   { id: 'e1', t: 0, title: 'Overnight numbers are ready', ag: 'chief', role: 'ch', nM: 210, dM: 60, nA: 0, dA: 15, imp: {}, txt: 'Bulletin published to the country head.', dec: null },
-  { id: 'e2', t: 40, title: `${SD} price list expires in 2 days`, ag: 'guard', role: 'cat', nM: 300, dM: 1500, nA: 5, dA: 95, imp: { margin: -0.15 }, txt: 'Found the expiring list and 14 items below the floor.', dec: { title: `${SD} cost list expires in 2 days`, ask: 'Decide: keep, renegotiate or accept the new cost list.', why: 'Without a decision the buy plan blocks on 14 items.', ev: ['14 items below the margin floor', 'Expires the day after tomorrow'], effect: { margin: 0.1 } } },
+  { id: 'e2', t: 40, title: `${SD} price list expires in 2 days`, ag: 'guard', role: 'cat', nM: 300, dM: 1500, nA: 5, dA: 95, imp: { margin: -0.03 }, txt: 'Found the expiring list and 14 items below the floor.', dec: { title: `${SD} cost list expires in 2 days`, ask: 'Decide: keep, renegotiate or accept the new cost list.', why: 'Without a decision the buy plan blocks on 14 items.', ev: ['14 items below the margin floor', 'Expires the day after tomorrow'], effect: { margin: 0.03 } } },
   { id: 'e3', t: 130, title: `${SG} truck is 3 hours late`, ag: 'reply', role: 'wh', nM: 150, dM: 240, nA: 10, dA: 35, imp: { avail: -0.6, gmv: -22000 }, txt: `Spotted the late truck and the ${CAT_DAIRY} stock at risk in ${Z2} and ${Z3}.`, dec: { title: `${SG} truck is 3 hours late`, ask: `Decide: move stock from ${Z2} or wait for the truck.`, why: `${CAT_DAIRY} cover in ${Z3} is under 4 hours.`, ev: ['Truck now expected 09:00', `${Z3} dairy cover 3.5 hours`], effect: { avail: 0.35, gmv: 9000 } } },
   { id: 'e4', t: 210, title: `Rain starts in ${Z2} and ${Z3}`, ag: 'pulse', role: 'store', nM: 120, dM: 180, nA: 5, dA: 40, imp: { avail: -0.3, pick: -4 }, txt: 'Forecast raised and evening peak moved to 18:00.', dec: { title: 'Rain brings the evening peak forward', ask: 'Decide: add 2 pickers from 18:00.', why: 'Orders per hour will peak 18:00 to 20:00.', ev: ['Past rainy days: orders +9% to +15%'], effect: { pick: 3 } } },
   { id: 'e5', t: 285, title: 'Competitor X extends its offer to Personal care', ag: 'comp', role: 'ch', nM: 900, dM: 1440, nA: 15, dA: 120, imp: { gmv: -18000, repeat: -0.1 }, txt: 'Found the extension and priced a response.', dec: { title: 'Competitor X extends its weekend offer to Personal care', ask: `Decide: extend the response to ${CAT_CARE} (extra ${C} 18,000)?`, why: '16 more matching items now show a gap above 10%.', ev: ['16 more items, gap +11%'], effect: { gmv: 10000, margin: -0.05 } } },
-  { id: 'e6', t: 360, title: `Forecast error spike in ${CAT_FRESH}, ${Z1}`, ag: 'fdoc', role: 'dp', nM: 1440, dM: 2880, nA: 20, dA: 60, imp: { avail: -0.4, margin: -0.1 }, txt: 'Found an old promotion still counted in the baseline.', dec: { title: `${CAT_FRESH} forecast in ${Z1} is off by 28%`, ask: 'Decide: remove the old promotion and re-run.', why: 'Over-ordering becomes waste.', ev: ['3 days running'], effect: { margin: 0.1, avail: 0.2 } } },
+  { id: 'e6', t: 360, title: `Forecast error spike in ${CAT_FRESH}, ${Z1}`, ag: 'fdoc', role: 'dp', nM: 1440, dM: 2880, nA: 20, dA: 60, imp: { avail: -0.4, margin: -0.03 }, txt: 'Found an old promotion still counted in the baseline.', dec: { title: `${CAT_FRESH} forecast in ${Z1} is off by 28%`, ask: 'Decide: remove the old promotion and re-run.', why: 'Over-ordering becomes waste.', ev: ['3 days running'], effect: { margin: 0.05, avail: 0.2 } } },
   { id: 'e7', t: 440, title: `Pick speed dips in ${Z5}`, ag: 'coach', role: 'store', nM: 180, dM: 240, nA: 10, dA: 30, imp: { pick: -6 }, txt: 'Found long walking paths after a layout change.', dec: { title: `Pick speed down to 104 units per hour in ${Z5}`, ask: 'Decide: switch to the suggested pick path.', why: 'Two shelf bays were moved this morning.', ev: ['Walking time up 18%'], effect: { pick: 5 } } },
-  { id: 'e8', t: 495, title: `${SK} credit-line documents have a gap`, ag: 'credit', role: 'fin', nM: 600, dM: 1440, nA: 15, dA: 150, imp: { wc: 0.2 }, txt: 'Found 2 missing documents and 1 expiring.', dec: { title: `${SK} credit-line pack has gaps`, ask: 'Decide: send the request to the supplier.', why: 'Credit line review is due Friday.', ev: ['2 missing, 1 expiring'], effect: { wc: -0.2 } } },
+  { id: 'e8', t: 495, title: `${SK} credit-line documents have a gap`, ag: 'credit', role: 'fin', nM: 600, dM: 1440, nA: 15, dA: 150, imp: { wc: 0.02 }, txt: 'Found 2 missing documents and 1 expiring.', dec: { title: `${SK} credit-line pack has gaps`, ask: 'Decide: send the request to the supplier.', why: 'Credit line review is due Friday.', ev: ['2 missing, 1 expiring'], effect: { wc: -0.02 } } },
   { id: 'e9', t: 570, title: `${CAT_DAIRY} stock-out building in ${Z3}`, ag: 'tower', role: 'store', nM: 240, dM: 180, nA: 5, dA: 25, imp: { avail: -0.7, gmv: -26000 }, txt: 'Tagged cause as supplier delay and proposed a fix.', dec: { title: `${CAT_DAIRY} stock-out in store Z3-02`, ask: 'Decide: confirm the fix for 6 items.', why: 'Evening orders will find empty shelves.', ev: ['6 items, 2 in back room'], effect: { avail: 0.5, gmv: 12000 } } },
-  { id: 'e10', t: 660, title: `Bakery stock near expiry in ${Z4}`, ag: 'waste', role: 'gro', nM: 480, dM: 600, nA: 10, dA: 45, imp: { margin: -0.15 }, txt: 'Suggested a 30% markdown after 17:00.', dec: { title: '48 bakery items expire tonight', ask: 'Decide: approve a 30% markdown.', why: `Unsold stock costs ${C} 1,900.`, ev: ['48 items, 6 products'], effect: { margin: 0.1 } } },
-  { id: 'e11', t: 750, title: 'Invoices do not match goods received', ag: 'inv', role: 'fin', nM: 1440, dM: 4320, nA: 30, dA: 180, imp: { margin: -0.1 }, txt: 'Matched 23 invoices and found price differences.', dec: { title: '23 invoices do not match', ask: 'Decide: hold payment until suppliers respond.', why: `Difference ${C} 18,400.`, ev: ['14 price, 7 quantity, 2 duplicate'], effect: { margin: 0.1 } } },
+  { id: 'e10', t: 660, title: `Bakery stock near expiry in ${Z4}`, ag: 'waste', role: 'gro', nM: 480, dM: 600, nA: 10, dA: 45, imp: { margin: -0.05 }, txt: 'Suggested a 30% markdown after 17:00.', dec: { title: '48 bakery items expire tonight', ask: 'Decide: approve a 30% markdown.', why: `Unsold stock costs ${C} 1,900.`, ev: ['48 items, 6 products'], effect: { margin: 0.04 } } },
+  { id: 'e11', t: 750, title: 'Invoices do not match goods received', ag: 'inv', role: 'fin', nM: 1440, dM: 4320, nA: 30, dA: 180, imp: { margin: -0.03 }, txt: 'Matched 23 invoices and found price differences.', dec: { title: '23 invoices do not match', ask: 'Decide: hold payment until suppliers respond.', why: `Difference ${C} 18,400.`, ev: ['14 price, 7 quantity, 2 duplicate'], effect: { margin: 0.03 } } },
   { id: 'e12', t: 810, title: "Evening wrap and tomorrow's bulletin", ag: 'chief', role: 'ch', nM: 120, dM: 60, nA: 0, dA: 20, imp: {}, txt: "Drafted tomorrow's bulletin from today's decisions.", dec: null }
 ];
 const WORLD = { manual: { tasksPerHour: 9, backlog: 12 }, ai: { tasksPerHour: 3.1, backlog: 3 } };    // BASELINES
@@ -522,29 +533,29 @@ const WORLD = { manual: { tasksPerHour: 9, backlog: 12 }, ai: { tasksPerHour: 3.
 const SCEN = [
   { id: 'price', name: 'Supplier price rise', sub: `${SD} announces +6.5%`, manual: { n: 300, d: 1500 }, steps: [
     { ag: 'pcheck', text: `${SD} sent a new cost list. 14 items would fall below the margin floor.`, status: 'Found something' },
-    { ag: 'guard', text: 'Calculated the leak: about ' + C + ' 6,200 a week if prices stay as they are.', status: 'Found something', imp: { margin: -0.2 } },
-    { ag: 'negprep', text: `Prepared a brief for ${SD}: ask for 3% back-margin and a 60-day hold.`, status: 'Needs you', dec: { role: 'cat', title: `${SD} cost list: keep, renegotiate or accept`, ask: `Approve the brief and start the ${SD} talk?`, why: 'The list takes effect the day after tomorrow.', ev: ['14 items below floor', 'Margin 24.0% to 19.1%'], effect: { margin: 0.2 } } },
+    { ag: 'guard', text: 'Calculated the leak: about ' + C + ' 6,200 a week if prices stay as they are.', status: 'Found something', imp: { margin: -0.04 } },
+    { ag: 'negprep', text: `Prepared a brief for ${SD}: ask for 3% back-margin and a 60-day hold.`, status: 'Needs you', dec: { role: 'cat', title: `${SD} cost list: keep, renegotiate or accept`, ask: `Approve the brief and start the ${SD} talk?`, why: 'The list takes effect the day after tomorrow.', ev: ['14 items below floor', 'Margin 24.0% to 19.1%'], effect: { margin: 0.04 }, an: 'negprep' } },
     { ag: 'unblock', text: 'Held the 14 buy lines until the price is decided so no order goes out at the wrong cost.', status: 'Watching' },
     { ag: 'chief', text: 'Added to the country head bulletin as a margin watch item.', status: 'Found something' }] },
   { id: 'promo', name: 'Competitor promotion', sub: `Competitor X, ${CAT_BEV}, 20% off`, manual: { n: 900, d: 1440 }, steps: [
     { ag: 'comp', text: `Competitor X cut ${CAT_BEV} by 20% in 3 zones. Our gap is now +18% on 22 items.`, status: 'Found something' },
-    { ag: 'guard', text: `Priced three options. Matching 10 hero items costs ${C} 48,000 of margin and protects about ${C} 130,000 of sales.`, status: 'Found something' },
+    { ag: 'guard', text: `Priced three options. Matching 12 hero items costs ${C} 38,000 of price investment and protects about ${C} 280,000 of sales.`, status: 'Found something' },
     { ag: 'scout', text: 'Picked the zones where competitor customers overlap most: Zones 1, 3 and 4.', status: 'Found something' },
-    { ag: 'camp', text: 'Drafted a 2-day offer and the customer message.', status: 'Needs you', dec: { role: 'ch', title: `Respond to Competitor X on ${CAT_BEV}`, ask: `Approve a ${C} 48,000 response on 10 hero items?`, why: 'Gap above 15% usually costs orders within 2 days.', ev: ['22 items, gap +18%', 'Margin stays above floor'], effect: { gmv: 30000, margin: -0.12 }, edit: { type: 'number', label: 'Budget', value: 48000, unit: C } } }] },
+    { ag: 'camp', text: 'Drafted a 2-day offer and the customer message.', status: 'Needs you', dec: { role: 'ch', title: `Respond to Competitor X on ${CAT_BEV}`, ask: `Approve a ${C} 38,000 response on 12 hero items?`, why: 'A gap above 10% usually costs orders within 2 days.', ev: ['38 items, gap +14%', 'Margin stays above floor'], effect: { gmv: 50000, margin: -0.1 }, an: 'comp', edit: { type: 'number', label: 'Budget', value: 38000, unit: C } } }] },
   { id: 'rain', name: 'Heavy rain', sub: `${Z2} and ${Z3}, from 09:30`, manual: { n: 120, d: 180 }, steps: [
     { ag: 'pulse', text: 'Heavy rain forecast. On past rainy days orders rose 9% to 15% and peaked an hour earlier.', status: 'Found something' },
-    { ag: 'campf', text: 'Raised the evening forecast for both zones by 12%.', status: 'Needs you', dec: { role: 'dp', title: `Raise evening forecast for ${Z2} and ${Z3} by 12%`, ask: 'Approve the forecast change?', why: 'Rain lifts orders and slows delivery.', ev: ['10 comparable days'], effect: { avail: 0.2, gmv: 15000 }, edit: { type: 'number', label: 'Increase', value: 12, unit: '%' } } },
+    { ag: 'campf', text: 'Raised the evening forecast for both zones by 12%.', status: 'Needs you', dec: { role: 'dp', title: `Raise evening forecast for ${Z2} and ${Z3} by 12%`, ask: 'Approve the forecast change?', why: 'Rain lifts orders and slows delivery.', ev: ['10 comparable days'], effect: { avail: 0.2, gmv: 15000 }, an: 'pulse', edit: { type: 'number', label: 'Increase', value: 12, unit: '%' } } },
     { ag: 'ops', text: 'Needs 4 more pickers from 18:00 across the two zones.', status: 'Needs you', dec: { role: 'store', title: 'Add pickers for the rainy evening', ask: 'Approve 4 extra pickers from 18:00?', why: 'Without them, delivery time grows by about 6 minutes.', ev: ['Peak 18:00 to 20:00'], effect: { pick: 4 } } },
     { ag: 'camp', text: 'Drafted a rainy-day campaign: ready meals and hot food.', status: 'Found something' }] },
   { id: 'truck', name: 'Delayed inbound truck', sub: `${SG}, ${CAT_DAIRY}, 3 hours late`, manual: { n: 150, d: 240 }, steps: [
     { ag: 'inbd', text: `Truck from ${SG} is 3 hours late. Re-booked the dock for 09:30.`, status: 'Found something', imp: { avail: -0.3 } },
     { ag: 'tower', text: `${CAT_DAIRY} cover in ${Z3} is 3.5 hours. Tagged the cause: supplier.`, status: 'Found something', imp: { avail: -0.2, gmv: -9000 } },
-    { ag: 'transfer', text: `Found 480 units of dairy in ${Z2} that can move to ${Z3} by 08:00.`, status: 'Needs you', dec: { role: 'wh', title: `Move 480 dairy units from ${Z2} to ${Z3}`, ask: 'Approve the stock move?', why: `Shelves in ${Z3} run empty by 09:00.`, ev: ['Truck space available', '480 units, 3-day shelf life'], effect: { avail: 0.4, gmv: 12000 }, edit: { type: 'number', label: 'Units', value: 480, unit: 'units' } } },
-    { ag: 'resp', text: 'Prepared substitutes for the 6 items still at risk.', status: 'Needs you', dec: { role: 'store', title: 'Switch 6 dairy items to substitutes', ask: 'Confirm substitutes for 6 items?', why: 'Avoids cancelled orders.', ev: ['3 good substitutes found'], effect: { avail: 0.2, gmv: 5000 } } },
+    { ag: 'transfer', text: `Found 480 units of dairy in ${Z2} that can move to ${Z3} by 08:00.`, status: 'Needs you', dec: { role: 'wh', title: `Move 480 dairy units from ${Z2} to ${Z3}`, ask: 'Approve the stock move?', why: `Shelves in ${Z3} run empty by 09:00.`, ev: ['Truck space available', '480 units, 3-day shelf life'], effect: { avail: 0.4, gmv: 12000 }, an: 'tower', edit: { type: 'number', label: 'Units', value: 480, unit: 'units' } } },
+    { ag: 'resp', text: 'Prepared substitutes for the 6 items still at risk.', status: 'Needs you', dec: { role: 'store', title: 'Switch 6 dairy items to substitutes', ask: 'Confirm substitutes for 6 items?', why: 'Avoids cancelled orders.', ev: ['3 good substitutes found'], effect: { avail: 0.2, gmv: 5000 }, an: 'resp' } },
     { ag: 'reply', text: `Asked ${SG} for a firm time and logged the reply.`, status: 'Watching' }] },
   { id: 'fcst', name: 'Forecast error spike', sub: `${CAT_FRESH}, ${Z1}, 28% too high`, manual: { n: 1440, d: 2880 }, steps: [
     { ag: 'valid', text: 'Checked the data: sales are correct, nothing missing.', status: 'Watching' },
-    { ag: 'fdoc', text: 'Found the cause: an old promotion still counted in the baseline.', status: 'Needs you', dec: { role: 'dp', title: `${CAT_FRESH} forecast in ${Z1} is 28% too high`, ask: 'Approve removing the old promotion and re-running?', why: 'Waste is up 1.2 points.', ev: ['3 days in a row'], effect: { margin: 0.12, avail: 0.15 } } },
+    { ag: 'fdoc', text: 'Found the cause: an old promotion still counted in the baseline.', status: 'Needs you', dec: { role: 'dp', title: `${CAT_FRESH} forecast in ${Z1} is 28% too high`, ask: 'Approve removing the old promotion and re-running?', why: 'Waste is up 1.2 points.', ev: ['3 days in a row'], effect: { margin: 0.05, avail: 0.15 }, an: 'fdoc' } },
     { ag: 'edrev', text: 'Checked recent manual edits for the same category: 2 edits added to the error.', status: 'Found something' },
     { ag: 'unblock', text: 'Paused tonight\'s order for the 9 over-forecast items until the forecast is re-run.', status: 'Watching' },
     { ag: 'cash', text: 'Added the extra stock to the excess watch list.', status: 'Found something' }] }
@@ -562,7 +573,7 @@ const QA = [
     tasks: [['wh', `Move 480 dairy units from ${Z2} to ${Z3} before 07:00`], ['buy', `Get a firm delivery time from ${SG} and log it`], ['dp', `Add a rain effect to ${Z3} evening forecasts`], ['store', 'Confirm shelf counts for 6 dairy items in store Z3-02']] },
   { q: 'Which competitor moves should I respond to this week?', trail: [
     ['comp', `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} by 15% for the weekend on 38 items in 3 zones.`],
-    ['guard', `Matching all 38 would cost ${C} 160k of margin. Matching the 12 hero items costs ${C} 85k and covers 70% of the affected sales.`],
+    ['guard', `Matching all 38 would cost ${C} 96k of price investment. Matching the 12 hero items costs ${C} 38k and protects about ${C} 280k of the ${C} 410k of sales at risk.`],
     ['scout', 'Customers who buy both categories are most exposed; target Zones 1, 3 and 4.']],
     ans: `Respond on 12 hero items, not 38. This protects most of the exposed sales for about half the cost. Everything else can wait for the weekend read-out.`,
     tasks: [['cat', 'Prepare matched prices for 12 hero items, with margin check'], ['gro', 'Plan the weekend campaign for Zones 1, 3 and 4'], ['fin', 'Confirm the promotion budget ceiling for the weekend']] },
@@ -602,16 +613,16 @@ W('price', 'Supplier price change', 'Contracts and pricing', `A price list from 
   { a: 'agent', w: 'Plan Unblocker', t: 'Finds the buy lines that will block', d: 'Without a valid cost price, tonight\'s order cannot be placed for these items.', ev: ['14 buy lines', 'Next order cut-off: 17:00'], m: 3 },
   { a: 'agent', w: 'Price and Margin Check', t: 'Checks margin at the new cost', d: 'Cost rises 6.5%. At today\'s shelf prices the margin falls below the floor on all 14 items.', tb: { head: ['Item', 'Cost now', 'Cost new', 'Margin now', 'Margin new'], rows: [[`Whole milk 1 L`, '1.20', '1.28', '24.0%', '19.1%'], [`Yoghurt 500 g`, '1.55', '1.65', '25.2%', '20.3%'], [`Eggs x12`, '2.10', '2.24', '22.6%', '17.9%'], [`Butter 250 g`, '2.40', '2.56', '23.5%', '18.7%'], ['9 more items', '', '', '', '']] }, m: 5 },
   { a: 'agent', w: 'Supplier Negotiation Prep', t: 'Proposes three options', d: 'Each option shows what it does to margin and to sales.', ev: ['Keep: ask for a 30-day extension at today\'s price', 'Renegotiate: +3.5% instead of +6.5%, 60-day hold', 'Accept: +6.5%, raise shelf price on 6 items'], m: 6,
-    h: { role: 'cat', ask: 'Which option do you want to take to the supplier?', edit: { type: 'choice', label: 'Option', rec: 'ren', options: [{ id: 'keep', l: 'Keep today\'s price (ask for a 30-day extension)' }, { id: 'ren', l: 'Renegotiate (+3.5%, 60-day hold)' }, { id: 'acc', l: 'Accept the new list and raise 6 shelf prices' }] } }, imp: { margin: 0.2 } },
+    h: { role: 'cat', ask: 'Which option do you want to take to the supplier?', edit: { type: 'choice', label: 'Option', rec: 'ren', options: [{ id: 'keep', l: 'Keep today\'s price (ask for a 30-day extension)' }, { id: 'ren', l: 'Renegotiate (+3.5%, 60-day hold)' }, { id: 'acc', l: 'Accept the new list and raise 6 shelf prices' }] } }, imp: { margin: 0.04 } },
   { a: 'agent', w: 'Plan Unblocker', t: 'Loads the decision and unblocks the plan', d: 'Option chosen: {choice}. The 14 buy lines carry the agreed cost and go into tonight\'s order.', ev: ['14 lines released', 'Order goes out at 17:00'], m: 2 },
   { a: 'agent', w: 'PO Follow-up', t: 'Schedules the supplier reply check', d: `Sends the message to ${SD} for sign-off and checks for a reply after 48 hours.`, m: 2 }],
   [{ l: 'Time from alert to decision', b: 46, a: 2.2, u: 'hours' }, { l: 'Items that block the buy plan', b: 14, a: 0, u: 'items' }]);
 W('promo', 'Competitor promotion response', 'Pricing and growth', `Competitor X cuts ${CAT_BEV} and ${CAT_DAIRY} prices`, ['Competition Watch', 'Margin Guardian', 'Growth Scout', 'Country head'], true, [
   { a: 'agent', w: 'Competition Watch', t: 'Spots the promotion', d: 'Competitor X lowered 38 prices we also sell, for the weekend, in 3 zones.', ev: ['Price gap +14% (was +1%)', '21% of sales in those zones'], m: 3 },
-  { a: 'agent', w: 'Margin Guardian', t: 'Prices three responses', d: 'Each response shows margin cost and sales protected.', tb: { head: ['Response', 'Margin cost', 'Sales protected'], rows: [['Do nothing', `${C} 0`, `-${C} 130k at risk`], ['Match 12 hero items', `${C} 85k`, `${C} 92k`], ['Match all 38 items', `${C} 160k`, `${C} 118k`]] }, m: 6 },
+  { a: 'agent', w: 'Margin Guardian', t: 'Prices three responses', d: 'Each response shows margin cost and sales protected.', tb: { head: ['Response', 'Margin cost', 'Sales protected'], rows: [['Do nothing', `${C} 0`, `-${C} 410k of sales at risk`], ['Match 12 hero items', `${C} 38k`, `${C} 280k`], ['Match all 38 items', `${C} 96k`, `${C} 327k`]] }, m: 6 },
   { a: 'agent', w: 'Growth Scout', t: 'Targets the right customers and zones', d: 'Suggests the 12 hero items in Zones 1, 3 and 4 from Friday to Sunday, with a short message to customers who bought these items before.', m: 5 },
   { a: 'agent', w: 'Chief of Staff', t: 'Puts the decision in your inbox', d: 'One page: what happened, the three options, the recommendation.', m: 1,
-    h: { role: 'ch', ask: 'Approve a response budget for the weekend?', edit: { type: 'number', label: 'Budget', value: 85000, unit: C } }, imp: { gmv: 24000, margin: -0.1 } },
+    h: { role: 'ch', ask: 'Approve a response budget for the weekend?', edit: { type: 'number', label: 'Budget', value: 38000, unit: C } }, imp: { gmv: 24000, margin: -0.1 } },
   { a: 'agent', w: 'Price and Margin Check', t: 'Loads the prices for the weekend', d: 'Budget approved: {n}. 12 prices set to change Friday 06:00 and return Monday 06:00.', m: 3 },
   { a: 'agent', w: 'Competition Watch', t: 'Watches the weekend', d: 'Checks competitor prices every 3 hours and flags any change.', m: 1 }],
   [{ l: 'Time from competitor move to response', b: 30, a: 4, u: 'hours' }, { l: 'Items repriced by hand', b: 38, a: 0, u: 'items' }]);
@@ -648,7 +659,7 @@ W('credit', 'Supplier credit-line pack', 'Finance', `${SK} credit-line review is
   { a: 'agent', w: 'Credit-Line Document Pack', t: 'Compiles the pack and the gaps', d: '9 of 11 are ready. 2 are missing, 1 will expire.', m: 4 },
   { a: 'agent', w: 'Credit-Line Document Pack', t: 'Requests the missing papers', d: `Drafts a request to ${SK} for the bank letter, insurance certificate and renewed tax certificate.`, m: 2 },
   { a: 'person', w: 'Finance lead', t: 'Reviews the pack', d: 'Check the pack before it goes out.', m: 10,
-    h: { role: 'fin', ask: 'Send the pack?', edit: { type: 'choice', label: 'Send', rec: 'now', options: [{ id: 'now', l: 'Send now with the 2 gaps noted' }, { id: 'wait', l: 'Wait until the gaps are filled' }] } }, imp: { wc: -0.1 } },
+    h: { role: 'fin', ask: 'Send the pack?', edit: { type: 'choice', label: 'Send', rec: 'now', options: [{ id: 'now', l: 'Send now with the 2 gaps noted' }, { id: 'wait', l: 'Wait until the gaps are filled' }] } }, imp: {} },
   { a: 'agent', w: 'Credit-Line Document Pack', t: 'Sends and tracks', d: 'Pack sent: {choice}. Reminder in 3 days for the open gaps.', m: 2 }],
   [{ l: 'Time to assemble a pack', b: 180, a: 25, u: 'min' }, { l: 'Documents found missing after sending', b: 3, a: 0, u: 'docs' }]);
 /* simpler preview flows */
@@ -667,7 +678,7 @@ W('pofu', 'PO follow-up', 'Preview', '11 purchase orders unconfirmed after 24 ho
 W('camp', 'Campaign planning', 'Preview', 'Rain forecast in two zones', ['Campaign Planner', 'Campaign Forecast', 'Growth lead'], false, [
   { a: 'agent', w: 'Campaign Planner', t: 'Proposes a rainy-day campaign', d: 'Ready meals and hot food, 11:00 to 21:00.', m: 3 },
   { a: 'agent', w: 'Campaign Forecast', t: 'Forecasts demand and stock', d: 'Needs +22% ready meals; stock is sufficient.', m: 2 },
-  { a: 'person', w: 'Growth lead', t: 'Approves the budget', d: 'Cost of offer and messages.', m: 3, h: { role: 'gro', ask: 'Approve the campaign budget?', edit: { type: 'number', label: 'Budget', value: 12000, unit: C } }, imp: { gmv: 16000 } },
+  { a: 'person', w: 'Growth lead', t: 'Approves the budget', d: 'Cost of offer and messages.', m: 3, h: { role: 'gro', ask: 'Approve the campaign budget?', edit: { type: 'number', label: 'Budget', value: 4500, unit: C } }, imp: { gmv: 16000 } },
   { a: 'agent', w: 'Campaign Planner', t: 'Schedules and measures', d: 'Budget {n}. Reads results at 22:00.', m: 1 }],
   [{ l: 'Time to plan a campaign', b: 5, a: 1, u: 'days' }]);
 W('expand', 'Expansion candidate review', 'Preview', `4 neighbourhoods in ${Z6} outside the 15-minute area`, ['Coverage Scout', 'Growth Scout', 'Growth lead'], false, [
@@ -692,6 +703,201 @@ const BA = [
     { m: 'Edits that improved accuracy', b: 41, a: 52, u: '%', dir: 'higher', rule: 60 },
     { m: 'Days until an edit is reviewed', b: 7, a: 1, u: 'days', dir: 'lower', rule: 2 }] }
 ];
+
+
+/* ---------- decision briefs: the analysis behind each decision ----------
+   sum = recommendation and logic; facts = [label, value, comparison]; chart = bars; opts = options compared;
+   wi = what-if slider; assume / risks / noact / conf / src / qa = questions the person may ask; next = what happens after Approve.
+   All figures illustrative. BASELINES: replace with measured values later. */
+const AN = {};
+AN.comp = {
+  sum: `Match prices on the 12 hero items only. They carry 61% of the basket value of price-sensitive customers, and returns fall quickly once price investment passes about ${C} 30k. Matching all 38 items costs more than it protects.`,
+  facts: [['Items where Competitor X is now cheaper', '38 of 412 compared', 'was 3 last week'], ['Our price gap on those items', '+14%', 'was +1%'], ['Weekend sales exposed (3 zones, 3 days)', `${C} 830k`, '21% of sales in those zones'], ['Sales at risk with no response', `${C} 410k`, `range ${C} 300k to 520k`], ['Gross margin on those at-risk sales', `${C} 98k`, 'at 24%'], ['Last comparable case, 6 weeks ago', 'category sales -11% for 3 days', 'we did not respond']],
+  chart: { t: 'Our price gap versus Competitor X on the 38 items, last 7 days (%)', labels: ['Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'], data: [1, 1, 2, 1, 2, 13, 14], mark: 6, u: '%' },
+  opts: [
+    { n: 'Do nothing', cost: `${C} 0`, gain: `Lose about ${C} 410k of sales; ${C} 98k gross margin`, risk: 'High: repeat rate falls about 0.3 pts', net: `-${C} 98k` },
+    { n: 'Match 12 hero items', rec: 1, cost: `${C} 38k price investment`, gain: `Protect about ${C} 280k sales (${C} 67k margin)`, risk: 'Low to medium: competitor may extend', net: `+${C} 29k vs doing nothing` },
+    { n: 'Match all 38 items', cost: `${C} 96k price investment`, gain: `Protect about ${C} 327k sales (${C} 78k margin)`, risk: 'Medium: 9 items fall near the margin floor', net: `-${C} 18k` },
+    { n: 'Vouchers to the 5,000 most exposed customers', cost: `${C} 22k`, gain: `Protect about ${C} 150k sales`, risk: 'Medium: slower, only reaches app users', net: `+${C} 14k` }],
+  wi: { label: 'Price investment', u: C, min: 10000, max: 120000, step: 2000, value: 38000, f: v => { const p = 330000 * (1 - Math.exp(-v / 20200)), m = p * 0.24, n = m - v; return [['Sales protected', `${C} ${num(Math.round(p / 1000) * 1000)}`], ['Gross margin on protected sales', `${C} ${num(Math.round(m / 1000) * 1000)}`], ['Net after price investment', `${n >= 0 ? '+' : '-'}${C} ${num(Math.abs(Math.round(n / 1000) * 1000))}`, n >= 0 ? 'good' : 'crit'], ['Return per ' + C + ' 1 invested', (m / v).toFixed(2), m / v >= 1 ? 'good' : 'crit']]; }, note: 'Returns flatten quickly. The best net result is near ' + C + ' 28k; ' + C + ' 38k adds reach on two more hero items for little loss.' },
+  assume: ['Competitor X keeps its prices until Sunday night', 'Price-sensitive customers compare the 12 hero items first (basket data, Zones 1, 3, 4)', 'Response size follows the last 6 comparable offers; range is wide (plus or minus 35%)', 'No supplier funding is available before the weekend'],
+  risks: ['Competitor extends past Sunday: prices are re-checked every 3 hours and the agent asks you again if the gap re-opens above 10%', 'Signalling a price war: limited to 12 items and 3 days', 'Dairy half has no history of past responses'],
+  noact: `Expect about ${C} 410k less sales over the weekend (${C} 98k margin) and a small fall in repeat customers. In the one case we did not respond, category sales dropped 11% for three days.`,
+  conf: { p: 74, why: 'Six comparable offers in 18 months. Effect sizes varied, so the range is wide.' },
+  src: ['Competitor price check, 06:10, 38 matching items', 'Our item sales and basket data, last 8 weeks', 'Six past competitor offers and our responses'],
+  qa: [['Why 12 items and not 38?', `These 12 make up 61% of the basket value of price-sensitive customers. Matching the other 26 protects only about ${C} 47k more sales for ${C} 58k more price investment.`], ['What if the competitor extends past Sunday?', `Prices are re-checked every 3 hours. If the gap re-opens above 10% on Monday you are asked again. Nothing beyond ${C} 38k is committed without a new approval.`], ['Can the suppliers fund part of it?', `Supplier B and Supplier F fund up to 40% of beverage promotions under their contracts, but asking takes about 2 days. Suggested follow-up for the commercial lead after the weekend.`], ['How sure are you of the ' + C + ' 280k?', `The range is ${C} 190k to ${C} 340k. Past beverage responses landed inside the range. The dairy part has no history, so treat it as the weaker half.`], ['Who does the work?', 'Price and Margin Check loads 12 prices Friday 06:00. Campaign Planner sends the customer message Friday 10:00. Competition Watch watches until Monday.']],
+  next: ['Price and Margin Check loads 12 prices, Friday 06:00', 'Campaign Planner sends the customer message, Friday 10:00', 'Competition Watch re-checks every 3 hours', 'Chief of Staff reports the result in Monday\'s bulletin']
+};
+AN.tower = {
+  sum: `Do both: expedite the top-up order and move 480 units from ${Z2}. The truck alone leaves ${Z3} shelves empty until about 11:00, and ${Z2} can spare the stock and stay above its 1-day safety level.`,
+  facts: [[`${CAT_DAIRY} availability in ${Z3}`, '86%', 'usual 95%'], ['Items out of stock', '31 of 214', 'across 14 stores'], ['Cover left in the zone', '3.5 hours', 'at 140 units an hour'], [`${SG} truck`, 'now 09:00', 'was due 06:00'], [`Spare stock in ${Z2}`, '1,150 units', '2.4 days of cover'], ['Sales lost since 06:00', `${C} 14k`, `about ${C} 3.1k an hour`]],
+  chart: { t: `${CAT_DAIRY} availability in ${Z3}, last 7 hours (%)`, labels: ['23h', '00', '01', '02', '03', '04', '05'].map((x, i) => ['23:00', '00:00', '01:00', '02:00', '03:00', '04:00', '05:00'][i]), data: [95, 94, 92, 89, 87, 86, 86], mark: 6, u: '%' },
+  opts: [
+    { n: 'Wait for the truck', cost: `${C} 0`, gain: `Shelves refilled by about 11:00`, risk: `High: ${SG} has been late twice in 30 days`, net: `-${C} 22k sales` },
+    { n: `Expedite the order and move stock from ${Z2}`, rec: 1, cost: `${C} 1.8k (transport and rush fee)`, gain: `Shelves refilled by 07:30; protects about ${C} 18k sales`, risk: `Low: ${Z2} cover falls from 2.4 to 1.4 days`, net: `+${C} 16k` },
+    { n: 'Move stock only', cost: `${C} 1.2k`, gain: `Protects about ${C} 14k sales`, risk: 'Medium: no restock behind it', net: `+${C} 13k` },
+    { n: 'Substitutes and recount only', cost: `${C} 0`, gain: `Protects about ${C} 5k`, risk: 'High: 25 items still empty', net: `+${C} 5k` }],
+  wi: { label: `Units moved from ${Z2}`, u: 'units', min: 0, max: 900, step: 20, value: 480, f: v => { const z3 = 3.5 + v / 140, z2 = (1150 - v) / 480; return [[`${Z3} cover`, `${z3.toFixed(1)} hours`, z3 >= 6 ? 'good' : 'crit'], [`${Z2} cover after the move`, `${z2.toFixed(1)} days`, z2 >= 1 ? 'good' : 'crit'], ['Transport and rush cost', `${C} ${num(Math.round(900 + v * 1.5))}`], [`${Z2} safety level`, z2 >= 1 ? 'Above 1 day' : 'Below 1 day: unsafe', z2 >= 1 ? 'good' : 'crit']]; }, note: `Moving more than about 650 units takes ${Z2} below its 1-day safety level.` },
+  assume: [`${SG} keeps the 09:00 promise (it has kept 74% of promises this month)`, `${Z3} demand stays at 140 units an hour, and rain adds about 10% from 09:30`, `${Z2} demand does not rise today`],
+  risks: [`The truck is later than 09:00: the stock move alone covers ${Z3} until about 14:00`, `${Z2} runs short if rain reaches it first: checked every hour by the agent`, 'Moved milk has a 3-day shelf life: still within limits'],
+  noact: `${Z3} dairy shelves stay near 86% until about 11:00, with about ${C} 22k of lost sales and more missing-item complaints. Customers who hit an empty shelf order less often for the next 2 weeks.`,
+  conf: { p: 82, why: 'Stock counts verified at 05:40 and the same fix worked in 4 of the last 5 late-truck cases.' },
+  src: ['Shelf counts and sales per hour, 05:40', `${SG} delivery confirmations, last 30 days`, 'Truck availability from Inbound Scheduler'],
+  qa: [[`Why is ${SG} late?`, 'Their dispatch lost two pallets overnight. They confirmed 09:00 by phone at 05:40. On-time delivery has been 74% this month, below the 90% target.'], [`Can ${Z2} really spare it?`, `Yes. ${Z2} holds 1,150 units, 2.4 days of cover. After the move it holds 1.4 days, above the 1-day safety level.`], ['What does it cost?', `Transport ${C} 1.2k plus ${C} 0.6k rush fee on the top-up order.`], ['Has this happened before?', `Twice in 30 days with ${SG}. The fix worked in 4 of the last 5 cases.`], ['Who else is affected?', `Replenishment lead moves the stock, Buyer chases ${SG}, Dark-store manager in ${Z3} confirms the shelves.`]],
+  next: [`Transfer Planner books the ${Z2} to ${Z3} truck for 06:30`, `PO Follow-up asks ${SG} for a firm time and logs the reply`, `Stock-out Responder updates store lists in ${Z3}`, 'Availability Control Tower re-checks at 08:00 and 11:00']
+};
+AN.guard = {
+  sum: `Do not accept the new cost list as sent. Renegotiate first: a +3.5% rise with a 60-day hold keeps margin above the floor, and the fall-back (accept and raise 6 shelf prices) still limits the loss.`,
+  facts: [['Items affected', '14, all ' + CAT_DAIRY, 'about 9% of category sales'], ['Cost rise', '+6.5%', 'last year +3%'], ['Margin on these items', '24.0% to 19.1%', 'floor is 21.0%'], ['Weekly sales of these items', `${C} 126k`, '18,400 units'], ['Margin lost if nothing changes', `${C} 6.2k a week`, `${C} 322k a year`], ['When it takes effect', 'in 2 days', 'buy plan blocks on these items']],
+  chart: { t: 'Margin on the 14 items by week (%), last week is the projection', labels: ['W-5', 'W-4', 'W-3', 'W-2', 'W-1', 'Next'], data: [24.2, 24.1, 24.0, 24.0, 24.0, 19.1], mark: 5, u: '%', ref: 21, refl: 'Floor 21.0%' },
+  opts: [
+    { n: 'Accept the new list as sent', cost: `${C} 6.2k a week of margin`, gain: 'No friction, supply continues', risk: 'High: below the floor, and sets a precedent', net: `-${C} 6.2k a week` },
+    { n: 'Accept and raise 6 shelf prices by 3%', cost: `${C} 4.9k a week (after price effect)`, gain: 'Recovers part of the loss', risk: 'Medium: volume on those 6 items falls about 4%', net: `-${C} 4.9k a week` },
+    { n: 'Renegotiate: +3.5% and a 60-day hold', rec: 1, cost: `${C} 3.4k a week if agreed (60% chance)`, gain: 'Margin 21.3%, above the floor; price protected for 60 days', risk: 'Medium: supplier may delay supply', net: `-${C} 4.5k a week expected` },
+    { n: 'Keep today\'s price, ask for a 30-day extension', cost: `${C} 0 for 30 days`, gain: 'Time to find alternatives', risk: `High: no second source for 4 items`, net: `${C} 0 for 30 days` }],
+  wi: { label: 'Cost rise we agree', u: '%', min: 0, max: 8, step: 0.5, value: 3.5, f: v => { const cost = 76 * (1 + v / 100), m = (100 - cost) / 100 * 100, leak = (24 - m) / 100 * 126000; return [['Margin on the 14 items', `${m.toFixed(1)}%`, m >= 21 ? 'good' : 'crit'], ['Against the 21.0% floor', m >= 21 ? 'Above the floor' : 'Below the floor', m >= 21 ? 'good' : 'crit'], ['Margin lost a week', `${C} ${num(Math.max(0, Math.round(leak / 100) * 100))}`], ['Margin lost a year', `${C} ${num(Math.max(0, Math.round(leak * 52 / 1000) * 1000))}`]]; }, note: 'The break-even rise that keeps margin at the floor is about 4.0%.' },
+  assume: [`Shelf prices stay as they are unless you approve a rise`, 'Volume of these items is stable at 18,400 units a week', `${SD} accepts a negotiation: they have a 60% chance of agreeing based on last year`],
+  risks: [`${SD} slows deliveries during the talk: no second source for 4 items`, 'A shelf-price rise sends price-sensitive customers to competitor X', 'Delay pushes the decision past the list date'],
+  noact: `The list takes effect in 2 days. Margin on 14 items falls to 19.1%, below the floor, costing about ${C} 6.2k a week. The buy plan also blocks these items until a price is loaded.`,
+  conf: { p: 78, why: `Cost list and sales are exact. The negotiation outcome is the uncertain part (60% chance).` },
+  src: [`${SD} cost list received 05:30`, 'Item sales and shelf prices, last 8 weeks', 'Margin floor policy, contract terms'],
+  qa: [['Why is the floor 21.0%?', 'It is the category policy minimum after waste and promotion costs. Items below it are reviewed monthly by the Commercial lead.'], ['What do we offer in return?', `A planned 8% more yoghurt volume and on-time payment. The Negotiation Prep brief has the full list of asks and give-backs.`], ['What if they refuse?', `Fall-back: accept the list and raise 6 shelf prices by 3%, which recovers about ${C} 1.3k a week. A second source takes about 3 weeks to onboard.`], ['Can we really hold the old price for 2 days?', 'The old price is valid until the end of tomorrow. The buy plan only blocks after that.'], ['Who needs to act?', 'Commercial lead decides and leads the call. Plan Unblocker loads the final price once agreed.']],
+  next: [`Supplier Negotiation Prep sends the brief to the Commercial lead`, `Plan Unblocker holds the 14 buy lines until a price is agreed`, `PO Follow-up checks for ${SD}'s reply in 48 hours`, 'Margin Guardian re-checks margin the moment a price is loaded']
+};
+AN.negprep = {
+  sum: `Open with +3.5% and a 60-day hold, offer 8% more yoghurt volume and on-time payment in return, and settle at up to +5% if the hold becomes 90 days.`,
+  facts: [[`Our rank among ${SD}'s customers`, '#3', '11% of their sales'], ['Their cost rise asked', '+6.5%', 'last year +3%'], ['Their price versus market on 9 items', '+4%', ''], ['Our yearly spend with them', `${C} 5.9M`, ''], ['Items with no second source', '4 of 14', ''], ['Planned volume we can offer', '+8% yoghurt', 'worth about ' + C + ' 210k a year']],
+  chart: { t: `Cost rise accepted from ${SD}, last 4 years (%)`, labels: ['Y-4', 'Y-3', 'Y-2', 'Y-1', 'Ask'], data: [2.1, 2.8, 2.5, 3.0, 6.5], mark: 4, u: '%' },
+  opts: [{ n: 'Open at +3.5% and a 60-day hold', rec: 1, cost: 'Gives volume and prompt payment', gain: `Margin 21.3%; saves about ${C} 2.8k a week against the ask`, risk: 'Medium', net: 'Likely settle +4% to +5%' }, { n: 'Open at 0% (30-day extension)', cost: 'Stronger ask', gain: 'More room to land', risk: 'High: may cause delays', net: 'Uncertain' }, { n: 'Accept +6.5%', cost: `${C} 6.2k a week`, gain: 'Peace', risk: 'Below floor', net: `-${C} 6.2k a week` }],
+  assume: ['They value our growth in the category', 'Our volume offer is credible: yoghurt is +8% in 6 weeks'], risks: ['They link the talk to other categories', 'They ration supply of the 4 items we cannot source elsewhere'],
+  noact: 'The list takes effect with no negotiation, and margin falls below the floor on 14 items.', conf: { p: 66, why: 'Based on last year\'s talk. Sensitive to their own cost pressures.' }, src: ['Contract file', 'Purchase history 3 years', 'Market price check on 9 items'],
+  qa: [['What is our fall-back?', 'Accept up to +5% if the hold is 90 days, then raise 6 shelf prices.'], ['Who is on their side?', 'The key account manager. Meeting suggested Thursday 10:00.'], ['What can go wrong?', 'They may tie the answer to rebates on other categories. The brief lists what we will not trade.']],
+  next: ['Brief sent to the Commercial lead', 'Meeting invite drafted for Thursday', 'Plan Unblocker waits for the agreed price']
+};
+AN.cash = {
+  sum: `Pause new buys on the 9 excess items and move ${SK}'s payment to day 45, which its contract already allows. Together they release about ${C} 0.8M of cash without any price or service change.`,
+  facts: [['Inventory days', '41', 'target 38'], ['Payment days', '36', 'target 40'], ['Cash tied up by the gap (5 days)', `${C} 9.0M`, `at ${C} 1.8M cost of sales a day`], ['Excess stock above target', `${C} 310k`, '9 items are 70% of it'], [`${CAT_HOME} stock`, '74 days', 'target 45'], [`${SK} payment today`, 'day 30', 'contract allows day 45']],
+  chart: { t: 'Days of stock by category, against a target of 45 (days)', labels: ['Fresh', 'Dairy', 'Bakery', 'Meat', 'Packaged', 'Drinks', 'Household', 'Care'], data: [4, 9, 3, 6, 58, 44, 74, 52], mark: 6, u: 'd', ref: 45, refl: 'Target 45' },
+  opts: [{ n: 'Do nothing', cost: `${C} 0`, gain: 'No change', risk: 'Excess keeps growing', net: `${C} 9.0M stays tied up` }, { n: `Pause 9 items and move ${SK} to day 45`, rec: 1, cost: 'Small: 2 items may need a top-up in 3 weeks', gain: `About ${C} 310k stock released and ${C} 550k cash held longer`, risk: 'Low', net: `+${C} 0.86M cash, about 0.4 days` }, { n: 'Pause 9 items only', cost: `${C} 0`, gain: `${C} 310k released over 3 weeks`, risk: 'Low', net: `+${C} 0.31M` }, { n: 'Move 3 suppliers to day 45', cost: `${C} 24k a year of lost early-payment discount`, gain: `About ${C} 1.6M held longer`, risk: 'High: 2 of 3 contracts need renegotiation', net: `+${C} 1.6M cash` }],
+  wi: { label: `${SK} payment day`, u: 'days', min: 30, max: 60, step: 1, value: 45, f: v => { const rel = (v - 30) * 36700, d = rel / 1800000; return [['Cash held longer', `${C} ${num(Math.round(rel / 1000) * 1000)}`], ['Working capital days', `-${d.toFixed(2)} days`], ['Contract position', v <= 45 ? 'Allowed by contract' : 'Needs a contract change', v <= 45 ? 'good' : 'crit']]; }, note: 'Each extra day of payment is worth about ' + C + ' 37k of cash.' },
+  assume: [`${SK} purchases stay near ${C} 1.1M a month`, 'Cover on the 9 paused items stays above 20 days', 'No early-payment discount applies to Supplier K'],
+  risks: ['2 of the 9 items may run short in 3 weeks: buyers will be asked to review at day 14', 'Supplier K may remember the change in future talks'],
+  noact: 'Inventory stays at 41 days, payment at 36, and the excess grows with each weekly order.', conf: { p: 85, why: 'Stock and contract terms are exact; only demand on the 9 items is estimated.' }, src: ['Stock by item and days of cover', `${SK} contract, clause on payment`, 'Weekly sales, last 12 weeks'],
+  qa: [['Which 9 items?', `Mostly ${CAT_HOME} and ${CAT_PACK}: all above 60 days of cover. The full list is in the Working Capital Advisor.`], ['Is moving payment allowed?', `Yes. The contract allows up to day 45 without penalty or discount loss. Finance confirmed on file.`], ['What is the risk to supply?', 'Low. Paused items have more than 20 days of cover. Buyers re-open them at day 14.']],
+  next: ['Plan Unblocker pauses the 9 items in the buy plan', `Payment Timing moves ${SK} invoices to day 45`, 'Working Capital Advisor reports cash released in 2 weeks']
+};
+AN.risk = {
+  sum: `Escalate now with a 7-day deadline. Renewal usually takes 5 to 8 days, so waiting leaves no margin. Meanwhile line up alternatives for the top 20 items.`,
+  facts: [['Licence expires in', '12 days', ''], ['Items affected', '128', `${SL} range`], ['Items with missing allergen data', '31', 'of 128'], [`Share of sales from ${SL}`, '3.1%', `${C} 74k a day`], ['Usual renewal time', '5 to 8 days', 'based on the last 3 renewals'], ['Sales at risk if lapse lasts 3 days', `${C} 222k`, 'items come off shelf']],
+  opts: [{ n: 'Escalate to Legal and Catalogue, 7-day deadline', rec: 1, cost: 'About 4 hours of people time', gain: 'Time to fix before expiry', risk: 'Low', net: 'Protects up to ' + C + ' 222k' }, { n: `Ask ${SL} directly first (3 days)`, cost: '0', gain: 'Lower friction', risk: 'Medium: leaves 9 days to expiry', net: 'Slower' }, { n: 'Line up alternatives for the top 20 items', cost: `Price +2.5% on those items, about ${C} 1.8k a week`, gain: 'Cover if the licence lapses', risk: 'Low', net: 'Insurance' }, { n: 'Do nothing', cost: '0', gain: '-', risk: 'High: legal removal of 128 items', net: `Up to -${C} 222k` }],
+  assume: ['The licence authority works at its usual speed', `${SL} has already applied (to be confirmed)`], risks: ['Missing product data cannot be fixed quickly if supplier is slow', 'Legal exposure is for Legal to judge. The agent does not give legal advice'],
+  noact: `If the licence lapses we must remove 128 items from the shelf, about ${C} 74k of sales a day.`, conf: { p: 80, why: 'Dates are exact. Renewal time is based on 3 past cases.' }, src: [`${SL} licence record`, 'Catalogue completeness check', 'Sales by supplier, last 4 weeks'],
+  qa: [['What is the legal exposure?', 'Legal to confirm. In general, selling food without a valid licence can mean removal orders and fines. This brief is not legal advice.'], ['Who gets the escalation?', 'Legal and the Catalogue team, copied to the Commercial lead.'], ['Can we stock up before expiry?', 'Not advised: stock would be unsellable if the licence lapses.']],
+  next: ['Risk and Compliance sends the escalation with the 7-day deadline', 'Catalogue team receives the list of 31 items', 'Agent re-checks status in 3, 5 and 7 days']
+};
+AN.transfer = {
+  sum: `Release the plan. It uses 91% of truck space, protects the zones with the highest forecast gaps, and only 11 of 62 moves need your attention. The 2 uncertain counts already use the safer figure.`,
+  facts: [['Moves planned', '62', '4,380 units'], [`Largest zone: ${Z3}`, '1,150 units', 'forecast +12% for rain'], ['Truck space used', '91%', 'of 4,800 units'], ['Shelf life of moved units', '94% above 3 days', ''], ['Transport cost', `${C} 7.4k`, ''], ['Shelf-hours of stock-out avoided', '310', 'estimated'], ['Uncertain counts', '2', `${Z3} milk and ${Z4} eggs`]],
+  chart: { t: 'Units to move by zone', labels: ZONES, data: [920, 540, 1150, 690, 720, 360], mark: 2, u: '' },
+  opts: [{ n: 'Release as built', rec: 1, cost: `${C} 7.4k transport`, gain: '310 shelf-hours of stock-outs avoided', risk: 'Low', net: 'On time for 04:00 trucks' }, { n: 'Hold the 11 exceptions for a manual check', cost: '3 hours delay', gain: 'Higher accuracy on 2 counts', risk: 'Medium: 5 trucks lose their slot', net: 'Later arrivals' }, { n: `Cap ${Z3} at 900 units`, cost: 'Fewer units', gain: 'Lower truck pressure', risk: `Medium: ${Z3} dairy short again`, net: 'About 90 shelf-hours lost' }],
+  wi: { label: `${Z3} units`, u: 'units', min: 700, max: 1400, step: 50, value: 1150, f: v => { const u = (3230 + v) / 4800, h = 310 * (1 - Math.exp(-v / 700)) / (1 - Math.exp(-1150 / 700)), t = 7400 * (3230 + v) / 4380; return [['Truck space used', `${Math.round(u * 100)}%`, u <= 1 ? 'good' : 'crit'], ['Shelf-hours of stock-out avoided', `${Math.round(h)}`], ['Transport cost', `${C} ${num(Math.round(t / 100) * 100)}`], ['Extra truck needed', u > 1 ? 'Yes, 1 more' : 'No', u > 1 ? 'crit' : 'good']]; }, note: `Above 1,570 units ${Z3} needs a sixth truck, at about ${C} 1.4k.` },
+  assume: ['Tomorrow\'s forecast holds within 8%', 'Trucks are available at 04:00 to 06:00', 'Counts for the 2 uncertain items are 10% lower than the system'],
+  risks: ['Forecast error moves stock to the wrong zone: next daily plan corrects it', 'A late truck delays store lists'],
+  noact: `No plan means stores replenish from their own back rooms only: about 310 more shelf-hours of stock-outs and more manual calls tomorrow.`,
+  conf: { p: 88, why: 'This plan type has been right within 8% on 21 of the last 24 days.' }, src: ['Stock by store, 13:30', 'Forecast for tomorrow', 'Truck schedule'],
+  qa: [['Why is Zone 3 so big?', 'Rain is forecast and dairy has been short for 2 days. Zone 3 gets 26% of the units for 17% of sales.'], ['Which 11 moves are exceptions?', 'Moves with an uncertain count, a short shelf life or a truck over 95% full. They are marked in the plan.'], ['Can I change one zone only?', 'Yes. Choose Edit and set the Zone 3 units. Other zones stay unchanged.']],
+  next: ['Inbound Scheduler books 5 trucks, 04:00 to 06:00', 'Stock-out Responder sends lists to every store', 'Stock Accuracy re-counts the 2 uncertain items']
+};
+AN.coach = {
+  sum: `Move 2 pickers from stock work to picking at 18:00 and switch to the new pick path. Together they lift the evening pick capacity above the expected 148 orders an hour peak.`,
+  facts: [['Units per picker per hour, evening', '104', 'target 125'], ['Pickers on evening shift', '12', ''], ['Expected peak orders an hour', '148', '18:00 to 20:00'], ['Time spent walking', '34%', 'of pick time'], ['Time saved by the new path', '14 seconds an order', 'about 9%'], ['Stock work that waits if 2 move', 'about 25 minutes', 'shelf filling']],
+  chart: { t: 'Units per picker per hour by shift', labels: ['Morning', 'Afternoon', 'Evening'], data: [124, 119, 104], mark: 2, u: '', ref: 125, refl: 'Target 125' },
+  opts: [{ n: 'No change', cost: '0', gain: '-', risk: 'High: orders wait, delivery slows', net: `Capacity 137 orders an hour` }, { n: 'Move 2 pickers and use the new path', rec: 1, cost: 'Shelf filling waits about 25 minutes', gain: 'Capacity about 170 orders an hour', risk: 'Low', net: 'Meets peak' }, { n: 'New path only', cost: '0', gain: 'Capacity about 149 an hour', risk: 'Medium: just meets the peak', net: 'Thin margin' }, { n: 'Call in 2 extra staff', cost: `About ${C} 420 for the evening`, gain: 'Capacity about 170', risk: 'Medium: need to be reachable', net: 'Costs more' }],
+  wi: { label: 'Pickers moved to picking', u: 'pickers', min: 0, max: 4, step: 1, value: 2, f: v => { const uph = 113.4 - 1.5 * v, cap = (12 + v) * uph / 9.1; return [['Units per picker per hour', `${Math.round(uph)}`], ['Orders picked per hour', `${Math.round(cap)}`, cap >= 148 ? 'good' : 'crit'], ['Against the expected peak of 148', cap >= 148 ? 'Meets the peak' : 'Falls short', cap >= 148 ? 'good' : 'crit'], ['Shelf-filling delay', `${v * 12} minutes`, v > 3 ? 'crit' : 'good']]; }, note: 'More than 3 pickers makes the aisles crowded and delays shelf filling beyond 35 minutes.' },
+  assume: ['Peak orders arrive from 18:00 because of the rain', 'Units per order stay at 9.1', 'Picker app can load the new path today'], risks: ['Shelf filling delay could cause a few stock-outs: checked at 19:00', 'New path needs a short briefing'],
+  noact: `Capacity would be about 137 orders an hour against a peak of 148, so delivery time grows by about 6 minutes.`, conf: { p: 77, why: 'Walking time measured on 640 orders this week. Peak size from the rain forecast.' }, src: ['Pick times, last 7 days', 'Order forecast by hour', 'Store layout'],
+  qa: [['Who are the 2 pickers?', 'Agent proposes the two with the most picking experience this week. You can change them.'], ['Is the new path safe?', 'It uses the same aisles. It only changes the order of stops.'], ['When will I know it worked?', 'Units per picker per hour are checked at 20:00 against 18:00.']],
+  next: ['Coach updates the shift plan and sends it to the picker app', 'New path loaded for the evening', 'Operations Pulse re-measures at 20:00']
+};
+AN.fdoc = {
+  sum: `Remove the finished promotion from the baseline and re-run the forecast. With it removed the error on the last 3 days falls from 28% to 6%; no other change comes close.`,
+  facts: [[`${CAT_FRESH} forecast against actual sales in ${Z1}`, '+28%', '3 days running'], ['Promotion that ended', '12 days ago', 'still in the baseline'], ['Extra stock ordered because of it', `${C} 41k`, ''], ['Waste in the category', '+1.2 pts', `about ${C} 1.1k a day`], ['Accuracy after the fix', '91%', 'now 82%']],
+  chart: { t: 'Forecast as % of actual sales, last 7 days', labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'D-1', 'Today'], data: [100, 102, 99, 115, 124, 128, 128], mark: 6, u: '%', ref: 100, refl: 'Perfect' },
+  opts: [{ n: 'Remove the old promotion and re-run', rec: 1, cost: '10 minutes', gain: 'Error 28% to 6%; saves about ' + C + ' 1.1k a day waste', risk: 'Low', net: `+${C} 1.1k a day` }, { n: 'Lower the forecast by 25%', cost: '0', gain: 'Fast', risk: 'Medium: hides the cause, can overshoot', net: 'Temporary' }, { n: 'Wait 3 more days', cost: `${C} 3.3k more waste`, gain: 'More data', risk: 'High', net: `-${C} 3.3k` }],
+  assume: ['No other promotion is running', 'Underlying demand trend is flat'], risks: ['Removing the promotion also removes a real uplift on 1 of 3 items: checked, it is under 2%'],
+  noact: 'Over-ordering continues, with about 1.2 points of extra waste and ' + C + ' 1.1k a day lost.', conf: { p: 90, why: 'Re-running without the promotion explains almost all of the error.' }, src: ['Forecast and sales by day', 'Promotion calendar', 'Waste report'],
+  qa: [['How do you know it is the promotion?', 'Re-running without it brings the error from 28% to 6%. No other single change gets under 15%.'], ['Is this a one-off?', 'The Data Validator now checks the promotion calendar daily so it should not repeat.']],
+  next: ['Forecast Doctor re-runs the forecast', 'Plan Unblocker pauses tonight\'s order for over-forecast items until it finishes', 'Edit Reviewer scores the change tomorrow']
+};
+AN.unblock = {
+  sum: `Fill the 19 supplier links from last month's approved matches. 17 match with 97% confidence and 2 with 82%. The 8 cost prices need a supplier and stay with the buyer.`,
+  facts: [['Blocked buy lines', '27', ''], ['Missing supplier links', '19', '17 high confidence, 2 medium'], ['Missing cost prices', '8', 'need the supplier'], ['Value of blocked lines in tonight\'s order', `${C} 212k`, ''], ['Order cut-off', '17:00', ''], ['Items that stock out in 2 days if blocked', '11', '']],
+  opts: [{ n: 'Fill all 19 links from last month', rec: 1, cost: '0', gain: 'Order goes out at 17:00', risk: 'Low: a wrong link is caught at PO check', net: 'Saves about 4 hours of buyer time' }, { n: 'Fill only the 17 high-confidence links', cost: '0', gain: 'Safer', risk: 'Low: 2 items stay blocked', net: '2 items wait' }, { n: 'Leave it to the buyer', cost: 'About 4 hours', gain: 'Full control', risk: 'High: may miss the cut-off', net: '11 items at risk' }],
+  assume: ['Last month\'s approved supplier is still the right one', 'Pack sizes have not changed'], risks: ['A wrong link would be caught at PO check; correction costs about 20 minutes'],
+  noact: `Blocked lines drop out of tonight's order. 11 items stock out within 2 days.`, conf: { p: 94, why: 'Matched on item, supplier and pack size against approved history.' }, src: ['Buy plan', 'Approved orders, last 30 days', 'Supplier catalogue'],
+  qa: [['How were links matched?', 'Same item, same supplier, same pack size as last month\'s approved orders.'], ['What about the 2 medium ones?', 'Pack size is different on one; I flagged it for the buyer to check before release.']],
+  next: ['Plan Unblocker fills the links', 'Buy plan re-runs at 15:00', 'Buyer reviews the 8 missing cost prices']
+};
+AN.reply = {
+  sum: `Call ${SG} now. With no reply in 6 hours and a 74% on-time record this month, a firm time is the cheapest way to confirm whether the 09:00 promise holds.`,
+  facts: [[`${SG} reply`, 'none in 6 hours', ''], ['New delivery dates logged from others', '3', ''], [`${SG} on-time record this month`, '74%', 'target 90%'], [`Dairy items that depend on ${SG}`, '9', ''], ['Value of the delayed order', `${C} 63k`, '']],
+  opts: [{ n: 'Call now and ask for a firm time', rec: 1, cost: '10 minutes', gain: 'Know by 08:00 whether stock move is needed', risk: 'Low', net: 'Clear plan' }, { n: 'Switch the 9 items to another supplier', cost: 'Price +4%, 2-day lead time', gain: 'Less dependence', risk: 'Medium', net: 'Slow' }, { n: 'Wait for a reply', cost: '0', gain: '-', risk: 'High', net: 'Unknown' }],
+  assume: [`${SG}'s dispatch desk opens at 07:30`], risks: ['They give a time they cannot meet'], noact: 'We learn about the delay only when the truck fails to arrive.', conf: { p: 80, why: 'Based on how this supplier has behaved in 30 days.' }, src: ['Order confirmations', 'Supplier replies log'],
+  qa: [['What do I ask for?', 'A dispatch time and truck registration, so Inbound Scheduler can book the dock.'], ['Is there a script?', 'Yes. The agent drafts three lines: the order number, the delay, and the question.']],
+  next: ['Reply Tracker logs the answer', 'Inbound Scheduler re-books the dock', 'Availability Control Tower updates its estimate']
+};
+AN.resp = {
+  sum: `Confirm all three fixes: 2 items come from the back room in minutes, 3 have a substitute customers accept 78% of the time, and 1 needs a transfer tonight.`,
+  facts: [['Items out of stock in Z3-02', '6', ''], ['In the back room', '2', 'about 10 minutes'], ['With an accepted substitute', '3', '78% accepted'], ['Needing a transfer tonight', '1', ''], ['Sales protected today', `${C} 4k`, '']],
+  opts: [{ n: 'Confirm all three fixes', rec: 1, cost: '10 minutes of staff time', gain: `Protects about ${C} 4k sales today`, risk: 'Low', net: `+${C} 4k` }, { n: 'Back room only', cost: '5 minutes', gain: `Protects about ${C} 1.2k`, risk: 'Medium', net: `+${C} 1.2k` }, { n: 'Do nothing', cost: '0', gain: '-', risk: 'High: cancelled orders', net: `-${C} 4k` }],
+  assume: ['Substitutes are priced within 5% of the original'], risks: ['A customer may reject the substitute: refund is automatic'], noact: 'Customers hit empty shelves, orders cancel, and missing-item complaints rise.', conf: { p: 85, why: 'Back-room counts verified at 06:10.' }, src: ['Store stock count', 'Substitute acceptance history'],
+  qa: [['Who picks the substitutes?', 'The picker app suggests them in order of closest match.'], ['What happens to the last item?', 'It is added to tonight\'s transfer and shown as unavailable until it arrives.']],
+  next: ['Stock-out Responder updates the app', 'Picker app shows the substitutes', 'Transfer Planner adds the last item']
+};
+AN.paytm = {
+  sum: `Pay the 9 invoices on the last allowed day. No early-payment discount is lost, and cash stays with us 11 days longer.`,
+  facts: [['Invoices', '9', `${C} 142k`], ['Payment day today', 'day 25', 'terms allow day 36'], ['Cash held longer', `${C} 142k for 11 days`, ''], ['Early-payment discounts lost', `${C} 0`, 'none apply'], ['Largest invoice', SK, '']],
+  opts: [{ n: 'Pay on the last allowed day', rec: 1, cost: `${C} 0`, gain: 'Holds cash 11 days', risk: 'Low', net: 'Small working capital gain' }, { n: 'Keep paying on day 25', cost: `${C} 0`, gain: 'No change', risk: '-', net: '-' }, { n: 'Pay early for a 1.5% discount where offered', cost: 'Cash out earlier', gain: `About ${C} 1.2k saved`, risk: 'Low', net: 'Mixed' }],
+  assume: ['Supplier terms are respected'], risks: ['A supplier counts a late payment: all dates stay inside the terms'], noact: 'No change.', conf: { p: 92, why: 'Contract terms checked invoice by invoice.' }, src: ['Supplier terms', 'Invoice list'],
+  qa: [['Could any supplier object?', 'No. All dates are inside agreed terms.'], ['What is the benefit?', 'About 0.08 days of working capital. Small, but with no risk.']],
+  next: ['Payment Timing updates 9 payment dates', 'Finance lead is shown the schedule']
+};
+AN.camp = {
+  sum: `Run the rainy-day campaign. Past rainy days show ready meals up 34%, stock covers it, and the cost is small against the expected extra margin.`,
+  facts: [['Ready meals on past rainy days', '+34%', '5 comparable days'], ['Stock cover for hot food', '3.1 days', ''], ['Campaign cost', `${C} 4.5k`, 'messages and 5% offer'], ['Expected extra sales', `${C} 38k`, `range ${C} 24k to 52k`], ['Extra margin after cost', `${C} 4.6k`, '']],
+  opts: [{ n: 'Approve the campaign', rec: 1, cost: `${C} 4.5k`, gain: `About ${C} 38k extra sales`, risk: 'Low', net: `+${C} 4.6k margin` }, { n: 'Smaller campaign (one zone)', cost: `${C} 2.2k`, gain: `About ${C} 17k sales`, risk: 'Low', net: `+${C} 1.9k` }, { n: 'No campaign', cost: '0', gain: 'Normal rainy-day lift only', risk: 'Missed opportunity', net: '-' }],
+  assume: ['Rain starts at 09:30 as forecast', 'Stock is available for ready meals'], risks: ['Rain stops early: shelf life 3+ days limits waste'], noact: 'Normal rainy-day lift only; competitors may capture the extra demand.', conf: { p: 72, why: 'Five similar days; effect varied between +24% and +46%.' }, src: ['Rainy-day sales history', 'Weather forecast'],
+  qa: [['What is the offer?', '5% off ready meals and hot food from 11:00 to 21:00 in two zones.'], ['What if it does not rain?', 'The campaign switches off at 13:00 if rain has not started.']],
+  next: ['Campaign Planner schedules the offer for 11:00', 'Customer message sent at 10:45', 'Results read at 22:00']
+};
+AN.credit = {
+  sum: `Send the supplier the request for the 2 missing documents and the renewed tax certificate now. Waiting leaves no slack before Friday's review.`,
+  facts: [['Documents complete', '9 of 11', ''], ['Missing', 'Bank letter, insurance certificate', ''], ['Expiring', 'Tax certificate in 21 days', ''], ['Review due', 'Friday', '3 days'], ['Typical supplier reply time', '2 to 3 days', '']],
+  opts: [{ n: 'Request all 3 now', rec: 1, cost: '0', gain: 'Pack ready before Friday', risk: 'Low', net: 'On time' }, { n: 'Wait and send everything together', cost: '0', gain: 'One message', risk: 'Medium: may miss Friday', net: 'Late' }, { n: 'Send pack with gaps and ask for conditional approval', cost: '0', gain: 'Starts review early', risk: 'Medium', net: 'Review may stall' }],
+  assume: [`${SK} replies within 3 days`], risks: ['A document arrives with errors: the agent re-checks each one'], noact: 'Credit-line review slips and payment terms stay as they are.', conf: { p: 84, why: 'Checklist matches the finance requirements.' }, src: ['Supplier file', 'Document checklist'],
+  qa: [['Who reviews the pack?', 'Finance lead before it is sent.'], ['What if a document is rejected?', 'The agent flags it and requests a corrected one the same day.']],
+  next: ['Agent sends the request to the supplier', 'Reminder after 2 days', 'Finance lead reviews the final pack']
+};
+AN.pulse = {
+  sum: `Raise tonight's forecast by 12% for ${Z2} and ${Z3}. The last 10 rainy days averaged +11.8%, and most of the added units have a shelf life above 3 days.`,
+  facts: [['Average uplift on 10 rainy days', '+11.8%', 'range +9% to +15%'], ['Extra units to order', '1,900', `about ${C} 21k of stock`], ['Evening peak moves to', '18:00', 'was 19:00'], ['Units with shelf life above 3 days', '78%', '']],
+  chart: { t: 'Order uplift on the last 10 rainy days (%)', labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], data: [9, 11, 15, 12, 10, 13, 14, 9, 12, 13], mark: 9, u: '%' },
+  opts: [{ n: 'Raise by 12%', rec: 1, cost: `${C} 21k of stock`, gain: `Protects about ${C} 21k of sales`, risk: 'Low', net: 'Meets demand' }, { n: 'Raise by 6%', cost: `${C} 10k`, gain: `Protects about ${C} 11k`, risk: 'Medium: short at peak', net: 'Safer, may stock out' }, { n: 'No change', cost: '0', gain: '-', risk: 'High: stock-outs at peak', net: `-${C} 21k` }],
+  wi: { label: 'Forecast increase', u: '%', min: 0, max: 20, step: 1, value: 12, f: v => { const cover = Math.min(1, v / 11.8), over = Math.max(0, v - 15) * 160; return [['Demand covered', `${Math.round(cover * 100)}%`, cover >= 0.95 ? 'good' : 'crit'], ['Extra stock ordered', `${C} ${num(Math.round(v * 1750 / 100) * 100)}`], ['Waste risk if rain stops', `${C} ${num(Math.round(v * 40 + over))}`]]; }, note: 'Above 15% there is waste risk with little extra demand.' },
+  assume: ['Rain starts around 09:30 and lasts through the evening'], risks: ['Forecast changes: re-checked at 12:00'], noact: 'Evening stock-outs on ready meals and dairy.', conf: { p: 78, why: '10 comparable days, but weather timing can slip by 2 hours.' }, src: ['Weather forecast', 'Sales on past rainy days'],
+  qa: [['How wet is it expected to be?', 'Heavy rain from 09:30 to about 21:00.'], ['Is the forecast change reversible?', 'Yes. It can be edited until the order cut-off at 17:00.']],
+  next: ['Campaign Forecast applies the change', 'Plan Unblocker sends the order at 17:00']
+};
+AN.voice = {
+  sum: `Send the voucher. Customers who hit a missing item are less likely to order again, and the voucher cost is below the expected return.`,
+  facts: [['Customers affected', '1,150', 'yesterday evening'], ['Voucher value', `${C} 10`, `cost ${C} 11.5k if all used`], ['Expected redemption', '38%', ''], ['Repeat uplift on redeemers', '+9 pts', 'versus no voucher'], ['Expected return', `${C} 15.9k`, 'margin over 11 orders']],
+  opts: [{ n: 'Send the voucher', rec: 1, cost: `up to ${C} 11.5k`, gain: `Return about ${C} 15.9k`, risk: 'Low', net: `+${C} 4.4k` }, { n: 'Apology message only', cost: '0', gain: 'Small recovery', risk: 'Medium', net: 'Low effect' }, { n: 'Do nothing', cost: '0', gain: '-', risk: 'Repeat rate falls 0.1 pts', net: '-' }],
+  assume: ['Past voucher response holds'], risks: ['Voucher abuse: limited to 1 per customer'], noact: 'Affected customers order less often.', conf: { p: 68, why: 'Similar vouchers in the last year; effect varied.' }, src: ['Complaints', 'Past voucher results'],
+  qa: [['Who gets it?', 'Customers whose order missed an item in Zone 3 yesterday between 14:00 and 19:00.'], ['What if the redeem rate is low?', 'Cost falls with it. We only pay for vouchers used.']],
+  next: ['Customer Voice sends the message', 'Redemption tracked for 14 days']
+};
+
+AN['wf:price:3'] = AN.guard; AN['wf:promo:3'] = AN.comp; AN['wf:transfer:3'] = AN.transfer; AN['wf:stockout:5'] = AN.tower; AN['wf:picker:3'] = AN.coach; AN['wf:credit:3'] = AN.credit;
 
 /* ---------- decision log: yesterday's history (seeded) ---------- */
 const LOG0 = [
@@ -726,7 +932,7 @@ const VERB = { approved: 'Approved', edited: 'Edited and approved', rejected: 'R
 
 /* ---------- state ---------- */
 const S = { persona: 'ch', route: 'landing', arg: null, dec: [], log: [], feed: [], adj: {}, adjLog: [], stats: {}, flash: {}, seq: 0,
-  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', stage: null, pres: { on: false, i: 0, did3: false } };
+  sim: { t: 0, playing: false, speed: 1, world: 'ai', fired: {}, timer: null }, wf: {}, ask: null, assigned: {}, ba: {}, sort: { k: 'name', d: 1 }, flt: { role: 'all', wf: 'all' }, pflt: 'all', stage: null, wiVal: {}, pres: { on: false, i: 0, did3: false } };
 AG.forEach((a, i) => {
   a.act = [`05:55  Checked ${ri(300, 1900)} records, nothing else changed`, `05:20  Compared with yesterday and the same weekday last month`];
   const req = ri(22, 80), acc = Math.round(req * (0.62 + R() * 0.18)), ed = Math.round(req * (0.1 + R() * 0.1));
@@ -743,7 +949,7 @@ function addDecision(o) {
   if (d.agent) AGM[d.agent].status = 'Needs you';
   return d;
 }
-AG.filter(a => a.status === 'Needs you').forEach(a => S.dec.push({ id: 'd-' + a.id, status: 'open', agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, stage: a.stage, source: 'agent' }));
+AG.filter(a => a.status === 'Needs you').forEach(a => S.dec.push({ id: 'd-' + a.id, status: 'open', agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, stage: a.stage, source: 'agent', an: a.id }));
 LOG0.forEach((r, i) => S.log.push({ role: r[0], who: PWHO[r[0]], agent: r[1], wf: r[2], kind: r[3], item: r[4], reason: r[5], change: '', time: `Yesterday ${String(8 + Math.floor(i * 0.9)).padStart(2, '0')}:${String(ri(0, 59)).padStart(2, '0')}`, ord: -100 + i }));
 S.log.reverse();
 const openDec = role => S.dec.filter(d => d.status === 'open' && (!role || d.role === role));
@@ -759,7 +965,7 @@ const mNow = k => METRIC[k].base + (S.adj[k] || 0) + dayEff(k);
 function metricDelta(k) {
   const m = METRIC[k], diff = mNow(k) - m.series[12];
   const good = m.good === 'up' ? diff >= 0 : diff <= 0;
-  const flat = Math.abs(diff) < (k === 'gmv' ? 2000 : 0.04);
+  const flat = Math.abs(diff) < (k === 'gmv' ? 2000 : 0.009);
   return { txt: flat ? 'flat vs yesterday' : `${diff > 0 ? '+' : '-'}${m.d(diff)} vs yesterday`, cls: flat ? 'flat' : good ? 'good' : 'bad' };
 }
 function spark(k, big) {
@@ -803,14 +1009,15 @@ document.addEventListener('keydown', e => {
 
 /* ---------- decisions ---------- */
 function decisionCard(d, compact) {
-  const ag = d.agentName ? `<span class="tag acc">${d.agentName}</span>` : '';
+  const ag = d.agentName ? `<span class="tag acc">${d.agentName}</span>` : '', an = analysisFor(d);
   if (d.status !== 'open') {
-    return `<div class="dcard done-d ${d.status === 'rejected' ? 'rej' : ''}"><div class="row" style="justify-content:space-between"><strong>${d.title}</strong>${ag}</div><p class="why"><b>${VERB[d.status]}</b> by ${PWHO[d.role]} at ${d.at}. Reason: ${esc(d.reason)}${d.changeTxt ? ' Change: ' + esc(d.changeTxt) : ''}</p></div>`;
+    return `<div class="dcard done-d ${d.status === 'rejected' ? 'rej' : ''}"><div class="row" style="justify-content:space-between"><strong>${d.title}</strong>${ag}</div><p class="why"><b>${VERB[d.status]}</b> by ${PWHO[d.role]} at ${d.at}. Reason: ${esc(d.reason)}${d.changeTxt ? ' Change: ' + esc(d.changeTxt) : ''}</p><button class="chip" data-act="brief" data-id="${d.id}">View the evidence used</button></div>`;
   }
   return `<div class="dcard" data-did="${d.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><strong>${d.title}</strong>${ag}</div>
     <p class="why">${d.why}</p>${!compact && d.ev && d.ev.length ? `<ul class="ev">${d.ev.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
     <div class="ask">${d.ask}</div>
-    <div class="row" style="margin-top:12px"><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
+    <p class="imp">${impactLine(d)}${an ? ' &middot; Confidence ' + an.conf.p + '%' : ''}</p>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="brief" data-id="${d.id}">Review evidence</button><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
 }
 const REASONS = { approve: ['Evidence is clear', 'Within our limits', 'Low risk, high value', 'Time is short'], edit: ['Adjusted for local knowledge', 'Right idea, wrong size', 'Needs a smaller first step'], reject: ['Not enough evidence', 'Cost is too high', 'Wrong timing', 'Handle another way'] };
 function decideHTML(d, kind) {
@@ -820,11 +1027,12 @@ function decideHTML(d, kind) {
   if (kind === 'approve' && ed) ctl = ed.type === 'choice' ? `<div class="callout" style="background:var(--accent-soft);color:var(--accent)">You are approving: <b>${ed.options.find(o => o.id === ed.rec).l}</b></div>` : `<div class="callout" style="background:var(--accent-soft);color:var(--accent)">You are approving: <b>${ed.label} ${fmtVal(ed, ed.value)}</b></div>`;
   if (kind === 'edit') {
     if (ed && ed.type === 'choice') { const pre = (ed.options.find(o => o.id !== ed.rec) || ed.options[0]).id; ctl = `<fieldset style="border:0;padding:0;margin:0"><legend class="f">${ed.label}</legend>${ed.options.map(o => `<label class="radio"><input type="radio" name="chg" value="${o.id}" ${o.id === pre ? 'checked' : ''}><span>${o.l}${o.id === ed.rec ? ' <span class="tag acc">Recommended</span>' : ''}</span></label>`).join('')}</fieldset>`; }
-    else if (ed) ctl = `<label class="f" for="chg">${ed.label} (${ed.unit}), proposed ${num(ed.value)}</label><input class="in" id="chg" type="number" value="${ed.value}" min="0" step="any">`;
+    else if (ed) ctl = `<label class="f" for="chg">${ed.label} (${ed.unit}), proposed ${num(ed.value)}${S.wiVal[d.id] != null ? '. Starting from your what-if value.' : ''}</label><input class="in" id="chg" type="number" value="${S.wiVal[d.id] != null ? S.wiVal[d.id] : ed.value}" min="0" step="any">`;
     else ctl = `<label class="f" for="chg">What do you want to change?</label><input class="in" id="chg" type="text" placeholder="For example: smaller scope, later date">`;
   }
   return `<span class="eyebrow">${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 6px">${title}: ${d.title}</h2>
     <p class="muted small">${d.ask}</p>
+    ${checkBox(d, kind)}
     <div class="stack" style="margin-top:14px">${ctl}
     <div><label class="f" for="reason">Reason (required, goes into the decision log)</label>
     <div class="row" style="margin-bottom:8px">${REASONS[kind].map(r => `<button type="button" class="chip" data-act="chip" data-text="${r}">${r}</button>`).join('')}</div>
@@ -849,6 +1057,57 @@ function decide(id, kind, reason, chg) {
   if (d.agent) { const a = AGM[d.agent]; a.act.unshift(`${clock(S.sim.t)}  ${VERB[d.status]} by ${PWHO[d.role]}: ${reason}`); a.last = `${VERB[d.status]} ${clock(S.sim.t)}`; if (!openFor(d.agent).length) a.status = 'Watching'; }
   toast(`${VERB[d.status]}. Logged with your reason.`);
   if (d.wf) wfAfter(d);
+}
+
+/* ---------- decision briefs ---------- */
+function analysisFor(d) { const key = d.an || (d.source === 'agent' ? d.agent : null) || (d.source === 'workflow' ? 'wf:' + d.wf + ':' + d.step : null); return (key && AN[key]) || null; }
+function impactLine(d) { const e = Object.entries(d.effect || {}); return e.length ? 'Expected effect: ' + e.map(([k, v]) => `${METRIC[k].name} ${v > 0 ? '+' : '-'}${METRIC[k].d(v)}`).join(', ') : 'No scorecard change expected'; }
+function genAn(d) {
+  const ag = d.agent || d.sa, st = ag && S.stats[ag], rate = st ? st.acc / Math.max(1, st.req) : 0.7;
+  return { sum: `${d.why} The agent recommends: ${d.ask}`, facts: (d.ev || []).map(e => [e, '', '']),
+    opts: [{ n: 'Do nothing', cost: '-', gain: 'No change; the issue continues', risk: 'The finding stays open and may grow', net: '-' },
+      { n: 'Approve as proposed', rec: 1, cost: `Agent actions plus a few minutes of ${PWHO[d.role]} time`, gain: impactLine(d).replace('Expected effect: ', ''), risk: 'Low: logged and reversible', net: '-' },
+      { n: 'Edit to a smaller first step', cost: 'Less', gain: 'About 60% of the expected effect', risk: 'Lower: test before scaling', net: '-' }],
+    assume: ['Data was refreshed at 06:00', 'Past comparable cases behave the same way'], risks: ['The situation changes before the action lands: the agent re-checks and tells you'],
+    noact: 'The issue stays open. ' + d.why, conf: { p: Math.round(60 + rate * 30), why: `Based on this agent's record: ${Math.round(rate * 100)}% of its proposals accepted in the last 30 days.` },
+    src: ['Latest system data', 'Past decisions of this type'],
+    qa: [['Why now?', d.why], ['What evidence supports this?', (d.ev || []).join('; ') || 'See the finding.']], next: ['The agent carries out the approved action', 'The result is logged and shown in the next bulletin'] };
+}
+function checkBox(d, kind) {
+  const an = analysisFor(d) || genAn(d);
+  const body = kind === 'reject' ? `<b>If you reject:</b> ${an.noact}` : kind === 'edit' ? `<b>Agent's recommendation:</b> ${an.sum}` : `<b>What happens next:</b> ${an.next.slice(0, 3).join('; ')}.`;
+  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}<br><span style="display:block;margin-top:6px">${body}</span><button class="chip" style="margin-top:8px" data-act="brief" data-id="${d.id}">Open the full evidence brief</button></div>`;
+}
+function barSVG(c) {
+  const W = 520, H = 176, pl = 8, pb = 24, pt = 20, n = c.data.length, mx = Math.max(...c.data, c.ref || 0) * 1.15, bw = (W - pl * 2) / n;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.t)}" style="width:100%;height:auto">`;
+  c.data.forEach((v, i) => { const h = (H - pb - pt) * v / mx, x = pl + i * bw + bw * 0.15, y = H - pb - h; s += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${h.toFixed(1)}" rx="3" fill="${i === c.mark ? 'var(--accent)' : 'var(--ink3)'}" opacity="${i === c.mark ? 1 : 0.45}"/><text x="${(x + bw * 0.35).toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" font-size="11" fill="var(--ink2)">${v}${c.u === '%' ? '%' : ''}</text><text x="${(x + bw * 0.35).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="10.5" fill="var(--ink3)">${c.labels[i]}</text>`; });
+  if (c.ref != null) { const y = H - pb - (H - pb - pt) * c.ref / mx; s += `<line x1="${pl}" x2="${W - pl}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--warn)" stroke-dasharray="4 3"/><text x="${W - pl}" y="${(y - 4).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--warn)">${c.refl || ''}</text>`; }
+  return s + '</svg>';
+}
+function wiOut(wi, v) { return wi.f(v).map(([l, x, t]) => `<div class="${t || ''}">${l}<b>${x}</b></div>`).join(''); }
+function briefHTML(id) {
+  const d = S.dec.find(x => x.id === id); if (!d) return '<p>This decision is no longer available.</p>';
+  const an = analysisFor(d) || genAn(d), ag = d.agent || d.sa, st = ag && S.stats[ag];
+  const imp = Object.entries(d.effect || {}), wv = S.wiVal[d.id] != null ? S.wiVal[d.id] : (an.wi ? an.wi.value : 0);
+  const factsList = an.facts.every(f => !f[1]);
+  const rate = st ? `${st.req} proposals in the last 30 days: ${Math.round(st.acc / st.req * 100)}% accepted, ${Math.round(st.edit / st.req * 100)}% edited, ${Math.round(st.rej / st.req * 100)}% rejected.` : '';
+  return `<div class="brief"><span class="eyebrow">Decision brief &middot; ${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 8px">${d.title}</h2>
+  <div class="row"><span class="tag acc">${d.agentName || 'Agent'}</span><span class="tag">Illustrative data</span></div>
+  <div class="ask dcard" style="margin-top:12px;border-left-color:var(--accent)"><b>Decision needed:</b> ${d.ask}</div>
+  <h3 class="h3">What the agent recommends, and the logic</h3><p>${an.sum}</p>
+  <div class="two" style="margin-top:12px"><div><div class="small muted">Confidence in the estimate</div><div class="row" style="gap:10px;flex-wrap:nowrap"><div class="meter" style="flex:1" role="img" aria-label="Confidence ${an.conf.p} percent"><i style="width:${an.conf.p}%"></i></div><b>${an.conf.p}%</b></div><div class="small muted" style="margin-top:4px">${an.conf.why}</div></div>
+  <div><div class="small muted">Expected effect on the scorecard</div>${imp.length ? `<table class="tbl" style="margin-top:4px"><thead><tr><th></th><th class="n">Low</th><th class="n">Expected</th><th class="n">High</th></tr></thead><tbody>${imp.map(([k, v]) => { const m = METRIC[k], sg = x => `${x > 0 ? '+' : '-'}${m.d(x)}`; return `<tr><td>${m.name}</td><td class="n">${sg(v * 0.5)}</td><td class="n"><b>${sg(v)}</b></td><td class="n">${sg(v * 1.4)}</td></tr>`; }).join('')}</tbody></table>` : '<p class="small" style="margin-top:4px">No scorecard change expected.</p>'}</div></div>
+  <h3 class="h3">Key numbers</h3>${factsList ? `<ul class="ev">${an.facts.map(f => `<li>${f[0]}</li>`).join('')}</ul>` : `<div class="tw card"><table class="tbl"><tbody>${an.facts.map(f => `<tr><td>${f[0]}</td><td class="n"><b>${f[1]}</b></td><td class="faint">${f[2] || ''}</td></tr>`).join('')}</tbody></table></div>`}
+  ${an.chart ? `<h3 class="h3">${an.chart.t}</h3><div class="card pad" style="box-shadow:none">${barSVG(an.chart)}</div>` : ''}
+  <h3 class="h3">Options compared</h3><div class="tw card"><table class="tbl"><thead><tr><th>Option</th><th>What it costs</th><th>What we gain</th><th>Main risk</th><th>Net result</th></tr></thead><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b>${o.rec ? '<br><span class="tag acc">Agent recommends</span>' : ''}</td><td>${o.cost}</td><td>${o.gain}</td><td>${o.risk}</td><td>${o.net || ''}</td></tr>`).join('')}</tbody></table></div>
+  ${an.wi ? `<h3 class="h3">Try it: change the number and see the result</h3><div class="card pad" style="box-shadow:none"><label class="f" for="wi">${an.wi.label}: <b id="wi-v">${fmtVal({ unit: an.wi.u }, wv)}</b></label><input type="range" id="wi" min="${an.wi.min}" max="${an.wi.max}" step="${an.wi.step}" value="${wv}" data-input="wi" data-id="${d.id}"><div class="wiout" id="wi-out" aria-live="polite">${wiOut(an.wi, wv)}</div><p class="small muted" style="margin-top:10px">${an.wi.note || ''} If you choose Edit, this value is your starting point.</p></div>` : ''}
+  <div class="two"><div><h3 class="h3">What we assumed</h3><ul class="ev">${an.assume.map(x => `<li>${x}</li>`).join('')}</ul></div><div><h3 class="h3">What could go wrong</h3><ul class="ev">${an.risks.map(x => `<li>${x}</li>`).join('')}</ul></div></div>
+  <h3 class="h3">If we do nothing</h3><p>${an.noact}</p>
+  <h3 class="h3">What happens next if you approve</h3><ol class="bul">${an.next.map(x => `<li><span>${x}</span></li>`).join('')}</ol>
+  <h3 class="h3">Where the numbers come from</h3><ul class="ev">${an.src.map(x => `<li>${x}</li>`).join('')}${rate ? `<li>Track record of this agent: ${rate}</li>` : ''}</ul>
+  <h3 class="h3">Questions you may want to ask the agent</h3>${an.qa.concat([['What happens if I reject this?', 'The agent logs your reason and does not act. You can ask it for a revised proposal, and the same finding stays visible in the next bulletin.']]).map(([q, a]) => `<details class="qa"><summary>${q}</summary><p>${a}</p></details>`).join('')}
+  <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
 }
 
 /* ---------- workflow engine ---------- */
@@ -932,7 +1191,7 @@ function inject(id) {
     a.act.unshift(`${clock(S.sim.t)}  ${st.text}`);
     S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>${a.name}:</b> ${st.text}` });
     if (st.imp) Object.entries(st.imp).forEach(([k, v]) => { S.adj[k] = (S.adj[k] || 0) + v; S.adjLog.unshift({ k, v, who: a.name, t: clock(S.sim.t) }); S.flash[k] = 1; });
-    if (st.dec) { roles.add(st.dec.role); addDecision({ agent: st.ag, agentName: a.name, role: st.dec.role, title: st.dec.title, ask: st.dec.ask, why: st.dec.why, ev: st.dec.ev, effect: st.dec.effect, edit: st.dec.edit, source: 'scenario' }); toast(`New decision for ${PNAME[st.dec.role]}`); }
+    if (st.dec) { roles.add(st.dec.role); addDecision({ agent: st.ag, agentName: a.name, role: st.dec.role, title: st.dec.title, ask: st.dec.ask, why: st.dec.why, ev: st.dec.ev, effect: st.dec.effect, edit: st.dec.edit, an: st.dec.an, source: 'scenario' }); toast(`New decision for ${PNAME[st.dec.role]}`); }
     if (i === sc.steps.length - 1) { S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>Chain complete:</b> ${ags.size} agents worked on it, ${roles.size} roles have a decision waiting.` }); }
     updateTop(); render();
   }, reduced ? 120 * i : 1300 * i));
@@ -1138,7 +1397,8 @@ const PSTEPS = [
   { t: '1. Landing: the north star', time: '0:00 to 0:45', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
   { t: '2. Country head: morning bulletin', time: '0:45 to 1:45', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
   { t: '3. Play one scenario', time: '1:45 to 3:00', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
-  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Approve the Availability Control Tower proposal: expedite the top-up and move stock. A reason is required, and it goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open this decision', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
+  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, a what-if slider, assumptions and questions you can ask. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
+    action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
   { t: '5. Before and after', time: '3:45 to 4:30', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
   { t: '6. Close on the north star', time: '4:30 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
 ];
@@ -1147,7 +1407,7 @@ function presHTML() {
   return `<div class="card pcard" role="region" aria-label="Presenter panel"><div class="row" style="justify-content:space-between"><span class="eyebrow">Presenter mode</span><span class="small faint">${p.time}</span></div>
   <h2 class="h3" style="margin-top:4px">${p.t}</h2><div class="dots" aria-hidden="true">${PSTEPS.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</div>
   <p class="small muted">${p.say}</p>
-  <div class="row" style="margin-top:10px"><button class="btn sm" data-act="pres-back" ${i === 0 ? 'disabled' : ''}>Back</button><button class="btn pri sm" data-act="pres-next">${i === PSTEPS.length - 1 ? 'Finish' : 'Next'}</button>${p.action ? `<button class="btn sm" data-act="pres-action">${p.action[0]}</button>` : ''}<span class="grow"></span><button class="btn sm" data-act="pres-off" aria-label="Close presenter">Close</button></div></div>`;
+  <div class="row" style="margin-top:10px"><button class="btn sm" data-act="pres-back" ${i === 0 ? 'disabled' : ''}>Back</button><button class="btn pri sm" data-act="pres-next">${i === PSTEPS.length - 1 ? 'Finish' : 'Next'}</button>${p.action ? `<button class="btn sm" data-act="pres-action">${p.action[0]}</button>` : ''}${p.action2 ? `<button class="btn sm" data-act="pres-action2">${p.action2[0]}</button>` : ''}<span class="grow"></span><button class="btn sm" data-act="pres-off" aria-label="Close presenter">Close</button></div></div>`;
 }
 function presRender() { const el = $('#presenter'); el.hidden = !S.pres.on; $('#btn-pres').setAttribute('aria-pressed', S.pres.on); if (S.pres.on) el.innerHTML = presHTML(); }
 function presGo() { const p = PSTEPS[S.pres.i]; p.go(); presRender(); setTimeout(() => { const t = $(p.spot); if (t) { t.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); t.classList.add('spot'); setTimeout(() => t.classList.remove('spot'), 5200); } }, 350); }
@@ -1175,6 +1435,7 @@ const ACT = {
   agent: el => { const id = el.dataset.id; openLayer('drawer', AGM[id].name, () => agentHTML(id)); },
   metric: el => { const k = el.dataset.id; openLayer('drawer', METRIC[k].name + ' drivers', () => metricHTML(k)); },
   decide: el => openDecide(el.dataset.id, el.dataset.k),
+  brief: el => { const id = el.dataset.id; const L = openLayer('drawer', 'Decision brief', () => briefHTML(id)); L.el.classList.add('wide'); },
   chip: el => { const t = $('#reason'); t.value = el.dataset.text; t.focus(); },
   confirm: el => {
     const reason = $('#reason').value.trim(), kind = el.dataset.k, err = $('#derr'); let chg = '';
@@ -1188,8 +1449,9 @@ const ACT = {
   'pres-next': () => { if (S.pres.i >= PSTEPS.length - 1) { S.pres.on = false; presRender(); toast('Guided path finished.'); } else { S.pres.i++; presGo(); } },
   'pres-back': () => { if (S.pres.i > 0) { S.pres.i--; presGo(); } },
   'pres-action': () => PSTEPS[S.pres.i].action[1](),
+  'pres-action2': () => PSTEPS[S.pres.i].action2[1](),
   'read-bulletin': () => { AGM.chief.status = 'Watching'; AGM.chief.last = 'Bulletin read ' + clock(S.sim.t); AGM.chief.act.unshift(`${clock(S.sim.t)}  Bulletin read by the Country head`); toast('Bulletin marked as read.'); render(); },
-  'to-decision': el => { const a = AGM[el.dataset.id]; addDecision({ agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, source: 'agent' }); a.act.unshift(`${clock(S.sim.t)}  Turned the finding into a proposal`); toast('Proposal created and sent to ' + PNAME[a.role] + '.'); render(); },
+  'to-decision': el => { const a = AGM[el.dataset.id]; addDecision({ agent: a.id, agentName: a.name, role: a.role, title: a.finding, ask: a.ask, why: a.why, ev: a.ev, effect: a.effect, edit: a.edit, source: 'agent', an: a.id }); a.act.unshift(`${clock(S.sim.t)}  Turned the finding into a proposal`); toast('Proposal created and sent to ' + PNAME[a.role] + '.'); render(); },
   recheck: el => { const a = AGM[el.dataset.id]; a.act.unshift(`${clock(S.sim.t)}  Checked ${200 + (a.act.length * 137 + a.id.length * 53) % 1700} records, nothing new`); toast(a.name + ' checked again: nothing new.'); render(); },
   ask: el => { const i = +el.dataset.id, q = QA[i]; clearInterval(S.askT); S.ask = { i, n: reduced ? q.trail.length + 2 : 0 }; render(); if (!reduced) { S.askT = setInterval(() => { S.ask.n++; const o = $('#ask-out'); if (o) o.innerHTML = askOut(); if (S.ask.n >= q.trail.length + 2) clearInterval(S.askT); }, 700); } },
   assign: el => assignTask(+el.dataset.i, +el.dataset.j),
@@ -1221,6 +1483,11 @@ document.addEventListener('input', e => {
   const el = e.target.closest('[data-input="rule"]'); if (!el) return;
   const g = +el.dataset.g, r = +el.dataset.r, v = el.value, row = BA[g].rows[r]; S.ba[g + '-' + r] = v; const ok = baPass(row, v), res = $('#res' + g + '-' + r);
   res.className = ok ? 'pass' : 'fail'; res.textContent = ok ? 'Pass' : 'Fail';
+});
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-input="wi"]'); if (!el) return;
+  const d = S.dec.find(x => x.id === el.dataset.id), an = d && (analysisFor(d) || genAn(d)); if (!an || !an.wi) return;
+  S.wiVal[d.id] = +el.value; $('#wi-v').textContent = fmtVal({ unit: an.wi.u }, +el.value); $('#wi-out').innerHTML = wiOut(an.wi, +el.value);
 });
 window.addEventListener('hashchange', route);
 $('#role').innerHTML = PERSONAS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
