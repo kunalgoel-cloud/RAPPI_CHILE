@@ -257,6 +257,11 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
 .rcell{width:34px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;color:var(--ink3)}
 .r-R{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}.r-A,.r-AR{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}.r-AR{font-size:11px}.r-C{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}.r-I{background:var(--good-soft);color:var(--good);border-color:var(--good)}
 .raci th{white-space:normal;min-width:72px}.raci td:first-child,.raci th:first-child{position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px}
+.arow{all:unset;box-sizing:border-box;display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;width:100%;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}.arow:last-child{border:0}.arow:focus-visible{outline:3px solid var(--accent);outline-offset:-2px}.arow:hover b{color:var(--accent)}
+.afind{display:block}.linkcard{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--ink);text-align:left;cursor:pointer;font:inherit}.linkcard:hover{border-color:var(--accent)}
+.morebtn{border:0;background:transparent;padding:9px 13px;font-weight:600;font-size:14px;color:var(--accent);cursor:pointer;white-space:nowrap}
+.vrow{display:flex;flex-direction:column;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}.vrow:hover b{color:var(--accent)}
+.r-x{opacity:.5}
 @media(max-width:1500px){.role>span{display:none}}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
@@ -356,43 +361,43 @@ A('analyst', 'all', 'Business Analyst', 'Shared by every role. Answers any why, 
   'Ready for questions. Latest: Zone 3 sales gap explained (about 70% empty shelves, 30% rain-slowed deliveries).',
   'It breaks a number into its drivers, tests what-ifs, and compares options. It works the same way whoever asks, and brings in functional agents when the answer needs their expertise.',
   ['Driver trees for all six scorecard numbers', 'What-if calculators on 6 decision types', 'Uses the same illustrative data as every other agent'], 'Nothing needed.', {});
-A('pulse', 'ch', 'Market Pulse', 'Watches demand, weather, events and seasonality: what is moving in the market.', 'Found something', 'Forecast',
+A('pulse', 'dp', 'Market Pulse', 'Watches demand, weather, events and seasonality: what is moving in the market.', 'Found something', 'Forecast',
   `Rain from 09:30 in ${Z2} and ${Z3} usually lifts evening orders by about 12%.`,
   'It compares today with the last 10 rainy days and with this week\'s events calendar.',
   ['10 comparable rainy days, orders up 9% to 15%', 'Evening peak moves from 19:00 to 18:00', 'No competing local event found'],
   `Raise tonight's order forecast for ${Z2} and ${Z3} by 12%?`, { gmv: 21000 });
-A('comp', 'ch', 'Competition Watch', 'Tracks competitor prices, promotions and range moves, and suggests a response.', 'Needs you', 'Pricing and margin',
+A('comp', 'cat', 'Competition Watch', 'Tracks competitor prices, promotions and range moves, and suggests a response.', 'Needs you', 'Pricing and margin',
   `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} prices by 15% for the weekend in 3 zones.`,
   'Prices dropped on 38 items we both sell. Our price gap went from +1% to +14% on those items, and these two categories are 21% of sales in those zones.',
   ['38 matching items checked at 06:10', 'Price gap +14% on 38 items (was +1%)', `${CAT_BEV} and ${CAT_DAIRY} are 21% of sales in those zones`],
   `Approve a response budget of ${C} 38,000 to match prices on 12 hero items this weekend?`, { gmv: 60000, margin: -0.1 },
   { type: 'number', label: 'Budget', value: 38000, unit: C });
-A('voice', 'ch', 'Customer Voice', 'Reads repeat orders, complaints and reviews to explain why customers leave.', 'Found something', 'Customer',
+A('voice', 'gro', 'Customer Voice', 'Reads repeat orders, complaints and reviews to explain why customers leave.', 'Found something', 'Customer',
   `Missing-item complaints rose from 3.1% to 4.2% of orders in ${Z3}.`,
   'It groups complaint reasons and links them to stock-outs. The rise matches the dairy gaps yesterday evening.',
   ['4.2% of orders had a missing item (was 3.1%)', '"Item unavailable" is 61% of the reasons', '1,150 customers affected yesterday evening'],
   `Send a ${C} 10 recovery voucher to the 1,150 affected customers (cost ${C} 11,500)?`, { repeat: 0.3 });
-A('tower', 'ch', 'Availability Control Tower', 'Tracks stock-outs by zone and tags the cause: forecast, supplier, transfer or store.', 'Needs you', 'Store',
+A('tower', 'wh', 'Availability Control Tower', 'Tracks stock-outs by zone and tags the cause: forecast, supplier, transfer or store.', 'Needs you', 'Store',
   `${CAT_DAIRY} availability in ${Z3} fell to 86%. Main cause: the late truck from ${SG}.`,
   'Of the lost shelf hours, 55% trace to the supplier, 20% to the forecast, 15% to transfers and 10% to the store.',
   ['86% available at 07:00 (usual 95%)', '55% supplier, 20% forecast, 15% transfer, 10% store', `${SG} truck due 06:00, now expected 09:00`],
   `Approve an expedited top-up from ${SG} and a stock move from ${Z2} to ${Z3}?`, { avail: 0.4, gmv: 14000 });
-A('guard', 'ch', 'Margin Guardian', 'Finds margin leaks, price differences and supplier terms below our floor.', 'Needs you', 'Pricing and margin',
+A('guard', 'cat', 'Margin Guardian', 'Finds margin leaks, price differences and supplier terms below our floor.', 'Needs you', 'Pricing and margin',
   `${SD}'s new cost list takes 14 items below the margin floor.`,
   'Cost rises 6.5% from the day after tomorrow. At today\'s shelf prices, margin on these 14 items falls from 24.0% to 19.1%, below the 21.0% floor.',
   ['14 items affected, all in ' + CAT_DAIRY, 'Margin 24.0% to 19.1% at current prices', `Estimated leak ${C} 6,200 a week if nothing changes`],
   `Ask the commercial lead to renegotiate with ${SD} before accepting the list?`, { margin: 0.04 });
-A('cash', 'ch', 'Cash and Working Capital', 'Compares inventory days with payment days and flags excess stock and payment timing.', 'Needs you', 'Buy',
+A('cash', 'fin', 'Cash and Working Capital', 'Compares inventory days with payment days and flags excess stock and payment timing.', 'Needs you', 'Buy',
   `Inventory is 41 days against 36 payment days, so 5 days of cash are tied up.`,
   `Excess sits in ${CAT_HOME} and ${CAT_PACK}. Two suppliers could be paid later without penalty.`,
   [`Excess stock worth ${C} 310k above target`, `${CAT_HOME} is 9 days over target`, `${SK} allows payment on day 45 (we pay on day 30)`],
   `Pause new buys on 9 excess items and move ${SK} payment to day 45?`, { wc: -0.4 });
-A('scout', 'ch', 'Growth Scout', 'Finds gaps in coverage, customers reached and range, and candidate areas for new stores.', 'Found something', 'Assortment',
+A('scout', 'gro', 'Growth Scout', 'Finds gaps in coverage, customers reached and range, and candidate areas for new stores.', 'Found something', 'Assortment',
   `${Z6} carries 18% fewer items than similar zones in ${CAT_FRESH} and ${CAT_CARE}.`,
   'It compares each zone with its closest look-alikes by customers, basket and weather.',
   ['3 look-alike zones carry 40 more items', 'Search "no result" rate 6.8% in ' + Z6, '4 neighbourhoods sit outside the 15-minute area'],
   `Test 40 added items in ${Z6} for four weeks?`, { gmv: 9000 });
-A('ops', 'ch', 'Operations Pulse', 'Watches picker productivity, delivery readiness and staffing by hour.', 'Watching', 'Pick and pack',
+A('ops', 'store', 'Operations Pulse', 'Watches picker productivity, delivery readiness and staffing by hour.', 'Watching', 'Pick and pack',
   `Steady at 118 units per picker per hour. Evening staffing in ${Z5} is the one to watch.`,
   'It compares the order forecast with the shift plan every hour.',
   ['118 units per picker per hour (target 125)', `${Z5} is 2 pickers short from 18:00`, 'All other zones covered'],
@@ -1097,8 +1102,8 @@ function decisionCard(d, compact) {
   return `<div class="dcard" data-did="${d.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><strong>${d.title}</strong>${ag}</div>
     <p class="why">${d.why}</p>${!compact && d.ev && d.ev.length ? `<ul class="ev">${d.ev.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
     ${reasonBox(d)}
-    <div class="ask">${d.ask}</div>
-    <p class="imp">${impactLine(d)}${an ? ' &middot; Confidence ' + an.conf.p + '%' : ''}</p>${raciLine(d)}
+    ${d.dor ? `<p class="small muted" style="margin:6px 0 0"><b>Why this is with you:</b> ${d.dor}</p>` : ''}<div class="ask">${d.ask}</div>
+    <p class="imp">${impactLine(d)}${an ? ' &middot; Confidence ' + an.conf.p + '%' : ''}</p>${fitLine(d)}${raciLine(d)}
     <div class="row" style="margin-top:10px"><button class="btn sm" data-act="brief" data-id="${d.id}">Review evidence</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Question this</button><button class="btn pri sm" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button></div></div>`;
 }
 const REASONS = { approve: ['Evidence is clear', 'Within our limits', 'Low risk, high value', 'Time is short'], edit: ['Adjusted for local knowledge', 'Right idea, wrong size', 'Needs a smaller first step'], reject: ['Not enough evidence', 'Cost is too high', 'Wrong timing', 'Handle another way'] };
@@ -1160,7 +1165,7 @@ function genAn(d) {
 function checkBox(d, kind) {
   const an = analysisFor(d) || genAn(d);
   const body = kind === 'reject' ? `<b>If you reject:</b> ${an.noact}` : kind === 'edit' ? `<b>Agent's recommendation:</b> ${an.sum}` : `<b>What happens next:</b> ${an.next.slice(0, 3).join('; ')}.`;
-  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}${raciLine(d)}<br><span style="display:block;margin-top:6px">${body}</span><span class="row" style="margin-top:8px"><button class="chip" data-act="brief" data-id="${d.id}">Open the full evidence brief</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this first</button></span></div>`;
+  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}${fitLine(d)}${raciLine(d)}<br><span style="display:block;margin-top:6px">${body}</span><span class="row" style="margin-top:8px"><button class="chip" data-act="brief" data-id="${d.id}">Open the full evidence brief</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this first</button></span></div>`;
 }
 function barSVG(c) {
   const W = 520, H = 176, pl = 8, pb = 24, pt = 20, n = c.data.length, mx = Math.max(...c.data, c.ref || 0) * 1.15, bw = (W - pl * 2) / n;
@@ -1181,7 +1186,7 @@ function briefHTML(id) {
   let body = '';
   if (tab === 'glance') {
     body = `<div class="dcard" style="margin-top:14px"><b>Decision needed:</b> ${d.ask}</div>
-    <h3 class="h3">Recommendation</h3><p>${an.sum}</p>
+    ${d.dor ? `<p class="small muted" style="margin-top:10px"><b>Why this is with you:</b> ${d.dor}</p>` : ''}<h3 class="h3">Recommendation</h3><p>${an.sum}</p>${fitLine(d)}
     <div class="grid g3" style="margin-top:12px">
       <div class="card stat" style="box-shadow:none"><div class="l">Confidence</div><div class="v">${an.conf.p}%</div><div class="meter" style="margin-top:6px"><i style="width:${an.conf.p}%"></i></div></div>
       <div class="card stat" style="box-shadow:none"><div class="l">Expected effect</div><div class="small" style="margin-top:4px">${imp.length ? imp.map(([k, v]) => `<b>${METRIC[k].name}</b> ${v > 0 ? '+' : '-'}${METRIC[k].d(v)}`).join('<br>') : 'No scorecard change'}</div></div>
@@ -1273,6 +1278,7 @@ K('assign', /assign|delegate|\btask|follow.?up|remind/g, [['chief', (cx, st) => 
 K('draft', /draft|write|e-?mail|script|compose/g, [['reply', cx => `Draft for ${cx.d && /day|supplier|truck/i.test(cx.d.title) ? SG : SG}: "Hello, our order for ${CAT_DAIRY} was due at 06:00 and has not arrived. Please confirm a dispatch time and truck registration by 08:00 so we can plan the dock. Thank you." The Buyer reviews it before it is sent.`]], ['What do we offer in return?', 'What if they cannot deliver today?', 'Assign the call'], '', []);
 K('simple', /\bsimple|plain|eli5|in short|in a nutshell|summar(y|ise|ize) (this|it)/g, [['analyst', cx => cx.d ? `In plain words: ${firstS((analysisFor(cx.d) || genAn(cx.d)).sum)} If we do nothing: ${firstS((analysisFor(cx.d) || genAn(cx.d)).noact)}` : 'Open a decision, then ask me again and I will explain it in plain words.']], [], '', []);
 K('wbr', /\bwbr\b|weekly business review|weekly review|business review/g, [['analyst', () => 'I compile the weekly business review data pack: the scorecard this week against last, what moved and which agents moved it, decisions taken, and open items. Open it from your task board with Generate data pack, or request each team\'s numbers with Request WBR data. Requests go to a Slack channel and become tasks on each person\'s board.']], ['Request WBR numbers from each team', 'What moved this week?', 'Where are we losing margin?'], '', []);
+K('scenario', /scenario|primary kpi|guardrail|constraint|free cash flow|\bfcf\b|growth first|cash first|across the supply chain|what comes first/g, [['analyst', () => { const o = optimize(S.sc.pid, S.sc.cons), P = PRIM.find(p => p.id === S.sc.pid); return `With ${P.n.toLowerCase()} first and your guardrails, the best ${o.feasible ? 'feasible' : 'closest'} plan is: ` + (Object.keys(LEVERS).filter(k => o.L[k] !== LEVERS[k].base).map(k => `${LEVERS[k].n.toLowerCase()} ${levFmt(k, o.L[k])}`).join('; ') || 'no lever changes') + `. After 13 weeks: GMV ${C} ${o.r.gmv.toFixed(2)}M a day, free cash flow ${C} ${o.r.fcf.toFixed(1)}M, margin ${o.r.margin.toFixed(1)}%, availability ${o.r.avail.toFixed(1)}%.`; }], ['chief', () => S.sc.adopted ? `Active scenario: ${PRIM.find(p => p.id === S.sc.adopted.pid).n} first, adopted at ${S.sc.adopted.time}. Decisions are tagged by fit, and tasks went to the teams affected.` : 'No scenario is adopted yet. Open the Scenario planner, choose the primary KPI, then adopt the plan so decisions can be checked against it.']], ['What changes across the supply chain?', 'Compare growth first and free cash flow first'], 'Choose the one number that matters most; the rest become guardrails.', []);
 K('okr', /\bokrs?\b|objective|key result|quarter|on pace/g, [['analyst', () => { const all = OKRS.flatMap(o => o.krs), b = all.filter(k => krStatus(k) === 'Behind'), r = all.filter(k => krStatus(k) === 'At risk'); return `Week ${QTR.week} of ${QTR.of}: ${all.length - b.length - r.length} of ${all.length} key results are on pace, ${r.length} at risk, ${b.length} behind. Behind: ${b.map(k => `${k.n} (${Math.round(krProg(k) * 100)}% against ${Math.round(PACE * 100)}% expected)`).join('; ') || 'none'}.`; }]], ['Which team should I nudge?', 'What is blocking the growth lineup?', 'Which approvals are delayed?'], 'The biggest gap is growth: the GMV step change is far behind the pace of the quarter, and the lineup is gated by working capital and approvals.', [T('gro', 'Share a plan to close the GMV gap this quarter'), T('fin', 'Confirm the working capital release for the lineup')]);
 K('nudge', /nudge|chase|who is behind|which team|who should i|monitor/g, [['chief', () => { const r = orgRows(); return `Nudge: ${r.filter(x => x.rec === 'Nudge').map(x => `${x.p.who} (${x.offs} off target, ${x.open.length} decisions waiting)`).join('; ') || 'nobody'}. Watch: ${r.filter(x => x.rec === 'Watch').map(x => x.p.who).join(', ') || 'nobody'}. Monitor only: ${r.filter(x => x.rec === 'Monitor').map(x => x.p.who).join(', ') || 'nobody'}. Open the Org and OKRs page to send the nudge in Slack.`; }]], ['How are the OKRs moving?', 'Which approvals are delayed?'], '', []);
 K('deps', /dependenc|approval|allocation|delayed|blocked on|escalat|waiting for/g, [['chief', () => { const late = S.deps.filter(d => !d.done && depStatus(d) === 'Breached'); return `${late.length} approvals are past their turnaround: ` + late.map(d => `${d.title} (${rname(d.owner)}, ${d.days} of ${d.sla} days)`).join('; ') + '. You can nudge or escalate each one from Org and OKRs.'; }], ['cash', () => { const c = lineupCalc(S.lint); return `Working capital for the growth lineup: ${C} ${num(c.peakWc)}k needed at peak against ${C} ${num(c.alloc)}k available. ${c.ok ? 'It fits.' : 'It is short by ' + C + ' ' + num(c.peakWc - c.alloc) + 'k until the cash decision and the CFO top-up land.'}`; }]], ['Can the growth lineup go ahead?', 'Who falls under availability in the RACI?'], 'Clear the two oldest approvals (CFO top-up and marketing budget) first: they gate the growth lineup.', [T('ch', 'Escalate the CFO top-up and the marketing budget approval')]);
@@ -1708,7 +1714,7 @@ function taskCard(t) {
   return `<div class="tcard ${t.prio === 'high' ? 'hi' : ''}"><div class="row" style="gap:6px"><span class="tag ${t.src === 'agent' ? 'acc' : ''}">${tag}</span>${t.prio === 'high' ? '<span class="tag crit">High priority</span>' : ''}</div><b style="display:block;margin:6px 0 2px">${esc(t.title)}</b><div class="small faint">Due ${t.due}${who}</div>
   <div class="row" style="margin-top:8px">${acts}</div><div class="row" style="margin-top:6px">${t.kind === 'wbr' ? `<button class="chip" data-act="wbr-gen" data-id="${t.id}">Generate data pack</button>` : ''}${t.link ? `<button class="chip" data-act="agent" data-id="${t.link}">Open agent</button>` : ''}<button class="chip" data-act="task-msg" data-id="${t.id}">Message the team</button></div></div>`;
 }
-function decCard(d) { const an = analysisFor(d); return `<div class="tcard dec"><div class="row" style="gap:6px"><span class="tag acc">Decision</span>${an ? `<span class="tag">Confidence ${an.conf.p}%</span>` : ''}</div><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${d.agentName || 'Agent'}</div>${reasonBox(d)}<div class="small" style="margin-top:6px"><b>Asks:</b> ${d.ask}</div><div class="row" style="margin-top:8px"><button class="btn sm pri" data-act="brief" data-id="${d.id}">Review and decide</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Question this</button></div></div>`; }
+function decCard(d) { const an = analysisFor(d); return `<div class="tcard dec"><div class="row" style="gap:6px"><span class="tag acc">Decision</span>${an ? `<span class="tag">Confidence ${an.conf.p}%</span>` : ''}</div><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${d.agentName || 'Agent'}</div>${d.dor ? `<div class="small muted" style="margin-top:6px"><b>Why this is with you:</b> ${d.dor}</div>` : ''}${reasonBox(d)}<div class="small" style="margin-top:6px"><b>Asks:</b> ${d.ask}</div>${fitLine(d)}<div class="row" style="margin-top:8px"><button class="btn sm pri" data-act="brief" data-id="${d.id}">Review and decide</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Question this</button></div></div>`; }
 function boardHTML(role) {
   const ts = S.tasks.filter(t => t.role === role), open = openDec(role), dnow = S.dec.filter(d => d.role === role && (d.status === 'approved' || d.status === 'edited' || d.status === 'rejected')).slice(-3);
   const col = (k, l) => { const items = ts.filter(t => t.status === k), n = items.length + (k === 'todo' ? open.length : k === 'done' ? dnow.length : 0);
@@ -1735,10 +1741,10 @@ function renderSlack() {
 V.my = () => {
   const p = PERSONAS.find(x => x.id === S.persona), role = p.id; markRead(role);
   const mets = metricItems(role), att = mets.filter(m => mStat(m) !== 'On track').length, ts = S.tasks.filter(t => t.role === role), openT = ts.filter(t => t.status !== 'done').length + openDec(role).length;
-  const ags = AG.filter(a => a.kind === 'shared' || a.role === role);
+  const ags = AG.filter(a => a.kind === 'shared' || vlev(role, a.team) === 'own');
   return `<section class="hero" style="padding-top:6px"><span class="eyebrow">My day</span><h1 class="h1">${p.name}</h1><p>One screen for what to do today: your tasks, your numbers, your agents and your team.</p></section>
   <div class="grid g4" style="margin:18px 0"><div class="card stat"><div class="v">${openDec(role).length}</div><div class="l">decisions waiting for you</div></div><div class="card stat"><div class="v">${openT}</div><div class="l">open items on your board</div></div><div class="card stat"><div class="v" id="kp-unread">${unread(role)}</div><div class="l">unread messages for you</div></div><div class="card stat"><div class="v">${att}</div><div class="l">of ${mets.length} numbers off target or on watch</div></div></div>
-  <section class="sec" style="margin-top:8px"><div class="sec-h"><h2 class="h2">Your agents</h2><span class="muted small">Select one to read its finding or discuss it with the team</span></div><div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="routine-new">Set a daily routine for an agent</button><a class="small" href="#/routines">Manage all routines (${S.routines.filter(r => r.on).length} running)</a></div><div class="row">${ags.map(a => `<button class="chip agentchip" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i>${a.name}${a.kind === 'shared' ? ' (shared)' : ''}</button>`).join('')}</div></section>
+  ${scenBanner(role)}<section class="sec" style="margin-top:8px"><div class="sec-h"><h2 class="h2">Your agents</h2><span class="muted small">Select one to read its finding or discuss it with the team</span></div><div class="row" style="margin-bottom:8px"><button class="btn sm" data-act="routine-new">Set a daily routine for an agent</button><a class="small" href="#/routines">Manage all routines (${S.routines.filter(r => r.on).length} running)</a></div><div class="row">${ags.map(a => `<button class="chip agentchip" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i>${a.name}${a.kind === 'shared' ? ' (shared)' : ''}</button>`).join('')}</div></section>
   <section class="sec" id="tasks"><div class="sec-h"><h2 class="h2">Task board</h2><div class="row"><button class="btn pri sm" data-act="task-new">New task</button><button class="btn sm" data-act="task-new" data-k="wbr">Request WBR data</button></div></div>${boardHTML(role)}</section>
   <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:36px" id="lower">
     <section id="metrics"><div class="sec-h"><h2 class="h2">Metric board</h2><span class="muted small">Status against target</span></div><div class="grid g3">${mets.map(metricCard).join('')}</div></section>
@@ -1832,7 +1838,7 @@ const RACI0 = {
   d_price: { n: 'Supplier price change', k: 'Decision', A: 'cat', R: ['buy'], C: ['fin', 'cfo'], I: ['ch'] },
   d_comp: { n: 'Competitor response', k: 'Decision', A: 'ch', R: ['cat', 'gro'], C: ['fin'], I: ['store'] },
   d_xfer: { n: 'Daily transfer plan', k: 'Decision', A: 'wh', R: ['wh'], C: ['store', 'dp'], I: ['buy'] },
-  d_stock: { n: 'Stock-out fix', k: 'Decision', A: 'store', R: ['wh', 'buy'], C: ['dp'], I: ['ch'] },
+  d_stock: { n: 'Stock-out fix', k: 'Decision', A: 'wh', R: ['store', 'buy'], C: ['dp'], I: ['ch'] },
   d_camp: { n: 'Campaign approval', k: 'Decision', A: 'ch', R: ['gro'], C: ['fin', 'wh', 'store', 'mkt'], I: ['cat'] },
   d_cash: { n: 'Payment terms and credit line', k: 'Decision', A: 'fin', R: ['fin'], C: ['cat', 'cfo'], I: ['buy', 'ch'] },
   d_legal: { n: 'Licence and compliance', k: 'Decision', A: 'ch', R: ['cat'], C: ['legal'], I: ['fin'] }
@@ -1845,7 +1851,7 @@ const raciIssue = k => { const n = raciOf(k).A.length; return n === 1 ? '' : n =
 const AGROW = { tower: 'd_stock', guard: 'd_price', negprep: 'd_price', comp: 'd_comp', cash: 'd_cash', paytm: 'd_cash', credit: 'd_cash', risk: 'd_legal', transfer: 'd_xfer', resp: 'd_stock', reply: 'd_stock', coach: 'pick', fdoc: 'fcst', pulse: 'fcst', unblock: 'avail', camp: 'd_camp', scout: 'd_camp', voice: 'repeat', waste: 'margin', inv: 'invm', cattask: 'margin', fit: 'margin', valid: 'fcst', pofu: 'sot', campf: 'fcst', edrev: 'fcst', hday: 'sot', acc: 'avail', inbd: 'sot', excess: 'wc', wca: 'wc', cov: 'gmv', ops: 'pick', pcheck: 'floor' };
 const rowFor = d => AGROW[d.agent || d.sa] || null;
 const raciNames = list => list.length ? list.map(rname).join(', ') : 'nobody';
-function raciLine(d) { const k = rowFor(d); if (!k) return ''; const r = raciOf(k); return `<p class="small muted" style="margin:6px 0 0"><b>RACI</b> (${RACI0[k].n}): Accountable <b>${raciNames(r.A)}</b> &middot; Responsible ${raciNames(r.R)} &middot; Consulted ${raciNames(r.C)} &middot; Informed ${raciNames(r.I)}</p>`; }
+function raciLine(d) { const k = rowFor(d); if (!k) return ''; const r = raciOf(k), others = [...new Set(r.R.concat(r.C, r.I))].filter(x => !r.A.includes(x)).length; return `<p class="small muted" style="margin:6px 0 0">Owner: <b>${raciNames(r.A)}</b>${others ? ` &middot; ${others} others involved (see RACI)` : ''}</p>`; }
 /* --- connected tools --- */
 S.tools = {}; const TOOLS = [['buy', 'Buy plan tool', 'Purchase orders, cost prices, supplier links'], ['price', 'Pricing tool', 'Shelf prices, promotions, margin floors'], ['fcst', 'Forecast tool', 'Demand forecast and baselines'], ['wms', 'Warehouse system', 'Stock, transfers, dock slots'], ['store', 'Store app', 'Pick lists, shift plans, shelf counts'], ['fin', 'Finance system', 'Invoices, payment terms, credit lines'], ['supp', 'Supplier portal', 'Supplier messages, documents, escalations'], ['camp', 'Campaign tool', 'Offers, customer messages, vouchers'], ['bi', 'Central dashboard', 'Team scorecard and data points'], ['slack', 'Slack (simulated)', 'Team channels and notifications']];
 TOOLS.forEach((t, i) => { S.tools[t[0]] = { id: t[0], n: t[1], d: t[2], on: true, last: '05:55', writes: 0, custom: false, teams: [] }; });
@@ -1895,7 +1901,7 @@ function lensHTML() {
 }
 function connectToolHTML() { const teams = Object.keys(TEAMTOOLS).filter(t => t !== 'Program team'); return `<span class="eyebrow">Tools</span><h2 class="h2" style="margin:4px 0 6px">Connect a tool</h2><p class="small muted">Once connected, decisions taken by the chosen teams are written back to it, and the central dashboard shows what changed.</p><div class="stack" style="margin-top:10px"><div><label class="f" for="tl-name">Tool name</label><input class="in" id="tl-name" type="text" placeholder="For example: Weekly planning sheet"></div><fieldset style="border:0;padding:0;margin:0"><legend class="f">Receives updates from decisions in</legend>${teams.map(t => `<label class="row" style="gap:8px;margin:4px 0"><input type="checkbox" name="tl-team" value="${t}"> ${t}</label>`).join('')}</fieldset><div class="err" id="tlerr" hidden></div><div class="row"><button class="btn pri" data-act="tool-add">Connect</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`; }
 V.team = () => {
-  const tab = S.ttab || 'overview', tabs = [['overview', 'Overview'], ['raci', 'RACI matrix'], ['tools', 'Tools and write-backs']];
+  const tab = S.ttab || 'overview', tabs = [['overview', 'Overview'], ['raci', 'RACI matrix'], ['vis', 'Visibility'], ['tools', 'Tools and write-backs']];
   const today = S.log.filter(l => /^Today/.test(l.time)), applied = S.wb.filter(w => w.status.startsWith('Applied')).length, queued = S.wb.filter(w => w.status === 'Queued').length, gaps = RACI_KEYS.filter(raciIssue).length, on = Object.values(S.tools).filter(t => t.on).length;
   let body = '';
   if (tab === 'overview') {
@@ -1906,6 +1912,8 @@ V.team = () => {
   } else if (tab === 'raci') {
     body = `<p class="muted" style="margin:14px 0 8px">R Responsible (does the work), A Accountable (approves, one per row), C Consulted (asked for input), I Informed. Click a cell to change it. The matrix drives routing: the Accountable owner approves, Responsible roles get a task when a decision is made, Consulted and Informed roles are notified in Slack.</p>
     <div class="row" style="margin:10px 0"><label class="small" for="rl"><b>Show me where</b></label><select class="in" id="rl" style="width:auto" data-change="rlens"><option value="all">Everyone</option>${RACI_COLS.map(c => `<option value="${c.id}" ${S.rlens === c.id ? 'selected' : ''}>${c.n}</option>`).join('')}</select><button class="btn sm" data-act="raci-reset">Reset to default</button><span class="tag ${gaps ? 'crit' : 'good'}">${gaps ? gaps + ' row' + (gaps > 1 ? 's' : '') + ' need attention' : 'Every row has one accountable owner'}</span></div>${lensHTML()}<div style="margin-top:14px">${raciTable()}</div>`;
+  } else if (tab === 'vis') {
+    body = visTab();
   } else {
     body = `<div class="row" style="margin:16px 0"><button class="btn pri" data-act="tool-new">Connect a tool</button><span class="muted small">Decisions write back to these tools. A disconnected tool queues its updates.</span></div>
     <div class="grid g3">${Object.values(S.tools).map(t => `<article class="card pad"><div class="row" style="justify-content:space-between"><b>${toolDot(t)}${t.n}</b><span class="tag ${t.on ? 'good' : 'crit'}">${t.on ? 'Connected' : 'Disconnected'}</span></div><p class="small muted" style="margin:4px 0">${t.d || (t.teams.join(', ') + ' decisions')}</p><p class="small">Last sync ${t.last}. ${t.writes} update${t.writes === 1 ? '' : 's'} from decisions.</p><div class="row" style="margin-top:8px"><button class="btn sm" data-act="tool-toggle" data-id="${t.id}">${t.on ? 'Disconnect' : 'Reconnect'}</button><button class="btn sm" data-act="tool-sync" data-id="${t.id}" ${t.on ? '' : 'disabled'}>Sync now</button></div></article>`).join('')}</div>
@@ -2023,7 +2031,7 @@ V.org = () => {
   <div class="grid g3">${rows.map(r => `<article class="card pad"><div class="row" style="justify-content:space-between"><b>${r.p.who}</b>${recTag(r.rec)}</div><ul class="ev" style="list-style:none;padding:0;margin-top:8px">${r.st.map(([m, s]) => `<li style="display:flex;justify-content:space-between;gap:8px;margin:5px 0"><span>${m.n}<br><span class="small faint">${m.fmt(m.now())}, target ${m.fmt(m.tgt)}</span></span>${statTag(s)}</li>`).join('')}</ul>
   <p class="small muted" style="margin-top:8px">${r.open.length ? `${r.open.length} decision${r.open.length > 1 ? 's' : ''} waiting, oldest ${Math.round(r.oldest)} h.` : 'No decisions waiting.'}${S.nudges['org-' + r.role] ? ` Nudged at ${S.nudges['org-' + r.role]}.` : ''}</p>
   <div class="row" style="margin-top:8px">${isCh ? `<button class="btn ${r.rec === 'Nudge' ? 'pri' : ''} sm" data-act="nudge" data-role="${r.role}" data-kind="org">Nudge</button>` : ''}<button class="btn sm" data-act="chat-open" data-q="Why is the ${esc(r.p.who.toLowerCase())} behind on its numbers?">Ask why</button><button class="btn sm" data-act="persona-go" data-id="${r.role}">View their day</button></div></article>`).join('')}</div></section>
-  <section class="sec"><div class="sec-h"><h2 class="h2">OKRs: week ${QTR.week} of ${QTR.of}</h2><span class="muted small">The marker shows where progress should be by now (${Math.round(PACE * 100)}%)</span></div><div class="stack">${OKRS.map(o => `<div class="card pad"><div class="row" style="justify-content:space-between"><h3 class="h3">${o.o}</h3><span class="small muted">${Math.round(objProg(o) * 100)}% overall</span></div>${o.krs.map(k => { const p = krProg(k), s = krStatus(k); return `<div style="border-top:1px solid var(--line);padding:10px 0;margin-top:10px"><div class="row" style="justify-content:space-between"><b>${k.n}</b>${krTag(s)}</div><div class="small muted">${k.fmt(k.cur())} now, started at ${k.fmt(k.start)}, target ${k.fmt(k.tgt)}. Owner: ${rname(k.owner)}</div><div class="track" style="margin-top:6px;position:relative" role="progressbar" aria-valuenow="${Math.round(p * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${k.n} progress"><i style="width:${Math.min(100, p * 100)}%"></i><b style="position:absolute;left:${PACE * 100}%;top:-3px;width:3px;height:16px;background:var(--ink);border-radius:2px" title="Expected by now"></b></div><div class="row" style="margin-top:8px">${isCh && k.owner !== 'ch' ? `<button class="chip" data-act="nudge" data-role="${k.owner}" data-kind="kr" data-key="${k.n}" data-p="${Math.round(p * 100)}">Nudge the owner</button>` : ''}<button class="chip" data-act="chat-open" data-q="${esc(k.q)}">Ask why</button></div></div>`; }).join('')}</div>`).join('')}</div></section>
+  <section class="sec"><div class="sec-h"><h2 class="h2">OKRs: week ${QTR.week} of ${QTR.of}</h2><span class="muted small">The marker shows where progress should be by now (${Math.round(PACE * 100)}%)</span></div><div class="stack">${OKRS.map(o => `<details class="card pad okr"><summary class="row" style="justify-content:space-between;cursor:pointer"><h3 class="h3" style="display:inline">${o.o}</h3><span class="small muted">${Math.round(objProg(o) * 100)}% overall, ${o.krs.filter(k => krStatus(k) !== 'On pace').length} of ${o.krs.length} to watch</span></summary>${o.krs.map(k => { const p = krProg(k), s = krStatus(k); return `<div style="border-top:1px solid var(--line);padding:10px 0;margin-top:10px"><div class="row" style="justify-content:space-between"><b>${k.n}</b>${krTag(s)}</div><div class="small muted">${k.fmt(k.cur())} now, started at ${k.fmt(k.start)}, target ${k.fmt(k.tgt)}. Owner: ${rname(k.owner)}</div><div class="track" style="margin-top:6px;position:relative" role="progressbar" aria-valuenow="${Math.round(p * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${k.n} progress"><i style="width:${Math.min(100, p * 100)}%"></i><b style="position:absolute;left:${PACE * 100}%;top:-3px;width:3px;height:16px;background:var(--ink);border-radius:2px" title="Expected by now"></b></div><div class="row" style="margin-top:8px">${isCh && k.owner !== 'ch' ? `<button class="chip" data-act="nudge" data-role="${k.owner}" data-kind="kr" data-key="${k.n}" data-p="${Math.round(p * 100)}">Nudge the owner</button>` : ''}<button class="chip" data-act="chat-open" data-q="${esc(k.q)}">Ask why</button></div></div>`; }).join('')}</details>`).join('')}</div></section>
   <section class="sec"><div class="sec-h"><h2 class="h2">Cross-org dependencies</h2><span class="muted small">Things that sit outside any one team</span></div>
   <div class="card pad"><h3 class="h3">Working capital allocation</h3><p class="small muted">Allocated to the growth lineup, and what the lineup needs at peak.</p><div class="grid g3" style="margin-top:8px"><div class="card stat" style="box-shadow:none"><div class="v">${C} ${num(al.base)}k</div><div class="l">base allocation</div></div><div class="card stat" style="box-shadow:none"><div class="v">+${C} ${num(al.cash)}k</div><div class="l">from the cash decision ${al.cash ? '(approved)' : '(pending: Cash and Working Capital)'}</div></div><div class="card stat" style="box-shadow:none"><div class="v">+${C} ${num(al.top)}k</div><div class="l">CFO top-up ${al.top ? '(approved)' : '(pending, 6 days)'}</div></div></div>
   <p style="margin-top:10px"><b>Peak need at plan: ${C} ${num(calc.peakWc)}k (week ${calc.peakWeek}).</b> Available: ${C} ${num(alloc)}k. ${calc.ok ? '<span class="tag good">Fits</span>' : `<span class="tag crit">Short by ${C} ${num(calc.peakWc - alloc)}k</span>`}</p></div>
@@ -2035,17 +2043,199 @@ V.org = () => {
   <div class="row" style="margin-top:12px">${S.dec.find(d => d.id === 'd-lineup').status === 'open' ? `<button class="btn pri" data-act="brief" data-id="d-lineup">Review and decide on the lineup</button><button class="btn" data-act="brief-q" data-id="d-lineup">Question this</button>` : '<span class="tag good">Lineup decision made</span>'}</div></div></section>`;
 };
 
+/* ---------- scenario model: 13-week forecast, guardrails, best feasible plan ----------
+   Illustrative model. BASELINES: replace the base numbers and elasticities with measured values. */
+const SBASE = { G0: 16.8, m0: 24.8, a0: 94.6, r0: 61.2, cover0: 41, pay0: 36, opexPct: 0.215, trend: 0.003, headroom: 0.9, sot0: 74 };
+const LEVERS = {
+  int: { n: 'Growth campaign intensity', u: 'x plan', vals: [0, 0.5, 1, 1.5, 2], base: 0 },
+  price: { n: 'Price investment', u: '% of GMV', vals: [-0.5, 0, 0.5, 1, 1.5], base: 0 },
+  cover: { n: 'Inventory cover target', u: 'days', vals: [37, 39, 41, 44, 47], base: 41 },
+  pay: { n: 'Supplier payment terms', u: 'days', vals: [36, 38, 40], base: 36 }
+};
+function simScen(L) {
+  const B = SBASE, ser = { gmv: [], avail: [], repeat: [], wc: [], fcf: [], margin: [] }; let fcf = 0, capOK = true, wcPrev = (B.cover0 - B.pay0) * (B.G0 / 7 * (1 - B.m0 / 100)), last = {};
+  for (let t = 1; t <= 13; t++) {
+    const ramp = Math.min(1, t / 6), rc = Math.min(1, t / 8), tr = Math.pow(1 + B.trend, t);
+    const lift = 0.025 * Math.pow(L.int, 0.8) * ramp + 0.03 * L.price * Math.min(1, t / 3), G = B.G0 * tr * (1 + lift), extra = B.G0 * tr * lift;
+    if (extra > B.headroom) capOK = false;
+    const cover = B.cover0 + (L.cover - B.cover0) * rc, pay = B.pay0 + (L.pay - B.pay0) * rc;
+    const strain = 1.5 * Math.pow(Math.max(0, extra) / B.headroom, 2), sot = B.sot0 - 1.6 * (pay - B.pay0);
+    const avail = Math.min(99.5, 99 - 12 * Math.exp(-(cover - 25) / 16) - strain - 0.12 * (B.sot0 - sot));
+    const repeat = B.r0 + 0.45 * (avail - B.a0) + 0.55 * ramp * Math.pow(L.int, 0.8) + 0.5 * L.price * Math.min(1, t / 3);
+    const margin = B.m0 - L.price * Math.min(1, t / 3) - 0.04 * (pay - B.pay0) - 0.02 * Math.max(0, cover - B.cover0) + 0.01 * Math.max(0, B.cover0 - cover);
+    const eCover = cover + 0.65 * ramp * L.int, wcLevel = (eCover - pay) * (G / 7 * (1 - margin / 100)), dWC = wcLevel - wcPrev; wcPrev = wcLevel;
+    const mkt = 0.075 * L.int * (t <= 8 ? 1 : 0.5), ebitda = G * margin / 100 - B.opexPct * G - mkt; fcf += ebitda - dWC;
+    ser.gmv.push(G / 7); ser.avail.push(avail); ser.repeat.push(repeat); ser.wc.push(eCover - pay); ser.fcf.push(fcf); ser.margin.push(margin);
+    last = { gmv: G / 7, margin, avail, repeat, wc: eCover - pay, sot };
+  }
+  return Object.assign({ fcf, capOK, ser }, last);
+}
+const CONS = [
+  { k: 'avail', n: 'Availability', op: '>=', def: 94.0, step: 0.1, u: '%' }, { k: 'margin', n: 'Gross margin', op: '>=', def: 23.5, step: 0.1, u: '%' },
+  { k: 'repeat', n: 'Repeat rate', op: '>=', def: 60.5, step: 0.1, u: '%' }, { k: 'wc', n: 'Working capital days', op: '<=', def: 7.0, step: 0.1, u: 'days' },
+  { k: 'fcf', n: '13-week free cash flow', op: '>=', def: 3.0, step: 0.5, u: 'M' }, { k: 'sot', n: 'Supplier on-time delivery', op: '>=', def: 70, step: 1, u: '%' }
+];
+const PRIM = [
+  { id: 'growth', n: 'Growth', sub: 'GMV per day', obj: r => r.gmv, skip: [] },
+  { id: 'fcf', n: 'Free cash flow', sub: '13-week cash generated', obj: r => r.fcf, skip: ['fcf'] },
+  { id: 'margin', n: 'Gross margin', sub: 'Profitability', obj: r => r.margin, skip: ['margin'] },
+  { id: 'service', n: 'Service', sub: 'Availability and repeat', obj: r => r.avail + 0.5 * r.repeat, skip: ['avail', 'repeat'] },
+  { id: 'balanced', n: 'Balanced', sub: 'Equal weight, all guardrails', obj: r => (r.gmv - 2.45) / 0.15 + (r.fcf - 6) / 1 + (r.margin - 24.8) / 0.3 + (r.avail - 94.6) / 1 + (r.repeat - 61.2) / 0.5 - (r.wc - 5) / 0.5, skip: [] }
+];
+function conCheck(r, cons, skip) { const out = []; CONS.forEach(c => { if (skip.includes(c.k)) return; const lim = cons[c.k], v = r[c.k], slack = c.op === '>=' ? v - lim : lim - v; out.push({ c, v, lim, slack, ok: slack >= -1e-9 }); }); out.push({ c: { k: 'cap', n: 'Delivery capacity', op: 'ok' }, v: r.capOK, lim: true, slack: r.capOK ? 1 : -1, ok: r.capOK }); return out; }
+function optimize(pid, cons) {
+  const P = PRIM.find(p => p.id === pid); let best = null, near = null;
+  LEVERS.int.vals.forEach(i => LEVERS.price.vals.forEach(pr => LEVERS.cover.vals.forEach(cv => LEVERS.pay.vals.forEach(py => {
+    const L = { int: i, price: pr, cover: cv, pay: py }, r = simScen(L), chk = conCheck(r, cons, P.skip), bad = chk.filter(x => !x.ok);
+    if (!bad.length) { const val = P.obj(r); if (!best || val > best.val) best = { L, r, chk, val }; }
+    else { const tv = bad.reduce((a, x) => a + (x.c.k === 'cap' ? 1 : Math.abs(x.slack) / (x.c.step * 10 || 1)), 0); if (!near || tv < near.tv) near = { L, r, chk, tv, val: P.obj(r) }; }
+  }))));
+  return best ? Object.assign({ feasible: true, pid }, best) : Object.assign({ feasible: false, pid }, near);
+}
+
+/* ---------- scenario planner: pick the primary KPI, set guardrails, adopt a plan that steers decisions ---------- */
+S.sc = { pid: 'fcf', cons: Object.fromEntries(CONS.map(c => [c.k, c.def])), adopted: null };
+const conFmt = (c, v) => c.k === 'fcf' ? `${C} ${v.toFixed(1)}M` : c.u === 'days' ? v.toFixed(1) + ' days' : v.toFixed(c.step < 1 ? 1 : 0) + '%';
+const LEVROLES = { int: 'Growth lead, Demand planner, Store operations', price: 'Commercial lead', cover: 'Buyer, Replenishment lead, Demand planner', pay: 'Finance lead, Commercial lead' };
+const levFmt = (k, v) => k === 'price' ? (v < 0 ? `price rise worth ${-v}% of GMV` : v === 0 ? '0% of GMV' : `${v}% of GMV invested in price`) : k === 'int' ? (v === 0 ? 'none' : v + 'x plan') : `${v} days`;
+const BASEL = () => simScen({ int: 0, price: 0, cover: 41, pay: 36 });
+function scBinding(o) { return o.chk.filter(x => x.c.k !== 'cap' && x.slack >= 0 && x.slack < (x.c.step || 1) * 3).map(x => x.c.k); }
+function scResultHTML() {
+  const o = optimize(S.sc.pid, S.sc.cons), P = PRIM.find(p => p.id === S.sc.pid), r = o.r, b = BASEL(), bind = scBinding(o), bad = o.chk.filter(x => !x.ok);
+  const ck = k => o.chk.find(x => x.c.k === k);
+  const tile = (n, v, bv, key, ser, fmt, good) => { const c = ck(key), st = P.skip.includes(key) || (key === 'gmv' && P.id === 'growth') ? '<span class="tag acc">Objective</span>' : !c ? '' : c.ok ? `<span class="tag good">Guardrail met</span>${bind.includes(key) ? ' <span class="tag warn">Binding</span>' : ''}` : '<span class="tag crit">Guardrail missed</span>', d = v => v - bv; return `<div class="card kpi" style="padding:12px 14px"><div class="row" style="justify-content:space-between;align-items:flex-start"><span class="l">${n}</span>${st}</div><div class="v" style="font-size:22px">${fmt(v)}</div><div class="small faint">vs current course ${fmt(bv)}</div>${sparkArr(ser)}</div>`; };
+  const heads = o.feasible ? `<div class="callout" style="background:var(--good-soft);color:var(--good)"><b>Best feasible plan for ${P.n.toLowerCase()} first.</b> ${bind.length ? 'Held back by: ' + bind.map(k => CONS.find(c => c.k === k).n.toLowerCase()).join(', ') + '.' : 'No guardrail is binding.'}</div>` : `<div class="callout" style="background:var(--crit-soft);color:var(--crit)"><b>No plan meets every guardrail.</b> Closest plan shown. Missed: ${bad.map(x => x.c.n.toLowerCase()).join(', ')}. Relax a guardrail or choose another primary KPI.</div>`;
+  return `${heads}
+  <div class="tw card" style="margin-top:12px"><table class="tbl"><thead><tr><th>Lever</th><th>Today</th><th>Plan</th><th>Who acts</th></tr></thead><tbody>${Object.keys(LEVERS).map(k => { const L = LEVERS[k], v = o.L[k], ch = v !== L.base; return `<tr><td>${L.n}</td><td>${levFmt(k, L.base)}</td><td><b>${levFmt(k, v)}</b>${ch ? '' : ' <span class="faint">(no change)</span>'}</td><td class="small">${ch ? LEVROLES[k] : '-'}</td></tr>`; }).join('')}</tbody></table></div>
+  <h3 class="h3" style="margin:16px 0 8px">End of the 13 weeks</h3><div class="grid g3">${tile('GMV per day', r.gmv, b.gmv, 'gmv', r.ser.gmv, v => `${C} ${v.toFixed(2)}M`)}${tile('Free cash flow (13 weeks)', r.fcf, b.fcf, 'fcf', r.ser.fcf, v => `${C} ${v.toFixed(1)}M`)}${tile('Gross margin', r.margin, b.margin, 'margin', r.ser.margin, v => v.toFixed(1) + '%')}${tile('Availability', r.avail, b.avail, 'avail', r.ser.avail, v => v.toFixed(1) + '%')}${tile('Repeat rate', r.repeat, b.repeat, 'repeat', r.ser.repeat, v => v.toFixed(1) + '%')}${tile('Working capital days', r.wc, b.wc, 'wc', r.ser.wc, v => v.toFixed(1) + ' days')}</div>
+  <p class="small muted" style="margin-top:8px">Supplier on-time delivery ${r.sot.toFixed(0)}% ${ck('sot') && !ck('sot').ok ? '(missed)' : ''}. Delivery capacity ${r.capOK ? 'holds' : 'is exceeded in the busiest weeks'}.</p>
+  <div class="row" style="margin-top:12px">${S.sc.adopted && S.sc.adopted.pid === S.sc.pid && JSON.stringify(S.sc.adopted.L) === JSON.stringify(o.L) ? '<span class="tag good">Adopted</span>' : `<button class="btn pri" data-act="sc-adopt">Adopt this scenario</button>`}<span class="muted small">Adopting sets policy across the supply chain and checks every decision against it.</span></div>`;
+}
+function scCompareHTML() {
+  return `<div class="tw card"><table class="tbl"><thead><tr><th>If this comes first</th><th class="n">GMV/day</th><th class="n">FCF</th><th class="n">Margin</th><th class="n">Availability</th><th class="n">Repeat</th><th class="n">WC days</th><th>Plan</th><th></th></tr></thead><tbody>${PRIM.map(p => { const o = optimize(p.id, S.sc.cons), r = o.r; return `<tr class="${p.id === S.sc.pid ? 'rec' : ''}"><td><b>${p.n}</b>${o.feasible ? '' : ' <span class="tag crit">Infeasible</span>'}</td><td class="n">${r.gmv.toFixed(2)}M</td><td class="n">${r.fcf.toFixed(1)}M</td><td class="n">${r.margin.toFixed(1)}%</td><td class="n">${r.avail.toFixed(1)}%</td><td class="n">${r.repeat.toFixed(1)}%</td><td class="n">${r.wc.toFixed(1)}</td><td class="small">${Object.keys(LEVERS).filter(k => o.L[k] !== LEVERS[k].base).map(k => `${LEVERS[k].n.split(' ')[0]} ${levFmt(k, o.L[k])}`).join('; ') || 'No change'}</td><td><button class="btn sm" data-act="sc-pick" data-id="${p.id}">Show</button></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+V.scen = () => {
+  const ad = S.sc.adopted, P = PRIM.find(p => p.id === S.sc.pid);
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">Scenario planner</span><h1 class="h1">What comes first this quarter?</h1><p>Choose the one number that matters most. Everything else becomes a guardrail. The planner finds the best plan that respects them, forecasts 13 weeks, and once adopted, steers decisions across the supply chain.</p></section>
+  ${ad ? `<div class="card pad" style="margin-top:14px;background:var(--accent-soft)"><span class="tag acc">Active scenario</span> <b>${PRIM.find(p => p.id === ad.pid).n} first</b>, adopted at ${ad.time}. Decisions are tagged by how well they fit it. <button class="btn sm" data-act="sc-clear" style="margin-left:8px">Withdraw</button></div>` : ''}
+  <section class="sec" style="margin-top:20px"><h2 class="h2" style="margin-bottom:10px">1. What matters most?</h2><div class="grid g4" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">${PRIM.map(p => `<button class="btn sc-btn" data-act="sc-pick" data-id="${p.id}" aria-pressed="${p.id === S.sc.pid}"><b>${p.n}</b><span>${p.sub}</span></button>`).join('')}</div></section>
+  <section class="sec"><details class="card pad" open><summary style="cursor:pointer;font-weight:650">2. Guardrails for everything else${P.skip.length ? ` <span class="small muted">(${P.skip.map(k => CONS.find(c => c.k === k).n.toLowerCase()).join(', ')} is the goal, not a guardrail)</span>` : ''}</summary><div class="grid g3" style="margin-top:12px">${CONS.map(c => `<div><label class="f" for="gc-${c.k}">${c.n} ${c.op === '>=' ? 'at least' : 'at most'}${P.skip.includes(c.k) ? ' (not used)' : ''}</label><input class="in" id="gc-${c.k}" type="number" step="${c.step}" value="${S.sc.cons[c.k]}" data-input="sc-con" data-k="${c.k}" ${P.skip.includes(c.k) ? 'disabled' : ''}></div>`).join('')}</div><div class="row" style="margin-top:10px"><button class="btn sm" data-act="sc-reset">Reset guardrails</button></div></details></section>
+  <section class="sec"><h2 class="h2" style="margin-bottom:10px">3. The plan and the forecast</h2><div id="sc-result">${scResultHTML()}</div></section>
+  <section class="sec"><details class="card pad"><summary style="cursor:pointer;font-weight:650">Compare all five choices side by side</summary><div style="margin-top:12px" id="sc-compare">${scCompareHTML()}</div></details></section>
+  <p class="small muted" style="margin-top:16px">Forecast model is illustrative: a simple 13-week model of sales, margin, availability, repeat and cash. Replace the base figures and the effect sizes with measured ones before relying on it.</p>`;
+};
+/* --- scenario fit: does a decision help or hurt the active scenario? --- */
+const SCW = { growth: { gmv: 1, margin: 0.2, avail: 0.3, repeat: 0.3, wc: -0.1 }, fcf: { gmv: 0.3, margin: 0.5, wc: -1.2, avail: 0.2, repeat: 0.1 }, margin: { margin: 1.2, gmv: 0.2, wc: -0.2, avail: 0.2, repeat: 0.1 }, service: { avail: 1.2, repeat: 0.8, gmv: 0.2, margin: 0.1, wc: -0.1, pick: 0.1 }, balanced: { gmv: 0.5, margin: 0.5, wc: -0.5, avail: 0.5, repeat: 0.5 } };
+const SCN = { gmv: 60000, margin: 0.1, wc: 0.3, avail: 0.4, repeat: 0.3, pick: 4 };
+function scenFit(d) {
+  const a = S.sc.adopted; if (!a) return null; const w = SCW[a.pid], eff = Object.entries(d.effect || {}); if (!eff.length) return { label: 'Neutral', cls: '', why: 'It does not move the numbers the scenario cares about.' };
+  const terms = eff.map(([k, v]) => [k, (w[k] || 0) * v / SCN[k]]), score = terms.reduce((s, x) => s + x[1], 0), top = terms.slice().sort((x, y) => Math.abs(y[1]) - Math.abs(x[1]))[0], nm = METRIC[top[0]].name.toLowerCase();
+  const label = score > 0.35 ? 'Supports' : score < -0.35 ? 'Works against' : 'Neutral', P = PRIM.find(p => p.id === a.pid).n.toLowerCase();
+  return { label, cls: label === 'Supports' ? 'good' : label === 'Works against' ? 'crit' : '', why: `${label === 'Supports' ? 'Helps' : label === 'Works against' ? 'Hurts' : 'Barely moves'} ${P} first, mainly through ${nm}.` };
+}
+const fitLine = d => { const f = scenFit(d); return f ? `<p class="small" style="margin:6px 0 0"><span class="tag ${f.cls}">Scenario fit: ${f.label}</span> <span class="muted">${f.why}</span></p>` : ''; };
+function scenRoleText(role) {
+  const a = S.sc.adopted; if (!a) return ''; const L = a.L, B = Object.fromEntries(Object.keys(LEVERS).map(k => [k, LEVERS[k].base])), out = [], ch = k => L[k] !== B[k];
+  if (ch('cover') && ['buy', 'wh', 'dp'].includes(role)) out.push(`inventory cover target ${B.cover} to ${L.cover} days`);
+  if (ch('pay') && ['fin', 'cat'].includes(role)) out.push(`supplier payment terms ${B.pay} to ${L.pay} days`);
+  if (ch('int') && ['gro', 'dp', 'store'].includes(role)) out.push(`growth campaigns at ${L.int}x plan`);
+  if (ch('price') && role === 'cat') out.push(`price investment ${levFmt('price', L.price)}`);
+  return out.length ? out.join('; ') : role === 'ch' ? 'you steer; teams act on the levers' : 'no lever changes for your function';
+}
+function scenBanner(role) {
+  const a = S.sc.adopted; if (!a) return ['ch', 'fin', 'gro'].includes(role) ? `<div class="card pad small" style="margin-bottom:14px"><span class="tag">No scenario adopted</span> Decisions are not yet checked against a primary KPI. <a href="#/scen">Open the scenario planner</a></div>` : '';
+  return `<div class="card pad small" style="margin-bottom:14px;background:var(--accent-soft)"><span class="tag acc">Active scenario</span> <b>${PRIM.find(p => p.id === a.pid).n} first.</b> For you: ${scenRoleText(role)}. <a href="#/scen">Open the planner</a></div>`;
+}
+function applyScenario(o) {
+  const me = S.persona, B = Object.fromEntries(Object.keys(LEVERS).map(k => [k, LEVERS[k].base])), L = o.L, ch = k => L[k] !== B[k], name = PRIM.find(p => p.id === o.pid).n + ' first';
+  S.sc.adopted = { pid: o.pid, L: Object.assign({}, L), time: clock(S.sim.t) }; S.lint = L.int || 0.5;
+  const wb = (tool, text) => { const t = S.tools[tool]; S.wb.unshift({ id: 'w' + (++S.seq), time: clock(S.sim.t), dec: 'Scenario adopted: ' + name, by: PWHO[me], tool, text, status: t.on ? 'Applied' : 'Queued' }); if (t.on) { t.writes++; t.last = clock(S.sim.t); } };
+  const task = (role, title) => addTask({ role, title, by: 'Scenario: ' + name, src: 'agent', due: 'Today 17:00', prio: 'normal' });
+  if (ch('cover')) { wb('buy', `Inventory cover target ${B.cover} to ${L.cover} days`); wb('fcst', `Safety stock settings updated for a ${L.cover}-day cover`); task('buy', `Re-run the buy plan with a ${L.cover}-day cover target`); task('wh', `Adjust transfer buffers to a ${L.cover}-day cover`); task('dp', `Update safety stock to a ${L.cover}-day cover`); }
+  if (ch('pay')) { wb('fin', `Supplier payment terms target ${B.pay} to ${L.pay} days`); task('fin', `Move supplier payment terms toward day ${L.pay}`); task('cat', `Raise the payment-term ask in supplier talks (target day ${L.pay})`); }
+  if (ch('int')) { wb('camp', `Growth campaign intensity set to ${L.int}x plan`); task('gro', `Run the growth lineup at ${L.int}x intensity`); task('store', 'Plan picker capacity for the lineup weeks'); }
+  if (ch('price')) { wb('price', `Price investment set to ${levFmt('price', L.price)}`); task('cat', `Hold price investment at ${levFmt('price', L.price)}`); }
+  wb('bi', `Active scenario set: ${name}`);
+  postMsg('ops', { f: PWHO[me], k: 'role', r: me, t: `Scenario adopted: ${name}. Plan: ` + (Object.keys(LEVERS).filter(ch).map(k => `${LEVERS[k].n.toLowerCase()} ${levFmt(k, L[k])}`).join('; ') || 'no lever changes') + '. Tasks created for the teams affected.' });
+}
+
+/* ---------- visibility and decision rights: be informed, but focus on what needs doing ---------- */
+const ROUTES = [['my', 'My day', 'What to do today: decisions, tasks, numbers, messages'], ['org', 'Org and OKRs', 'Which teams to monitor or nudge, OKRs, cross-org dependencies'], ['scen', 'Scenario planner', 'Choose the primary KPI, set guardrails, forecast the quarter'], ['team', 'Team dashboard', 'RACI, visibility, connected tools and write-backs'], ['home', 'Briefing and agents', 'Morning briefing and your agents'], ['score', 'Scorecard', 'Six numbers and their drivers'], ['flows', 'Workflows', 'Playable workflows, step by step'], ['routines', 'Agent routines', 'Daily tasks agents run on their own'], ['day', 'Day in the life', 'Simulation: events, reactions, manual versus AI-native'], ['agents', 'Agent portfolio', 'Every agent and its track record'], ['log', 'Decision log', 'Who decided what, when, and why'], ['compare', 'Before and after', 'Workflow tests with pass or fail']];
+const VNAV0 = { ch: ['my', 'org', 'scen', 'team', 'score'], cat: ['my', 'home', 'flows', 'score'], dp: ['my', 'home', 'flows', 'routines'], buy: ['my', 'home', 'flows', 'routines'], wh: ['my', 'home', 'flows', 'day'], store: ['my', 'home', 'flows', 'day'], fin: ['my', 'home', 'scen', 'team'], gro: ['my', 'home', 'scen', 'score'] };
+S.vnav = JSON.parse(JSON.stringify(VNAV0));
+const TEAMS = ['Commercial team', 'Procurement team', 'Supply chain team', 'Demand planning team', 'Finance team', 'Growth team', 'Store operations team', 'Customer team', 'Risk and Compliance team'];
+const VLEV = ['own', 'rollup', 'esc', 'none'], VLAB = { own: 'Own agents', rollup: 'Status only', esc: 'Escalations only', none: 'Hidden' }, VSHORT = { own: 'Own', rollup: 'Status', esc: 'Escal.', none: '-' };
+const VTEAM0 = {
+  ch: Object.fromEntries(TEAMS.map(t => [t, 'esc'])),
+  cat: { 'Commercial team': 'own', 'Procurement team': 'rollup', 'Finance team': 'rollup', 'Growth team': 'rollup' },
+  dp: { 'Demand planning team': 'own', 'Procurement team': 'rollup', 'Supply chain team': 'rollup', 'Commercial team': 'rollup' },
+  buy: { 'Procurement team': 'own', 'Commercial team': 'rollup', 'Supply chain team': 'rollup', 'Demand planning team': 'rollup' },
+  wh: { 'Supply chain team': 'own', 'Procurement team': 'rollup', 'Store operations team': 'rollup', 'Demand planning team': 'rollup' },
+  store: { 'Store operations team': 'own', 'Supply chain team': 'rollup' },
+  fin: { 'Finance team': 'own', 'Commercial team': 'rollup', 'Procurement team': 'rollup', 'Growth team': 'rollup' },
+  gro: { 'Growth team': 'own', 'Customer team': 'own', 'Commercial team': 'rollup', 'Finance team': 'rollup' }
+};
+S.vteam = JSON.parse(JSON.stringify(VTEAM0));
+const vlev = (role, team) => (S.vteam[role] || {})[team] || 'none';
+const ownAgents = role => AG.filter(a => a.kind === 'functional' && vlev(role, a.team) === 'own');
+const DOA = [['Supplier price change', 'Commercial lead, up to a 5% cost change with margin above the floor', 'Margin below the floor, or the change is above 5%'], ['Competitor response', 'Commercial lead, up to ' + C + ' 25k', 'Above ' + C + ' 25k'], ['Stock-out fix and transfers', 'Replenishment lead and Dark-store manager, up to ' + C + ' 10k', 'Above ' + C + ' 10k, or an outage longer than 24 hours'], ['Campaign approval', 'Growth lead, up to ' + C + ' 50k', 'Above ' + C + ' 50k, or it needs working capital'], ['Payment terms and cash', 'Finance lead, up to ' + C + ' 250k', 'Above ' + C + ' 250k, or it moves cash across teams'], ['Licence and compliance', '-', 'Always'], ['Staffing and shift plans', 'Dark-store manager', 'Never']];
+const DOR = { comp: `Above your ${C} 25k limit for commercial spend: the budget is ${C} 38k.`, cash: 'Cross-team: it moves cash between Finance, Procurement and Growth.', risk: 'Compliance escalation: it sits outside any one function.', scout: '' };
+function navHTML() {
+  const prim = S.vnav[S.persona] || [];
+  return [['landing', 'North star']].concat(prim.map(r => [r, ROUTES.find(x => x[0] === r)[1]])).map(([r, l]) => `<a href="#/${r}" ${(S.route === r || (r === 'flows' && S.route === 'flow')) ? 'aria-current="page"' : ''}>${l}</a>`).join('') + `<button class="morebtn" data-act="nav-more">All views</button>`;
+}
+function moreHTML() {
+  const prim = S.vnav[S.persona] || [], rest = ROUTES.filter(r => !prim.includes(r[0])), row = r => `<a class="vrow" href="#/${r[0]}" data-act="nav-go"><b>${r[1]}</b><span class="small muted">${r[2]}</span></a>`;
+  return `<span class="eyebrow">All views</span><h2 class="h2" style="margin:4px 0 6px">Everything is reachable, only your essentials are in the menu</h2><p class="small muted">Menu for the ${PWHO[S.persona]}. Change what sits in each role's menu under Team dashboard, Visibility.</p>
+  <h3 class="h3" style="margin:14px 0 6px">In your menu</h3>${prim.map(k => row(ROUTES.find(r => r[0] === k))).join('')}<h3 class="h3" style="margin:14px 0 6px">Open when you need it</h3>${rest.map(row).join('')}`;
+}
+const agentRow = a => { const esc2 = S.dec.find(d => d.status === 'open' && d.agent === a.id && d.role !== S.persona); return `<button class="arow" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i><span><b>${a.name}</b><span class="small muted afind">${firstS(a.finding)}${esc2 ? ' Escalated to the ' + PWHO[esc2.role] + '.' : ''}</span></span>${pill(a.status)}</button>`; };
+function teamRoll(team) { const ag = AG.filter(a => a.team === team), attn = ag.filter(a => a.status !== 'Watching').length, dec = S.dec.filter(d => d.status === 'open' && (AGM[d.agent || d.sa] || {}).team === team).length; return { n: ag.length, attn, dec, ag }; }
+function teamsHTML(role) {
+  const rows = TEAMS.filter(t => ['rollup', 'esc'].includes(vlev(role, t)));
+  if (!rows.length) return '';
+  return `<section class="sec"><div class="sec-h"><h2 class="h2">${role === 'ch' ? 'Your teams: what reaches you' : 'Teams you are informed on'}</h2><span class="muted small">${role === 'ch' ? 'Decisions only come up when they pass a limit' : 'Status only. Their work is theirs'}</span></div><div class="card"><ul class="feed" style="padding:0 18px">${rows.map(t => { const x = teamRoll(t), esc = S.dec.filter(d => d.status === 'open' && d.role === role && (AGM[d.agent || d.sa] || {}).team === t).length, lv = vlev(role, t);
+    return `<li style="grid-template-columns:1fr auto;align-items:center"><span><b>${t}</b><br><span class="small muted">${lv === 'esc' ? (esc ? `${esc} item${esc > 1 ? 's' : ''} escalated to you` : 'Nothing escalated') : `${x.attn} of ${x.n} agents have something to look at, ${x.dec} decision${x.dec === 1 ? '' : 's'} open`}</span></span><button class="btn sm" data-act="team-open" data-id="${t}">See agents</button></li>`; }).join('')}</ul></div></section>`;
+}
+V.home = () => {
+  const p = PERSONAS.find(x => x.id === S.persona), role = p.id, top = openDec(role), own = ownAgents(role), shared = AG.filter(a => a.kind === 'shared');
+  const kp = p.kpis.map(([l, v, n]) => `<div class="card stat"><div class="v">${v == null ? top.length : v}</div><div class="l"><b>${l}</b><br>${n}</div></div>`).join('');
+  const mets = metricItems(role), off = mets.filter(m => mStat(m) !== 'On track').length;
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">${role === 'ch' ? 'Morning briefing, 06:00' : 'Your morning briefing'}</span><h1 class="h1">${p.name}</h1><p>${p.blurb}</p></section>
+  <div class="grid g3" style="margin:18px 0">${kp}</div>
+  <div class="grid g2" id="bulletin">
+    <section class="card pad"><h2 class="h2">What happened</h2><ol class="bul" style="margin-top:8px">${p.happened.map(x => `<li><span>${x}</span></li>`).join('')}</ol></section>
+    <section class="card pad"><div class="row" style="justify-content:space-between"><h2 class="h2">${role === 'ch' ? 'Escalated to you' : 'Decide today'}</h2><span class="muted small">${top.length} waiting</span></div><div class="stack" style="margin-top:10px">${inboxHTML(role, 5)}</div></section></div>
+  <section class="sec"><div class="sec-h"><h2 class="h2">Shared agents</h2><span class="muted small">Same for every role</span></div><div class="card" style="padding:4px 14px">${shared.map(agentRow).join('')}</div></section>
+  ${own.length ? `<section class="sec"><div class="sec-h"><h2 class="h2">Your agents (${own.length})</h2><span class="muted small">Built by your team</span></div><div class="card" style="padding:4px 14px">${own.map(agentRow).join('')}</div></section>` : ''}
+  ${teamsHTML(role)}
+  <section class="sec"><div class="grid g3"><a class="card pad linkcard" href="#/score"><b>Scorecard</b><span class="small muted">${role === 'ch' ? 'Six numbers and their drivers' : off + ' of ' + mets.length + ' of your numbers need a look'}. Open it</span></a><a class="card pad linkcard" href="#/day"><b>Day in the life</b><span class="small muted">Events, reactions and the latest from the agents. Open it</span></a><button class="card pad linkcard" data-act="chat-open"><b>Ask the team</b><span class="small muted">Any question, in your own words</span></button></div></section>`;
+};
+function teamAgentsHTML(team) { const ag = AG.filter(a => a.team === team); return `<span class="eyebrow">${team}</span><h2 class="h2" style="margin:4px 0 6px">Agents in the ${team.toLowerCase()}</h2><p class="small muted">Built and owned by the team. You are informed, they act.</p><div style="padding:4px 0">${ag.map(agentRow).join('')}</div>`; }
+function visTab() {
+  const roles = PERSONAS;
+  return `<p class="muted" style="margin:14px 0 8px">Who sees what. Click a cell to change it. Everyone can still open any view through All views; the menu only holds what the role needs to act.</p>
+  <h2 class="h2" style="margin:14px 0 8px">Views in each role's menu</h2><div class="tw card"><table class="tbl raci"><thead><tr><th>Role</th>${ROUTES.map(r => `<th class="n">${r[1]}</th>`).join('')}</tr></thead><tbody>${roles.map(p => `<tr><td><b>${p.who}</b></td>${ROUTES.map(r => { const on = S.vnav[p.id].includes(r[0]), my = r[0] === 'my'; return `<td class="n"><button class="rcell ${on ? 'r-R' : 'r-x'}" data-act="vnav-cell" data-id="${p.id}" data-k="${r[0]}" ${my ? 'disabled' : ''} aria-label="${p.who}, ${r[1]}: ${on ? 'in the menu' : 'in All views only'}. Press to change.">${on ? '&#10003;' : '&middot;'}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+  <h2 class="h2" style="margin:24px 0 8px">What each role sees of the other teams' agents</h2><p class="small muted" style="margin:0 0 8px">Own agents: full view and actions. Status only: one line per team. Escalations only: nothing unless a decision passes a limit. Hidden: not shown.</p><div class="tw card"><table class="tbl raci"><thead><tr><th>Role</th>${TEAMS.map(t => `<th class="n">${t.replace(' team', '')}</th>`).join('')}</tr></thead><tbody>${roles.map(p => `<tr><td><b>${p.who}</b></td>${TEAMS.map(t => { const v = vlev(p.id, t); return `<td class="n"><button class="rcell ${v === 'own' ? 'r-A' : v === 'rollup' ? 'r-C' : v === 'esc' ? 'r-I' : 'r-x'}" style="width:auto;padding:0 8px;font-size:11px" data-act="vteam-cell" data-id="${p.id}" data-k="${t}" aria-label="${p.who}, ${t}: ${VLAB[v]}. Press to change.">${VSHORT[v]}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+  <h2 class="h2" style="margin:24px 0 8px">Decision rights: what reaches the Country head</h2><div class="card tw"><table class="tbl"><thead><tr><th>Decision</th><th>The owner decides</th><th>It escalates to the Country head when</th></tr></thead><tbody>${DOA.map(r => `<tr><td><b>${r[0]}</b></td><td class="small">${r[1]}</td><td class="small">${r[2]}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+S.dec.forEach(d => { if (DOR[d.agent]) d.dor = DOR[d.agent]; });
+['comp', 'cash'].forEach(id => { const d = S.dec.find(x => x.id === 'd-' + id); if (d) d.role = 'ch'; });
+(S.dec.find(d => d.id === 'd-lineup') || {}).dor = 'Cross-team: it needs working capital, marketing budget and delivery capacity from other teams.';
+
 /* ---------- presenter ---------- */
 const PSTEPS = [
-  { t: '1. Landing: the north star', time: '0:00 to 0:35', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
-  { t: '2. Country head: morning bulletin', time: '0:35 to 1:15', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
-  { t: '3. My day: one screen per role', time: '1:15 to 2:00', say: 'Every role gets one consolidated screen: decisions and tasks on a board, numbers against target, all their agents, and a team channel. Create a task, ask a colleague in Slack, or generate the WBR data pack in one click.', go: () => { S.persona = 'ch'; nav('my'); }, spot: '#tasks' },
-  { t: '4. Org and OKRs: monitor, nudge, unblock', time: '2:00 to 2:45', say: 'As Country head you see which team KPIs to monitor and which to nudge, how the OKRs are moving against the pace of the quarter, and the dependencies outside any one team: working capital, delayed approvals and the growth lineup. Nudge from here and it goes to Slack and the task board.', go: () => { S.persona = 'ch'; nav('org'); }, spot: '#lineup' },
-  { t: '5. Play one scenario', time: '2:45 to 3:45', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
-  { t: '6. Approve a decision', time: '3:45 to 4:20', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
-    action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
-  { t: '7. Before and after', time: '4:20 to 4:45', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
-  { t: '8. Close on the north star', time: '4:45 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
+  { t: '1. Landing: the north star', time: '0:00 to 0:30', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
+  { t: '2. Country head: morning bulletin', time: '0:30 to 1:00', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
+  { t: '3. My day: one screen per role', time: '1:00 to 1:40', say: 'Every role gets one consolidated screen: decisions and tasks on a board, numbers against target, all their agents, and a team channel. Create a task, ask a colleague in Slack, or generate the WBR data pack in one click.', go: () => { S.persona = 'ch'; nav('my'); }, spot: '#tasks' },
+  { t: '4. Org and OKRs: monitor, nudge, unblock', time: '1:40 to 2:15', say: 'As Country head you see which team KPIs to monitor and which to nudge, how the OKRs are moving against the pace of the quarter, and the dependencies outside any one team: working capital, delayed approvals and the growth lineup. Nudge from here and it goes to Slack and the task board.', go: () => { S.persona = 'ch'; nav('org'); }, spot: '#lineup' },
+  { t: '5. Scenario planner: what comes first', time: '2:15 to 2:55', say: 'Pick the one number that matters most, such as free cash flow or growth. Everything else becomes a guardrail. The planner finds the best feasible plan, forecasts 13 weeks, and when adopted it sets policy across supply chain, pricing, payment terms and campaigns, and tags every decision with its fit.', go: () => { S.persona = 'ch'; nav('scen'); }, spot: '#sc-result' },
+  { t: '6. Inject an event', time: '2:55 to 3:40', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
+  { t: '7. Approve a decision', time: '3:40 to 4:20', say: 'This reached the Country head because the budget is above the USD 25k limit. Open the evidence brief: the options, the what-if slider, who is involved and how it fits the active scenario. Question it in the chat, then approve. A reason is required, the tools are updated and the right people are notified.', go: () => { S.persona = 'ch'; nav('my'); simPause(); }, spot: '[data-did="d-comp"], .tcard.dec', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-comp' && d.status === 'open')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-comp')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
+    action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-comp' && d.status === 'open')) openDecide('d-comp', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
+  { t: '8. Before and after', time: '4:20 to 4:45', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
+  { t: '9. Close on the north star', time: '4:45 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
 ];
 function presHTML() {
   const i = S.pres.i, p = PSTEPS[i];
@@ -2067,7 +2257,7 @@ function updateTop() {
 function render() {
   const f = document.activeElement, key = f && f.dataset && f.dataset.act ? f : null;
   const sy = window.scrollY;
-  $('#nav').innerHTML = NAV.map(([r, l]) => `<a href="#/${r}" ${(S.route === r || (r === 'flows' && S.route === 'flow')) ? 'aria-current="page"' : ''}>${l}</a>`).join('');
+  $('#nav').innerHTML = navHTML();
   const sd = $('.scin'), draft = sd && !LAY.length ? { v: sd.value, f: document.activeElement === sd } : null;
   $('#view').innerHTML = (V[S.route] || V.landing)(S.arg) + `<footer>All data in this demo is illustrative and synthetic. Country (${CTRY}), currency (${C}), zones and suppliers are set at the top of the file; zone and supplier names are still placeholders. <button class="btn sm" data-act="reset-demo">Reset demo</button></footer>`;
   S.flash = {}; updateTop(); LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); presRender();
@@ -2198,6 +2388,22 @@ Object.assign(ACT, {
   'dep-ok': el => { const d = S.deps.find(x => x.id === el.dataset.id); d.done = true; if (d.kind === 'wc') toast('Top-up approved: the allocation for the lineup grows by ' + C + ' 500k.'); else if (d.kind === 'mkt') toast('Marketing budget released: blocked campaigns are unblocked.'); else toast('Marked as approved.'); render(); }
 });
 document.addEventListener('input', e => { const el = e.target.closest('[data-input="lint"]'); if (!el) return; S.lint = +el.value; $('#lint-v').textContent = S.lint.toFixed(1) + 'x'; $('#lint-out').innerHTML = wiOut(AN.lineup.wi, S.lint); });
+
+Object.assign(ACT, {
+  'sc-pick': el => { S.sc.pid = el.dataset.id; render(); },
+  'sc-reset': () => { CONS.forEach(c => { S.sc.cons[c.k] = c.def; }); render(); },
+  'sc-adopt': () => { applyScenario(optimize(S.sc.pid, S.sc.cons)); toast('Scenario adopted. Tasks and tool updates created.'); render(); },
+  'sc-clear': () => { S.sc.adopted = null; toast('Scenario withdrawn. Decisions are no longer tagged.'); render(); }
+});
+document.addEventListener('input', e => { const el = e.target.closest('[data-input="sc-con"]'); if (!el) return; const v = parseFloat(el.value); if (isNaN(v)) return; S.sc.cons[el.dataset.k] = v; const r = $('#sc-result'); if (r) r.innerHTML = scResultHTML(); const c = $('#sc-compare'); if (c) c.innerHTML = scCompareHTML(); });
+
+Object.assign(ACT, {
+  'nav-more': () => openLayer('modal', 'All views', moreHTML),
+  'nav-go': () => closeLayer(),
+  'team-open': el => openLayer('drawer', el.dataset.id, () => teamAgentsHTML(el.dataset.id)),
+  'vnav-cell': el => { const l = S.vnav[el.dataset.id], k = el.dataset.k, i = l.indexOf(k); if (i >= 0) l.splice(i, 1); else l.push(k); render(); },
+  'vteam-cell': el => { const m = S.vteam[el.dataset.id] || (S.vteam[el.dataset.id] = {}), cur = m[el.dataset.k] || 'none'; m[el.dataset.k] = VLEV[(VLEV.indexOf(cur) + 1) % VLEV.length]; render(); }
+});
 
 document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-chatform]'); if (!f) return; e.preventDefault(); const i = $('.cin', f); const v = i.value; i.value = ''; chatSend(f.dataset.chatform, v); });
