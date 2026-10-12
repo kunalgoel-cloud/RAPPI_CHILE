@@ -244,6 +244,15 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
 .cform{display:flex;gap:8px}.cform .in{flex:1}
 .dots3 i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink3);margin-left:4px;animation:bl 1.2s infinite}.dots3 i:nth-child(2){animation-delay:.2s}.dots3 i:nth-child(3){animation-delay:.4s}
 @keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.kanban{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;align-items:start}
+.kcol{background:var(--surface2);border-radius:12px;padding:12px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14px}
+.tcard.hi{border-left:4px solid var(--crit)}.tcard.dec{border-left:4px solid var(--accent)}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ink3);margin-right:6px}.sdot.n{background:var(--accent)}.sdot.f{background:var(--warn)}
+.agentchip{padding:6px 12px}
+.sml{max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px 2px 10px}
+.sm{border-bottom:1px solid var(--line);padding-bottom:8px;font-size:14px}.sh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}.sh time{color:var(--ink3);font-variant-numeric:tabular-nums}
+@media(max-width:1000px){#lower{grid-template-columns:1fr!important}}
 @media(max-width:1500px){.role>span{display:none}}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
@@ -300,7 +309,7 @@ const ST = n => STAGES.indexOf(n);
 
 /* ---------- the people ---------- */
 const PERSONAS = [
-  { id: 'ch', name: 'Country head', who: 'You', blurb: 'Your whole market on one page: what moved, why, and the few things that need you.',
+  { id: 'ch', name: 'Country head', who: 'Country head', blurb: 'Your whole market on one page: what moved, why, and the few things that need you.',
     kpis: [['Orders expected today', '41,200', '+2.2% vs yesterday'], ['Zones on track', '4 of 6', 'Zones 3 and 5 need attention'], ['Decisions waiting for you', null, 'ranked by money at risk']],
     happened: [`Zone 3 sales ran 11% below usual yesterday, mostly dairy and fresh stock-outs in the evening.`, `Competitor X cut ${CAT_BEV} and ${CAT_DAIRY} prices by 15% for the weekend in three zones.`, `${SD} sent a cost list that takes 14 items below the margin floor.`, `Inventory days are 41 against 36 payment days, 5 days of cash tied up.`, `${SL}'s food licence expires in 12 days and 31 items are missing product data.`] },
   { id: 'cat', name: 'Commercial lead and Catman', who: 'Commercial lead', blurb: 'Your portfolio, your suppliers, your margin. Agents prepare, you negotiate.',
@@ -923,6 +932,41 @@ AN.voice = {
 
 AN['wf:price:3'] = AN.guard; AN['wf:promo:3'] = AN.comp; AN['wf:transfer:3'] = AN.transfer; AN['wf:stockout:5'] = AN.tower; AN['wf:picker:3'] = AN.coach; AN['wf:credit:3'] = AN.credit;
 
+/* ---------- workspace data: metric boards, seed tasks, Slack channels (all illustrative) ---------- */
+const CORE_T = { gmv: { t: 2450000, tol: 100000 }, avail: { t: 95, tol: 1 }, repeat: { t: 62, tol: 1 }, margin: { t: 25, tol: 0.5 }, wc: { t: 4, tol: 1.5 }, pick: { t: 125, tol: 8 } };
+const cm = (n, val, tgt, pre, suf, good, tol, agents) => ({ n, val, tgt, pre, suf, good, tol, agents: agents || [], series: series(val, Math.max(0.4, Math.abs(val) * 0.03), 0) });
+const PMET = {
+  ch: ['gmv', 'avail', 'repeat', 'margin', 'wc', 'pick'],
+  cat: ['margin', 'gmv', cm('Items below margin floor', 14, 0, '', '', 'down', 3, ['guard', 'pcheck']), cm('Supplier on-time delivery', 74, 90, '', '%', 'up', 8, ['reply', 'pofu']), cm('Price gap versus Competitor X', 14, 3, '+', '%', 'down', 4, ['comp'])],
+  dp: ['avail', cm('Forecast accuracy', 82, 90, '', '%', 'up', 5, ['fdoc', 'pulse']), cm('Manual edits with a reason', 74, 90, '', '%', 'up', 10, ['edrev']), cm('Items with data gaps', 37, 0, '', '', 'down', 10, ['valid'])],
+  buy: ['avail', cm('Orders confirmed within 24 hours', 68, 90, '', '%', 'up', 8, ['pofu', 'reply']), cm('Blocked buy lines', 27, 0, '', '', 'down', 5, ['unblock']), cm('Supplier on-time delivery', 74, 90, '', '%', 'up', 8, ['reply'])],
+  wh: ['avail', cm('Stock count accuracy', 96.2, 98, '', '%', 'up', 1.5, ['acc']), cm('Trucks on time today', 96, 95, '', '%', 'up', 3, ['inbd']), cm('Transfer moves planned for tomorrow', 62, 60, '', '', 'up', 10, ['transfer'])],
+  store: ['pick', 'avail', cm('Items out of stock in store Z3-02', 6, 0, '', '', 'down', 3, ['resp']), cm('Items expiring tonight', 48, 20, '', '', 'down', 15, ['waste'])],
+  fin: ['wc', 'margin', cm('Invoices not matching', 23, 5, '', '', 'down', 10, ['inv']), cm('Payment days (average)', 36, 40, '', '', 'up', 3, ['paytm']), cm('Excess stock above target (thousands)', 310, 150, `${C} `, 'k', 'down', 100, ['wca', 'cash'])],
+  gro: ['gmv', 'repeat', cm('Neighbourhoods outside the 15-minute area', 4, 0, '', '', 'down', 2, ['cov', 'scout']), cm('Campaign return per dollar spent', 8.4, 5, '', 'x', 'up', 1, ['camp']), cm('Excess stock to move (thousands)', 120, 40, `${C} `, 'k', 'down', 40, ['excess'])]
+};
+const ROLECH = { ch: 'ops', cat: 'comm', dp: 'supply', buy: 'supply', wh: 'supply', store: 'ops', fin: 'fin', gro: 'growth' };
+const TEAMROLE = { 'Commercial team': 'cat', 'Supply chain team': 'wh', 'Procurement team': 'buy', 'Demand planning team': 'dp', 'Finance team': 'fin', 'Growth team': 'gro', 'Store operations team': 'store' };
+const CHANNELS = [{ id: 'ops', n: `#${CTRY.toLowerCase()}-daily-ops`, d: 'Stock, trucks and stores, today' }, { id: 'supply', n: '#supply-chain', d: 'Orders, transfers, inbound' }, { id: 'comm', n: '#commercial', d: 'Suppliers, prices, range' }, { id: 'fin', n: '#finance', d: 'Invoices, cash, credit lines' }, { id: 'growth', n: '#growth', d: 'Campaigns, coverage, excess stock' }, { id: 'wbr', n: '#wbr-data', d: 'Weekly business review data requests' }];
+const TASKS0 = [
+  ['ch', 'Weekly business review (WBR): data pack', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['ch', 'Review the Zone 3 recovery plan with the Replenishment lead', 'Availability Control Tower', 'agent', 'Today 12:00', 'high', 'doing', '', 'tower'], ['ch', 'Confirm the weekend promotion budget ceiling with the Finance lead', 'Competition Watch', 'agent', 'Today 17:00', 'normal', 'wait', '', 'comp'],
+  ['cat', 'WBR: commercial numbers (margin, price gaps, supplier terms)', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['cat', 'Prepare the Supplier D talking points', 'Supplier Negotiation Prep', 'agent', 'Today 17:00', 'high', 'doing', '', 'negprep'], ['cat', 'Review 6 missing yoghurt items', 'Catman Task Manager', 'agent', 'Fri', 'normal', 'todo', '', 'cattask'],
+  ['dp', 'WBR: forecast accuracy and edits', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['dp', 'Remind editors who skipped the reason', 'Edit Reviewer', 'agent', 'Today 12:00', 'normal', 'todo', '', 'edrev'], ['dp', 'Check the Fresh produce forecast after the re-run', 'Forecast Doctor', 'agent', 'Today 17:00', 'normal', 'wait', '', 'fdoc'],
+  ['buy', 'WBR: supplier follow-up numbers', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['buy', 'Chase the 8 missing cost prices', 'Plan Unblocker', 'agent', 'Today 12:00', 'high', 'doing', '', 'unblock'], ['buy', 'Call Supplier G for a firm delivery time', 'Supplier Reply Tracker', 'agent', 'Today 12:00', 'high', 'todo', '', 'reply'],
+  ['wh', 'WBR: transfers and stock accuracy numbers', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['wh', "Review tomorrow's transfer plan (11 exceptions)", 'Transfer Planner', 'agent', 'Today 14:00', 'normal', 'todo', '', 'transfer'], ['wh', 'Recount 40 dairy items in Zone 4', 'Stock Accuracy', 'agent', 'Fri', 'normal', 'wait', '', 'acc'],
+  ['store', 'WBR: store numbers (pick speed, waste, availability)', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['store', 'Confirm fixes for 6 items in store Z3-02', 'Stock-out Responder', 'agent', 'Today 12:00', 'high', 'todo', '', 'resp'], ['store', 'Brief the evening shift on the new pick path', 'Picker Productivity Coach', 'agent', 'Today 17:00', 'normal', 'todo', '', 'coach'],
+  ['fin', 'WBR: finance numbers (margin, working capital, invoices)', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['fin', 'Review the Supplier K credit-line pack', 'Credit-Line Document Pack', 'agent', 'Today 17:00', 'high', 'todo', '', 'credit'], ['fin', 'Resolve 23 invoice differences', 'Invoice Match', 'agent', 'Fri', 'normal', 'doing', '', 'inv'],
+  ['gro', 'WBR: growth numbers (campaigns, coverage, excess stock)', 'Chief of Staff', 'recurring', 'Mon 09:00', 'normal', 'todo', 'wbr', 'chief'], ['gro', 'Approve the rainy-day campaign messages', 'Campaign Planner', 'agent', 'Today 12:00', 'normal', 'todo', '', 'camp'], ['gro', 'Shortlist 4 neighbourhood candidates in Zone 6', 'Coverage Scout', 'agent', 'Fri', 'normal', 'todo', '', 'cov']
+];
+const MSG0 = {
+  ops: [['Availability Control Tower', 'bot', 'tower', `${CAT_DAIRY} availability in ${Z3} is 86%. The late truck from ${SG} is the main cause.`, '05:58', 'ch'], ['Replenishment lead', 'role', 'wh', `I can move 480 units from ${Z2} if I get a go-ahead. The truck is free at 06:30.`, '06:02'], ['Dark-store manager', 'role', 'store', 'Store Z3-02 counts done. 6 items are empty and substitutes are ready.', '06:05', 'wh']],
+  supply: [['PO Follow-up', 'bot', 'pofu', '11 purchase orders are unconfirmed after 24 hours, 3 on key items.', '05:50', 'buy'], ['Buyer', 'role', 'buy', `Calling ${SG} at 07:30. I will post the answer here.`, '05:55']],
+  comm: [['Margin Guardian', 'bot', 'guard', `${SD}'s cost list takes 14 items below the margin floor.`, '05:40', 'cat'], ['Commercial lead', 'role', 'cat', 'The brief looks good. I will lead the call on Thursday.', '05:48', 'ch']],
+  fin: [['Invoice Match', 'bot', 'inv', `23 invoices do not match goods received (${C} 18,400).`, '05:45', 'fin'], ['Finance lead', 'role', 'fin', 'Holding payment on the 9 largest until suppliers respond.', '05:52']],
+  growth: [['Campaign Planner', 'bot', 'camp', 'The rainy-day campaign draft is ready for review.', '05:42', 'gro'], ['Growth lead', 'role', 'gro', 'Reviewing the messages by noon.', '05:58', 'ch']],
+  wbr: [['Chief of Staff', 'bot', 'chief', 'WBR data requests go out Friday 15:00. Each team posts its numbers here by Monday 09:00.', '05:30'], ['Finance lead', 'role', 'fin', 'Finance numbers will be ready on Sunday evening.', '05:41', 'ch']]
+};
+
 /* ---------- decision log: yesterday's history (seeded) ---------- */
 const LOG0 = [
   ['cat', 'Price and Margin Check', 'price', 'approved', `Renegotiate ${SB} yoghurt cost`, 'Within floor after 2% back-margin.'],
@@ -1151,7 +1195,7 @@ function briefHTML(id) {
   return `<div class="brief"><span class="eyebrow">Decision brief &middot; ${PNAME[d.role]}</span><h2 class="h2" style="margin:4px 0 8px">${d.title}</h2>
   <div class="row"><span class="tag acc">${d.agentName || 'Agent'}</span><span class="tag">Illustrative data</span></div>
   <div class="btabs" role="tablist" aria-label="Brief sections">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${tab === k}" class="btab" data-act="btab" data-id="${id}" data-k="${k}">${l}</button>`).join('')}</div>${body}
-  <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
+  <div class="bactions">${d.status === 'open' ? `<button class="btn pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><button class="btn" data-act="share-slack" data-id="${d.id}">Share in Slack</button><span class="small muted" style="align-self:center">A reason is required and goes into the decision log.</span>` : `<span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]} by ${PWHO[d.role]} at ${d.at}</span><span class="small muted" style="align-self:center">Reason: ${esc(d.reason)}</span>`}</div></div>`;
 }
 /* ---------- team chat: free-text questions, any agent can join ----------
    The demo assistant answers from the illustrative data and a prepared knowledge base (KB). No live AI. */
@@ -1167,7 +1211,7 @@ const QAtasks = i => QA[i].tasks.map(([r, t]) => T(r, t));
 K('q0', /(zone ?3|zone three).*(gmv|sales|drop|fell|fall|down|revenue)|(gmv|sales|revenue).*(drop|fell|fall|down|decline)|why did gmv/g, QA[0].trail.map(([id, x]) => [id, () => x]), ['Why is dairy in Zone 3 out of stock?', 'Which supplier is most responsible?', 'Assign the fixes'], QA[0].ans, QAtasks(0));
 K('q1', /competit|rival|their price|price war/g, QA[1].trail.map(([id, x]) => [id, () => x]), ['What if we match all 38 items?', 'Does this hurt margin?', 'Assign the response'], QA[1].ans, QAtasks(1));
 K('q2', /margin|profit|leak|losing|lose money|lost money/g, QA[2].trail.map(([id, x]) => [id, () => x]), ['What is driving margin?', 'What is the price rise from Supplier D going to cost?', 'Assign the fixes'], QA[2].ans, QAtasks(2));
-K('q3', /expan|new store|new zone|where should we (open|grow)|growth area|candidate/g, QA[3].trail.map(([id, x]) => [id, () => x]), ['Is the nearest store at capacity?', 'What would a new store need?', 'Assign the review'], QA[3].ans, QAtasks(3));
+K('q3', /expan|new store|new zone|where should we (open|grow)|growth area|candidate|neighbourhood|15.?min/g, QA[3].trail.map(([id, x]) => [id, () => x]), ['Is the nearest store at capacity?', 'What would a new store need?', 'Assign the review'], QA[3].ans, QAtasks(3));
 K('q4', /(customers?).*(leav|churn|lost|drop)|why .*leav|churn|retention|complain|repeat rate|review/g, QA[4].trail.map(([id, x]) => [id, () => x]), ['Which customers should get a voucher?', 'What is driving the repeat rate?', 'Assign the fixes'], QA[4].ans, QAtasks(4));
 K('q5', /too much stock|excess|overstock|inventory|working capital|cash tied|expir|waste|payment days/g, QA[5].trail.map(([id, x]) => [id, () => x]), ['What are the 9 excess items?', 'Can we move Supplier K to day 45?', 'Assign the actions'], QA[5].ans, QAtasks(5));
 K('z3cause', /(why|cause|reason).*(zone ?3|dairy)|(zone ?3|dairy).*(cause|reason|why)/g, [
@@ -1177,11 +1221,11 @@ K('z3cause', /(why|cause|reason).*(zone ?3|dairy)|(zone ?3|dairy).*(cause|reason
 K('avail', /stock.?out|availab|empty shelf|out of stock|on.?shelf|shelves/g, [
   ['tower', () => `Availability is ${pv('avail')} today (${DL('avail')}). The weak spot is ${CAT_DAIRY} in ${Z3} at 86%. Lost shelf hours overall: 32% supplier, 28% forecast, 22% transfers, 18% store.`],
   ['resp', () => 'In store Z3-02, 6 items are out: 2 in the back room, 3 with accepted substitutes, 1 needing tonight\'s transfer.']], ['Why is dairy in Zone 3 out of stock?', 'What does it cost us in sales?', 'Which supplier is most at risk?'], 'Fix the supplier delay and the transfer gap first: together they explain 54% of lost shelf hours.', [T('wh', `Move 480 dairy units from ${Z2} to ${Z3}`), T('store', 'Confirm fixes for the 6 items in store Z3-02')]);
-K('supplier', /supplier|truck|\blate\b|delay|purchase order|\bpo\b|inbound|dock|delivery time|on.?time/g, [
+K('supplier', /supplier|confirm|truck|\blate\b|delay|purchase order|\bpo\b|inbound|dock|delivery time|on.?time/g, [
   ['reply', () => `${SG} has not replied for 6 hours and is on time 74% of the time this month (target 90%). 3 other suppliers gave new dates.`],
   ['pofu', () => `11 purchase orders are unconfirmed after 24 hours, 3 on key items. ${SE} has not confirmed 3 days in a row.`],
   ['inbd', () => 'Dock 2 is double-booked at 10:00. Moving one truck to 11:00 is free.']], ['Which supplier is most at risk?', 'Draft a message to Supplier G', 'What is the cost of a late truck?'], `Get firm times from ${SG} and unconfirmed key-item suppliers today.`, [T('buy', `Call ${SG} for a firm delivery time`), T('buy', 'Escalate the 3 unconfirmed key-item orders')]);
-K('forecast', /forecast|predict|demand plan|accuracy|baseline|edit review|planner/g, [
+K('forecast', /forecast|predict|demand plan|accuracy|baseline|edit review|edits?\b|planner/g, [
   ['fdoc', () => `${CAT_FRESH} forecast in ${Z1} is 28% too high for 3 days because a finished promotion is still in the baseline. Re-running without it brings the error to 6%.`],
   ['pulse', () => 'Rain tonight in two zones should lift orders about 12%.'],
   ['edrev', () => 'Of 19 manual edits this week, 12 improved the forecast, 5 made no difference, 2 made it worse. 5 had no reason.']], ['What if we remove the old promotion?', 'Which edits made it worse?', 'What does over-forecasting cost?'], 'Remove the old promotion from the baseline and re-run.', [T('dp', `Remove the old promotion and re-run ${CAT_FRESH} in ${Z1}`)]);
@@ -1196,7 +1240,7 @@ K('weather', /\brain|weather|storm|season|temperature/g, [
 K('picker', /picker|picking|productiv|shift|staffing|labou?r|walking|pick path|units per/g, [
   ['coach', () => `Evening productivity is 104 units per picker per hour against a target of 125. Walking is 34% of pick time; the new path saves about 14 seconds an order.`],
   ['ops', () => `Overall ${pv('pick')}. ${Z5} is 2 pickers short from 18:00.`]], ['What if we move 3 pickers?', 'Will shelf filling suffer?', 'How do we measure the result?'], 'Move 2 pickers to picking at 18:00 and use the new path.', [T('store', 'Accept the evening shift plan and new pick path')]);
-K('transfer', /transfer|rebalanc|move stock|replenish|warehouse|truck space/g, [
+K('transfer', /transfer|rebalanc|move stock|replenish|warehouse|truck space|stock count|count accuracy/g, [
   ['transfer', () => `Tomorrow's plan has 62 moves, 4,380 units across 4 zones; truck space is 91% used. ${Z3} gets the most, 1,150 units.`],
   ['acc', () => `Two counts look wrong (${Z3} milk, ${Z4} eggs). The plan uses the safer figure. ${Z4} dairy shelf counts differ from the system by 3.8%.`]], ['What if we cap Zone 3 at 900 units?', 'Which 11 moves need review?', 'What does the plan cost?'], 'Release the plan: only 11 of 62 moves need a person.', [T('wh', "Review and release tomorrow's transfer plan")]);
 K('invoice', /invoice|payment timing|pay (the )?supplier|early.?payment|goods received/g, [
@@ -1221,6 +1265,7 @@ K('priorities', /priorit|what should i|what matters|brief me|catch me up|top dec
 K('assign', /assign|delegate|\btask|follow.?up|remind/g, [['chief', (cx, st) => { const t = cx.d ? ctxTasks(cx.d) : (st.tasks || []); cx.tasks = t; return t.length ? 'I can create these tasks. Select one to send it to that role\'s inbox.' : 'Ask me a question first, then I can turn the answer into tasks for the right roles.'; }]], [], '', []);
 K('draft', /draft|write|e-?mail|script|compose/g, [['reply', cx => `Draft for ${cx.d && /day|supplier|truck/i.test(cx.d.title) ? SG : SG}: "Hello, our order for ${CAT_DAIRY} was due at 06:00 and has not arrived. Please confirm a dispatch time and truck registration by 08:00 so we can plan the dock. Thank you." The Buyer reviews it before it is sent.`]], ['What do we offer in return?', 'What if they cannot deliver today?', 'Assign the call'], '', []);
 K('simple', /\bsimple|plain|eli5|in short|in a nutshell|summar(y|ise|ize) (this|it)/g, [['analyst', cx => cx.d ? `In plain words: ${firstS((analysisFor(cx.d) || genAn(cx.d)).sum)} If we do nothing: ${firstS((analysisFor(cx.d) || genAn(cx.d)).noact)}` : 'Open a decision, then ask me again and I will explain it in plain words.']], [], '', []);
+K('wbr', /\bwbr\b|weekly business review|weekly review|business review/g, [['analyst', () => 'I compile the weekly business review data pack: the scorecard this week against last, what moved and which agents moved it, decisions taken, and open items. Open it from your task board with Generate data pack, or request each team\'s numbers with Request WBR data. Requests go to a Slack channel and become tasks on each person\'s board.']], ['Request WBR numbers from each team', 'What moved this week?', 'Where are we losing margin?'], '', []);
 K('help', /what can you|how does this work|\bhelp\b|who are you|what do you do/g, [['chief', () => 'I coordinate. Ask in your own words about stock, suppliers, price and margin, forecasts, cash, customers, stores or growth, and I bring in the right agents. The Business Analyst joins for "why", "what if" and "how much" questions. I can also turn answers into tasks for a role.']], ['Brief me on today', 'Where are we losing margin?', 'Why did GMV drop in Zone 3 yesterday?'], '', []);
 function detectMetric(l) { return /availab|stock/.test(l) ? 'avail' : /repeat|retention|churn/.test(l) ? 'repeat' : /margin|profit/.test(l) ? 'margin' : /working|cash|inventory/.test(l) ? 'wc' : /pick|productiv/.test(l) ? 'pick' : 'gmv'; }
 const roleOfText = (t, dflt) => { const a = AG.find(x => x.role !== 'all' && t.includes(x.name)); return a ? a.role : dflt; };
@@ -1371,7 +1416,7 @@ function fireDay() {
   if (S.sim.world !== 'ai') return;
   DAY.forEach(e => {
     if (S.sim.fired[e.id] || S.sim.t < e.t + e.nA) return; S.sim.fired[e.id] = 1;
-    if (e.dec) { addDecision({ sa: e.ag, agentName: AGM[e.ag].name, role: e.role, title: e.dec.title, ask: e.dec.ask, why: e.dec.why, ev: e.dec.ev, effect: e.dec.effect, source: 'day' }); toast(`New decision for ${PNAME[e.role]}: ${e.dec.title}`); }
+    if (e.dec) { addDecision({ sa: e.ag, agentName: AGM[e.ag].name, role: e.role, title: e.dec.title, ask: e.dec.ask, why: e.dec.why, ev: e.dec.ev, effect: e.dec.effect, source: 'day' }); postMsg(ROLECH[e.role] || 'ops', { f: AGM[e.ag].name, k: 'bot', r: e.ag, t: `${e.txt} Decision needed from the ${PWHO[e.role]}.`, to: e.role }); toast(`New decision for ${PNAME[e.role]}: ${e.dec.title}`); }
   });
 }
 function simTick() {
@@ -1396,7 +1441,7 @@ function inject(id) {
     a.act.unshift(`${clock(S.sim.t)}  ${st.text}`);
     S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>${a.name}:</b> ${st.text}` });
     if (st.imp) Object.entries(st.imp).forEach(([k, v]) => { S.adj[k] = (S.adj[k] || 0) + v; S.adjLog.unshift({ k, v, who: a.name, t: clock(S.sim.t) }); S.flash[k] = 1; });
-    if (st.dec) { roles.add(st.dec.role); addDecision({ agent: st.ag, agentName: a.name, role: st.dec.role, title: st.dec.title, ask: st.dec.ask, why: st.dec.why, ev: st.dec.ev, effect: st.dec.effect, edit: st.dec.edit, an: st.dec.an, source: 'scenario' }); toast(`New decision for ${PNAME[st.dec.role]}`); }
+    if (st.dec) { roles.add(st.dec.role); postMsg(ROLECH[st.dec.role] || 'ops', { f: a.name, k: 'bot', r: st.ag, t: `${st.text} Decision needed from the ${PWHO[st.dec.role]}.`, to: st.dec.role }); addDecision({ agent: st.ag, agentName: a.name, role: st.dec.role, title: st.dec.title, ask: st.dec.ask, why: st.dec.why, ev: st.dec.ev, effect: st.dec.effect, edit: st.dec.edit, an: st.dec.an, source: 'scenario' }); toast(`New decision for ${PNAME[st.dec.role]}`); }
     if (i === sc.steps.length - 1) { S.feed.unshift({ t: S.sim.t, o: ++S.seq, x: `<b>Chain complete:</b> ${ags.size} agents worked on it, ${roles.size} roles have a decision waiting.` }); }
     updateTop(); render();
   }, reduced ? 120 * i : 1300 * i));
@@ -1602,15 +1647,124 @@ V.compare = () => `<section class="hero" style="padding-top:6px"><span class="ey
     <div class="row"><label class="small" for="r${key}">Pass if ${r.dir === 'lower' ? 'at most' : 'at least'}</label><input class="in" style="width:80px" id="r${key}" type="number" step="any" value="${rule}" data-input="rule" data-g="${gi}" data-r="${ri_}"><span id="res${key}" class="${ok ? 'pass' : 'fail'}">${ok ? 'Pass' : 'Fail'}</span></div></div>`; }).join('')}</div></section>`).join('')}</div>
   <p class="callout" style="margin-top:16px">One test is shown failing on purpose. A demo where everything passes is not believable; the failing tests are the ones to improve first.</p>`;
 
+/* ---------- My day: task board, metric board, agents strip, Slack-style team panel ---------- */
+S.tasks = TASKS0.map((t, i) => ({ id: 'tk' + i, role: t[0], title: t[1], by: t[2], src: t[3], due: t[4], prio: t[5], status: t[6], kind: t[7], link: t[8] }));
+S.msgs = {}; CHANNELS.forEach(c => { S.msgs[c.id] = (MSG0[c.id] || []).map((m, i) => ({ id: c.id + i, f: m[0], k: m[1], r: m[2], t: m[3], time: m[4], to: m[5], read: false })); });
+S.ch = 'ops'; S.compose = null;
+const COLS = [['todo', 'To do'], ['doing', 'In progress'], ['wait', 'Waiting on others'], ['done', 'Done']];
+const SRC = { agent: 'Agent', recurring: 'Recurring', slack: 'From Slack', chat: 'From chat', manual: 'Created by you' };
+function metricItems(role) {
+  return PMET[role].map(x => {
+    if (typeof x === 'string') { const m = METRIC[x], c = CORE_T[x]; return { k: x, n: m.name, series: m.series, fmt: m.fmt, now: () => mNow(x), tgt: c.t, tol: c.tol, good: m.good, agents: m.agents }; }
+    return { n: x.n, series: x.series, fmt: v => x.pre + (Math.round(v * 10) / 10) + x.suf, now: () => x.val, tgt: x.tgt, tol: x.tol, good: x.good, agents: x.agents };
+  });
+}
+function mStat(m) { const v = m.now(), gap = m.good === 'up' ? m.tgt - v : v - m.tgt; return gap <= 0 ? 'On track' : gap <= m.tol ? 'Watch' : 'Off track'; }
+const statTag = s => `<span class="tag ${s === 'On track' ? 'good' : s === 'Watch' ? 'warn' : 'crit'}">${s}</span>`;
+function sparkArr(a) { const mn = Math.min(...a), mx = Math.max(...a), r = mx - mn || 1; const pts = a.map((v, i) => `${(i / (a.length - 1) * 100).toFixed(1)},${(30 - (v - mn) / r * 26).toFixed(1)}`).join(' '); return `<svg viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`; }
+function metricCard(m) {
+  const s = mStat(m), a = m.series.slice(0, 13).concat(m.now());
+  return `<div class="card kpi" style="padding:14px 16px"><div class="row" style="justify-content:space-between;align-items:flex-start"><span class="l">${m.n}</span>${statTag(s)}</div><div class="v">${m.fmt(m.now())}</div><div class="small faint">Target ${m.fmt(m.tgt)}</div>${sparkArr(a)}
+  <div class="row" style="margin-top:8px">${m.k ? `<button class="chip" data-act="metric" data-id="${m.k}">Drivers</button>` : ''}<button class="chip" data-act="chat-open" data-q="Why is ${esc(m.n.toLowerCase())} ${s.toLowerCase()}?">Ask why</button></div></div>`;
+}
+const unread = role => Object.values(S.msgs).flat().filter(m => m.to === role && !m.read).length;
+function markRead(role) { (S.msgs[S.ch] || []).forEach(m => { if (m.to === role) m.read = true; }); }
+function addTask(o) { const t = Object.assign({ id: 'tk' + (++S.seq), status: 'todo', prio: 'normal', kind: '', src: 'manual', link: '' }, o); S.tasks.push(t); return t; }
+function postMsg(ch, o) { S.msgs[ch].push(Object.assign({ id: ch + (++S.seq), time: clock(S.sim.t), read: false }, o)); if (S.route === 'my') renderSlack(); }
+function ackText(to, text, due) { return /wbr/i.test(text) ? `On it. My WBR numbers will be in ${CHANNELS[5].n} by ${due}.` : /urgent|asap|\bnow\b/i.test(text) ? 'On it right now. I will update this thread within the hour.' : /\?/.test(text) ? `Looking into it. I will come back to you before ${due}.` : `Got it, thanks. It is on my board and I will update you by ${due}.`; }
+function assignTo(role, title, o) {
+  const me = S.persona, due = o.due || 'Today 17:00';
+  addTask({ role, title, by: PWHO[me], src: role === me ? 'manual' : 'slack', due, prio: o.prio || 'normal', kind: o.kind || '' });
+  if (role !== me && o.notify !== false) {
+    const ch = ROLECH[role]; postMsg(ch, { f: PWHO[me], k: 'role', r: me, t: `@${PWHO[role]} ${title}`, to: role });
+    setTimeout(() => postMsg(ch, { f: PWHO[role], k: 'role', r: role, to: me, t: ackText(role, title, due) }), reduced ? 0 : 1400);
+  }
+}
+function taskCard(t) {
+  const tag = t.src === 'agent' ? 'Agent: ' + t.by : SRC[t.src] || t.src, who = t.src === 'agent' ? '' : ` &middot; from ${t.by}`;
+  const btn = (k, l, cls) => `<button class="btn sm ${cls || ''}" data-act="task-move" data-id="${t.id}" data-k="${k}">${l}</button>`;
+  const acts = t.status === 'todo' ? btn('doing', 'Start', 'pri') + btn('wait', 'Waiting on others') : t.status === 'doing' ? btn('done', 'Mark done', 'pri') + btn('wait', 'Waiting on others') : t.status === 'wait' ? btn('doing', 'Back to in progress') + btn('done', 'Mark done', 'pri') : btn('todo', 'Reopen');
+  return `<div class="tcard ${t.prio === 'high' ? 'hi' : ''}"><div class="row" style="gap:6px"><span class="tag ${t.src === 'agent' ? 'acc' : ''}">${tag}</span>${t.prio === 'high' ? '<span class="tag crit">High priority</span>' : ''}</div><b style="display:block;margin:6px 0 2px">${esc(t.title)}</b><div class="small faint">Due ${t.due}${who}</div>
+  <div class="row" style="margin-top:8px">${acts}</div><div class="row" style="margin-top:6px">${t.kind === 'wbr' ? `<button class="chip" data-act="wbr-gen" data-id="${t.id}">Generate data pack</button>` : ''}${t.link ? `<button class="chip" data-act="agent" data-id="${t.link}">Open agent</button>` : ''}<button class="chip" data-act="task-msg" data-id="${t.id}">Message the team</button></div></div>`;
+}
+function decCard(d) { const an = analysisFor(d); return `<div class="tcard dec"><div class="row" style="gap:6px"><span class="tag acc">Decision</span>${an ? `<span class="tag">Confidence ${an.conf.p}%</span>` : ''}</div><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${d.agentName || 'Agent'}</div><div class="row" style="margin-top:8px"><button class="btn sm pri" data-act="brief" data-id="${d.id}">Review and decide</button></div></div>`; }
+function boardHTML(role) {
+  const ts = S.tasks.filter(t => t.role === role), open = openDec(role), dnow = S.dec.filter(d => d.role === role && (d.status === 'approved' || d.status === 'edited' || d.status === 'rejected')).slice(-3);
+  const col = (k, l) => { const items = ts.filter(t => t.status === k), n = items.length + (k === 'todo' ? open.length : k === 'done' ? dnow.length : 0);
+    return `<div class="kcol" role="group" aria-label="${l}"><h3 class="h3" style="margin-bottom:8px">${l} <span class="faint">${n}</span></h3><div class="stack">${k === 'todo' ? open.map(decCard).join('') : ''}${items.map(taskCard).join('')}${k === 'done' ? dnow.map(d => `<div class="tcard"><span class="tag ${d.status === 'rejected' ? 'crit' : 'good'}">${VERB[d.status]}</span><b style="display:block;margin:6px 0 2px">${d.title}</b><div class="small faint">${esc(d.reason)}</div></div>`).join('') : ''}${n ? '' : '<p class="small faint">Nothing here.</p>'}</div></div>`; };
+  return `<div class="kanban">${COLS.map(([k, l]) => col(k, l)).join('')}</div>`;
+}
+function msgHTMLs(m, i) {
+  const a = m.k === 'bot' ? AGM[m.r] : null, tag = a ? `<span class="tag ${a.kind === 'shared' ? 'acc' : ''}">${a.kind === 'shared' ? 'Shared agent' : 'Agent &middot; ' + a.team}</span>` : `<span class="tag">${PNAME[m.r] || ''}</span>`;
+  return `<div class="sm"><div class="sh"><b>${m.f}</b>${tag}<time>${m.time}</time>${m.to === S.persona ? '<span class="tag warn">For you</span>' : ''}</div><div>${esc(m.t)}</div><div class="row" style="margin-top:4px"><button class="chip" data-act="msg-task" data-ch="${S.ch}" data-i="${i}">Create task</button><button class="chip" data-act="msg-ask" data-ch="${S.ch}" data-i="${i}">Ask the team</button></div></div>`;
+}
+function slackInner() {
+  const me = S.persona, c = CHANNELS.find(x => x.id === S.ch), cp = S.compose && S.compose.text || '';
+  return `<div class="row" style="justify-content:space-between"><h3 class="h3">Team messages</h3><span class="tag warn" title="In production this connects to your Slack workspace">Simulated Slack</span></div>
+  <div class="row" style="margin:8px 0" role="tablist" aria-label="Channels">${CHANNELS.map(x => { const u = (S.msgs[x.id] || []).filter(m => m.to === me && !m.read).length; return `<button class="chip" role="tab" aria-selected="${x.id === S.ch}" data-act="ch-pick" data-id="${x.id}" style="${x.id === S.ch ? 'background:var(--accent-soft);border-color:var(--accent);color:var(--accent)' : ''}">${x.n}${u ? ` <b>${u}</b>` : ''}</button>`; }).join('')}</div>
+  <p class="small faint" style="margin:0 0 6px">${c.d}</p>
+  <div class="sml" role="log" aria-live="polite" aria-label="Messages in ${c.n}">${(S.msgs[S.ch] || []).map(msgHTMLs).join('')}</div>
+  <form class="scomp" data-slackform><div class="row" style="margin-bottom:6px"><label class="small" for="smention">Mention</label><select class="in" id="smention" style="width:auto"><option value="">Nobody</option>${PERSONAS.filter(p => p.id !== me).map(p => `<option value="${p.id}" ${S.compose && S.compose.to === p.id ? 'selected' : ''}>${p.who}</option>`).join('')}</select></div>
+  <div class="row" style="flex-wrap:nowrap"><input class="in scin" type="text" autocomplete="off" aria-label="Message to ${c.n}" placeholder="Message ${c.n}" value="${esc(cp)}"><button class="btn pri" type="submit">Send</button></div><p class="small faint" style="margin:6px 0 0">Mentioning a colleague also creates a task on their board.</p></form>`;
+}
+function renderSlack() {
+  const e = $('#slack'); if (!e) return; const k = $('.scin', e), v = k ? k.value : null, f = k && document.activeElement === k, ms = $('#smention', e), mv = ms ? ms.value : '';
+  markRead(S.persona); e.innerHTML = slackInner(); const n = $('.scin', e); if (v != null && n) { n.value = v; if (f) n.focus(); } const m2 = $('#smention', e); if (m2 && mv) m2.value = mv; const l = $('.sml', e); if (l) l.scrollTop = l.scrollHeight; const u = $('#kp-unread'); if (u) u.textContent = unread(S.persona);
+}
+V.my = () => {
+  const p = PERSONAS.find(x => x.id === S.persona), role = p.id; markRead(role);
+  const mets = metricItems(role), att = mets.filter(m => mStat(m) !== 'On track').length, ts = S.tasks.filter(t => t.role === role), openT = ts.filter(t => t.status !== 'done').length + openDec(role).length;
+  const ags = AG.filter(a => a.kind === 'shared' || a.role === role);
+  return `<section class="hero" style="padding-top:6px"><span class="eyebrow">My day</span><h1 class="h1">${p.name}</h1><p>One screen for what to do today: your tasks, your numbers, your agents and your team.</p></section>
+  <div class="grid g4" style="margin:18px 0"><div class="card stat"><div class="v">${openDec(role).length}</div><div class="l">decisions waiting for you</div></div><div class="card stat"><div class="v">${openT}</div><div class="l">open items on your board</div></div><div class="card stat"><div class="v" id="kp-unread">${unread(role)}</div><div class="l">unread messages for you</div></div><div class="card stat"><div class="v">${att}</div><div class="l">of ${mets.length} numbers off target or on watch</div></div></div>
+  <section class="sec" style="margin-top:8px"><div class="sec-h"><h2 class="h2">Your agents</h2><span class="muted small">Select one to read its finding or discuss it with the team</span></div><div class="row">${ags.map(a => `<button class="chip agentchip" data-act="agent" data-id="${a.id}"><i class="sdot ${a.status === 'Needs you' ? 'n' : a.status === 'Found something' ? 'f' : ''}"></i>${a.name}${a.kind === 'shared' ? ' (shared)' : ''}</button>`).join('')}</div></section>
+  <section class="sec" id="tasks"><div class="sec-h"><h2 class="h2">Task board</h2><div class="row"><button class="btn pri sm" data-act="task-new">New task</button><button class="btn sm" data-act="task-new" data-k="wbr">Request WBR data</button></div></div>${boardHTML(role)}</section>
+  <div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:36px" id="lower">
+    <section id="metrics"><div class="sec-h"><h2 class="h2">Metric board</h2><span class="muted small">Status against target</span></div><div class="grid g3">${mets.map(metricCard).join('')}</div></section>
+    <section class="card pad" id="slack">${slackInner()}</section></div>`;
+};
+function newTaskHTML(pre) {
+  pre = pre || {}; const me = S.persona;
+  return `<span class="eyebrow">Task board</span><h2 class="h2" style="margin:4px 0 12px">${pre.kind === 'wbr' ? 'Request WBR data' : 'New task'}</h2><div class="stack">
+  <div><label class="f" for="nt-tpl">Start from a template</label><select class="in" id="nt-tpl" data-change="nttpl"><option value="">Blank task</option><option value="wbr" ${pre.kind === 'wbr' ? 'selected' : ''}>WBR data pack request</option><option value="sup">Supplier review preparation</option><option value="data">Data request</option><option value="stand">Daily stand-up notes</option></select></div>
+  <div><label class="f" for="nt-title">What needs to be done</label><input class="in" id="nt-title" type="text" value="${esc(pre.title || (pre.kind === 'wbr' ? 'WBR data pack: send your weekly numbers' : ''))}" placeholder="For example: send the Zone 3 availability numbers"></div>
+  <div class="row" style="align-items:flex-end"><div style="flex:1"><label class="f" for="nt-role">Assign to</label><select class="in" id="nt-role">${PERSONAS.map(p => `<option value="${p.id}" ${(pre.role || me) === p.id ? 'selected' : ''}>${p.who}${p.id === me ? ' (me)' : ''}</option>`).join('')}</select></div>
+  <div style="flex:1"><label class="f" for="nt-due">Due</label><select class="in" id="nt-due">${['Today 12:00', 'Today 17:00', 'Tomorrow 09:00', 'Fri', 'Mon 09:00'].map(d => `<option ${d === (pre.due || (pre.kind === 'wbr' ? 'Mon 09:00' : 'Today 17:00')) ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+  <div style="flex:1"><label class="f" for="nt-prio">Priority</label><select class="in" id="nt-prio"><option value="normal">Normal</option><option value="high">High</option></select></div></div>
+  <label class="row" style="gap:8px"><input type="checkbox" id="nt-slack" checked> Tell them in Slack (a message is posted and they get the task)</label><div class="err" id="nterr" hidden></div>
+  <div class="row"><button class="btn pri" data-act="task-create" data-k="${pre.kind || ''}">Create task</button><button class="btn" data-act="close-layer">Cancel</button></div></div>`;
+}
+const TPL = { wbr: ['WBR data pack: send your weekly numbers', 'Mon 09:00'], sup: ['Prepare the supplier review: price, volume, service', 'Tomorrow 09:00'], data: ['Data request: ', 'Today 17:00'], stand: ['Write the daily stand-up notes', 'Today 12:00'] };
+/* WBR data pack: built from the same numbers as the metric board */
+function wbrData(role) {
+  const mets = metricItems(role).map(m => { const a = m.series.slice(0, 13).concat(m.now()), tw = a.slice(7).reduce((x, y) => x + y, 0) / 7, lw = a.slice(0, 7).reduce((x, y) => x + y, 0) / 7; return { m, tw, lw, ch: lw ? (tw - lw) / Math.abs(lw) * 100 : 0, st: mStat(m) }; });
+  const mv = mets.slice().sort((a, b) => Math.abs(b.ch) - Math.abs(a.ch)).slice(0, 3), dec = S.log.filter(l => l.role === role || role === 'ch'), cnt = k => dec.filter(l => l.kind === k).length;
+  return { mets, mv, dec, cnt, open: openDec(role) };
+}
+function wbrText(role) {
+  const d = wbrData(role), p = PERSONAS.find(x => x.id === role);
+  return [`WEEKLY BUSINESS REVIEW: DATA PACK (${p.who}, ${CTRY})`, 'Illustrative data', '', 'SCORECARD', ...d.mets.map(x => `- ${x.m.n}: ${x.m.fmt(x.tw)} this week vs ${x.m.fmt(x.lw)} last week (${x.ch >= 0 ? '+' : ''}${x.ch.toFixed(1)}%), target ${x.m.fmt(x.m.tgt)}, ${x.st}`), '', 'WHAT MOVED', ...d.mv.map(x => `- ${x.m.n} ${x.ch >= 0 ? 'up' : 'down'} ${Math.abs(x.ch).toFixed(1)}% week on week. Agents: ${[...new Set(x.m.agents)].map(i => AGM[i].name).join(', ')}`), '', `DECISIONS: ${d.cnt('approved')} approved, ${d.cnt('edited')} edited, ${d.cnt('rejected')} rejected`, ...d.dec.slice(0, 5).map(l => `- ${VERB[l.kind]}: ${l.item} (${l.reason})`), '', `OPEN ITEMS: ${d.open.length} decisions waiting`, ...d.open.slice(0, 3).map(x => `- ${x.title}`)].join('\n');
+}
+function wbrHTML(role, tid) {
+  const d = wbrData(role), p = PERSONAS.find(x => x.id === role);
+  return `<span class="eyebrow">Compiled by the Business Analyst</span><h2 class="h2" style="margin:4px 0 6px">WBR data pack: ${p.who}</h2><p class="small muted">Built from the same numbers as your metric board and decision log. <span class="tag warn">Illustrative data</span></p>
+  <h3 class="h3" style="margin-top:16px">Scorecard, this week against last</h3><div class="tw card"><table class="tbl"><thead><tr><th>Metric</th><th class="n">This week</th><th class="n">Last week</th><th class="n">Change</th><th class="n">Target</th><th>Status</th></tr></thead><tbody>${d.mets.map(x => `<tr><td>${x.m.n}</td><td class="n"><b>${x.m.fmt(x.tw)}</b></td><td class="n">${x.m.fmt(x.lw)}</td><td class="n">${x.ch >= 0 ? '+' : ''}${x.ch.toFixed(1)}%</td><td class="n">${x.m.fmt(x.m.tgt)}</td><td>${statTag(x.st)}</td></tr>`).join('')}</tbody></table></div>
+  <h3 class="h3" style="margin-top:16px">What moved, and who moved it</h3><ul class="ev">${d.mv.map(x => `<li><b>${x.m.n}</b> ${x.ch >= 0 ? 'up' : 'down'} ${Math.abs(x.ch).toFixed(1)}% week on week. Agents: ${[...new Set(x.m.agents)].map(i => AGM[i].name).join(', ')}</li>`).join('')}</ul>
+  <h3 class="h3" style="margin-top:16px">Decisions this week</h3><p class="small">${d.cnt('approved')} approved, ${d.cnt('edited')} edited, ${d.cnt('rejected')} rejected.</p><ul class="ev">${d.dec.slice(0, 5).map(l => `<li>${VERB[l.kind]}: ${l.item} <span class="faint">(${esc(l.reason)})</span></li>`).join('')}</ul>
+  <h3 class="h3" style="margin-top:16px">Open items</h3><ul class="ev">${d.open.slice(0, 3).map(x => `<li>${x.title}</li>`).join('') || '<li>No decisions waiting.</li>'}</ul>
+  <h3 class="h3" style="margin-top:16px">Plain text for email or Slack</h3><textarea class="in" id="wbr-text" readonly style="min-height:150px">${esc(wbrText(role))}</textarea>
+  <div class="row" style="margin-top:12px"><button class="btn pri" data-act="wbr-send" data-id="${tid || ''}">Post to ${CHANNELS[5].n} and mark done</button><button class="btn" data-act="wbr-copy">Copy text</button></div>`;
+}
 /* ---------- presenter ---------- */
 const PSTEPS = [
-  { t: '1. Landing: the north star', time: '0:00 to 0:45', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
-  { t: '2. Country head: morning bulletin', time: '0:45 to 1:45', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
-  { t: '3. Play one scenario', time: '1:45 to 3:00', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
-  { t: '4. Approve a decision', time: '3:00 to 3:45', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
+  { t: '1. Landing: the north star', time: '0:00 to 0:40', say: 'This is one chain from supplier to shelf. Each stage shows how many agents work there and how many decisions are waiting for a person. Agents do the routine; people decide what matters.', go: () => nav('landing'), spot: '.flowwrap' },
+  { t: '2. Country head: morning bulletin', time: '0:40 to 1:30', say: 'Here is the country head at 06:00. Left: what happened. Right: the decisions that need you, each with the evidence and the ask. Open Chief of Staff or any agent card to see why.', go: () => { S.persona = 'ch'; nav('home'); }, spot: '#bulletin' },
+  { t: '3. My day: one screen per role', time: '1:30 to 2:30', say: 'Every role gets one consolidated screen: decisions and tasks on a board, numbers against target, all their agents, and a team channel. Create a task, ask a colleague in Slack, or generate the WBR data pack in one click.', go: () => { S.persona = 'ch'; nav('my'); }, spot: '#tasks' },
+  { t: '4. Play one scenario', time: '2:30 to 3:30', say: 'A truck from the dairy supplier is three hours late. Watch four agents react in a chain and decisions land in the inboxes of the replenishment lead and the store manager. The scorecard moves.', go: () => { nav('day'); S.sim.world = 'ai'; if (!S.pres.did3) { S.pres.did3 = true; setTimeout(() => { inject('truck'); simPlay(); S.sim.speed = 4; render(); }, 500); } }, spot: '#d-scen' },
+  { t: '5. Approve a decision', time: '3:30 to 4:15', say: 'Back to the country head. Open the evidence brief on the Availability Control Tower decision: key numbers, four options with cost and risk, and a what-if slider, then use the Ask the team tab to question the agents in your own words. Then approve. A reason is required and goes into the decision log.', go: () => { S.persona = 'ch'; nav('home'); simPause(); }, spot: '[data-did="d-tower"]', action: ['Open the evidence brief', () => { if (S.dec.find(d => d.id === 'd-tower')) { const L = openLayer('drawer', 'Decision brief', () => briefHTML('d-tower')); L.el.classList.add('wide'); } else toast('Decision already made.'); }],
     action2: ['Approve', () => { if (S.dec.find(d => d.id === 'd-tower' && d.status === 'open')) openDecide('d-tower', 'approve'); else toast('Already decided. Open the decision log to see it.'); }] },
-  { t: '5. Before and after', time: '3:45 to 4:30', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
-  { t: '6. Close on the north star', time: '4:30 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
+  { t: '6. Before and after', time: '4:15 to 4:45', say: 'Each workflow has a test agreed up front. Two of three pass for transfers; one fails on purpose, to show where we still need to improve. All figures are illustrative until replaced by measured baselines.', go: () => nav('compare'), spot: '#ba' },
+  { t: '7. Close on the north star', time: '4:45 to 5:00', say: 'The ask: sponsor the first end-to-end chain in one market, measure each workflow against its test, and let agents handle the routine so your people can decide what matters.', go: () => nav('landing'), spot: '.flowwrap' }
 ];
 function presHTML() {
   const i = S.pres.i, p = PSTEPS[i];
@@ -1623,7 +1777,7 @@ function presRender() { const el = $('#presenter'); el.hidden = !S.pres.on; $('#
 function presGo() { const p = PSTEPS[S.pres.i]; p.go(); presRender(); setTimeout(() => { const t = $(p.spot); if (t) { t.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); t.classList.add('spot'); setTimeout(() => t.classList.remove('spot'), 5200); } }, 350); }
 
 /* ---------- shell: routing, render, events ---------- */
-const NAV = [['landing', 'North star'], ['home', 'Home'], ['score', 'Scorecard'], ['flows', 'Workflows'], ['day', 'Day in the life'], ['agents', 'Agent portfolio'], ['log', 'Decision log'], ['compare', 'Before and after']];
+const NAV = [['landing', 'North star'], ['my', 'My day'], ['home', 'Briefing and agents'], ['score', 'Scorecard'], ['flows', 'Workflows'], ['day', 'Day in the life'], ['agents', 'Agent portfolio'], ['log', 'Decision log'], ['compare', 'Before and after']];
 function nav(r, arg) { const h = '#/' + r + (arg ? '/' + arg : ''); if (location.hash === h) route(); else location.hash = h; }
 function route() { const m = location.hash.replace(/^#\/?/, '').split('/'); S.route = V[m[0]] ? m[0] : 'landing'; S.arg = m[1] || null; window.scrollTo(0, 0); render(); document.title = 'AI Native Retail Demo'; }
 function updateTop() {
@@ -1633,10 +1787,12 @@ function render() {
   const f = document.activeElement, key = f && f.dataset && f.dataset.act ? f : null;
   const sy = window.scrollY;
   $('#nav').innerHTML = NAV.map(([r, l]) => `<a href="#/${r}" ${(S.route === r || (r === 'flows' && S.route === 'flow')) ? 'aria-current="page"' : ''}>${l}</a>`).join('');
+  const sd = $('.scin'), draft = sd && !LAY.length ? { v: sd.value, f: document.activeElement === sd } : null;
   $('#view').innerHTML = (V[S.route] || V.landing)(S.arg) + `<footer>All data in this demo is illustrative and synthetic. Country (${CTRY}), currency (${C}), zones and suppliers are set at the top of the file; zone and supplier names are still placeholders. <button class="btn sm" data-act="reset-demo">Reset demo</button></footer>`;
   S.flash = {}; updateTop(); LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); presRender();
   if (S.route === 'day') { ['#d-feed', '#d-inbox'].forEach(s => { const e = $(s); e && delete e.dataset.sig; }); updateDay(); }
   window.scrollTo(0, sy);
+  if (S.route === 'my') { const l = $('.sml'); if (l) l.scrollTop = l.scrollHeight; const n = $('.scin'); if (draft && n) { n.value = draft.v; if (draft.f) n.focus(); } }
   if (key && !LAY.length) { let sel = `[data-act="${key.dataset.act}"]`; if (key.dataset.id != null) sel += `[data-id="${key.dataset.id}"]`; if (key.dataset.k != null) sel += `[data-k="${key.dataset.k}"]`; const el = $(sel); if (el && !el.disabled) el.focus({ preventScroll: true }); }
 }
 const ACT = {
@@ -1657,7 +1813,7 @@ const ACT = {
     if (!reason) { err.textContent = 'A reason is required so the decision log is useful later.'; err.hidden = false; $('#reason').focus(); return; }
     decide(el.dataset.id, kind, reason, chg); closeLayer(); render();
   },
-  'persona-go': el => { S.persona = el.dataset.id; $('#role').value = S.persona; nav('home'); },
+  'persona-go': el => { S.persona = el.dataset.id; $('#role').value = S.persona; nav('my'); },
   'pres-on': () => { S.pres.on = true; S.pres.i = 0; presGo(); },
   'pres-off': () => { S.pres.on = false; presRender(); },
   'pres-next': () => { if (S.pres.i >= PSTEPS.length - 1) { S.pres.on = false; presRender(); toast('Guided path finished.'); } else { S.pres.i++; presGo(); } },
@@ -1691,6 +1847,32 @@ function assignTask(i, j, quiet) {
 const CHG = {
   pflt: el => { S.pflt = el.value; render(); }, tflt: el => { S.tflt = el.value; render(); }, lrole: el => { S.flt.role = el.value; render(); }, lwf: el => { S.flt.wf = el.value; render(); }
 };
+Object.assign(ACT, {
+  'task-move': el => { const t = S.tasks.find(x => x.id === el.dataset.id); t.status = el.dataset.k; if (el.dataset.k === 'done') toast('Task marked done.'); render(); },
+  'task-new': el => { openLayer('modal', 'New task', () => newTaskHTML({ kind: el.dataset.k })); setTimeout(() => { const i = $('#nt-title'); i && i.focus(); }, 30); },
+  'task-create': el => {
+    const title = $('#nt-title').value.trim(), err = $('#nterr'); if (!title) { err.textContent = 'Please describe the task.'; err.hidden = false; $('#nt-title').focus(); return; }
+    assignTo($('#nt-role').value, title, { due: $('#nt-due').value, prio: $('#nt-prio').value, kind: el.dataset.k === 'wbr' || /^WBR/i.test(title) ? 'wbr' : '', notify: $('#nt-slack').checked });
+    closeLayer(); toast('Task created.'); render();
+  },
+  'task-msg': el => { const t = S.tasks.find(x => x.id === el.dataset.id); S.compose = { to: '', text: `Update on "${t.title}": ` }; renderSlack(); const i = $('.scin'); if (i) { i.focus(); i.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); } },
+  'ch-pick': el => { S.ch = el.dataset.id; renderSlack(); },
+  'msg-task': el => { const m = S.msgs[el.dataset.ch][+el.dataset.i]; openLayer('modal', 'New task', () => newTaskHTML({ title: m.t.replace(/^@[^ ]+( [A-Za-z-]+)? /, '').slice(0, 90), role: S.persona })); },
+  'msg-ask': el => openChat(S.msgs[el.dataset.ch][+el.dataset.i].t),
+  'wbr-gen': el => { const t = S.tasks.find(x => x.id === el.dataset.id); const L = openLayer('drawer', 'WBR data pack', () => wbrHTML(t.role, t.id)); L.el.classList.add('wide'); },
+  'wbr-copy': () => { const v = $('#wbr-text').value; const ok = () => toast('Copied to the clipboard.'), bad = () => { $('#wbr-text').select(); toast('Copy was blocked here. The text is selected: press Ctrl+C or Cmd+C.'); }; try { navigator.clipboard.writeText(v).then(ok, bad); } catch (e) { bad(); } },
+  'wbr-send': el => { const t = S.tasks.find(x => x.id === el.dataset.id); const me = S.persona, d = wbrData(me), off = d.mets.filter(x => x.st === 'Off track').length; postMsg('wbr', { f: PWHO[me], k: 'role', r: me, t: `WBR data pack ready: ${d.mets.length} metrics, ${off} off track, ${d.dec.length} decisions logged this week.` }); if (t) t.status = 'done'; S.ch = 'wbr'; toast('Posted to ' + CHANNELS[5].n + '. Task marked done.'); closeLayer(); render(); },
+  'share-slack': el => {
+    const d = S.dec.find(x => x.id === el.dataset.id), an = analysisFor(d) || genAn(d), me = S.persona, ch = ROLECH[d.role] || 'ops', ag = AGM[d.agent || d.sa], r = (ag && TEAMROLE[ag.team]) || 'ch', rr = r === me ? 'ch' : r;
+    postMsg(ch, { f: PWHO[me], k: 'role', r: me, t: `Looking at "${d.title}". Confidence ${an.conf.p}%. Need your view: ${d.ask}` }); S.ch = ch;
+    setTimeout(() => postMsg(ch, { f: PWHO[rr], k: 'role', r: rr, to: me, t: `Thanks for flagging. From my side the thing to watch is: ${an.risks[0]} Happy to join a quick call.` }), reduced ? 0 : 1600);
+    toast('Shared in ' + CHANNELS.find(c => c.id === ch).n + '.'); if (S.route === 'my') renderSlack();
+  }
+});
+CHG.nttpl = el => { const t = TPL[el.value]; if (!t) return; $('#nt-title').value = t[0]; $('#nt-due').value = t[1]; };
+document.addEventListener('submit', e => { const f = e.target.closest('form[data-slackform]'); if (!f) return; e.preventDefault(); const i = $('.scin', f), to = $('#smention', f).value, v = i.value.trim(); if (!v) return; i.value = ''; S.compose = null; const me = S.persona, ch = S.ch; postMsg(ch, { f: PWHO[me], k: 'role', r: me, t: (to ? `@${PWHO[to]} ` : '') + v }); if (to) { const due = /wbr/i.test(v) ? 'Mon 09:00' : 'Today 17:00'; addTask({ role: to, title: v.length > 80 ? v.slice(0, 77) + '...' : v, by: PWHO[me], src: 'slack', due, prio: /urgent|asap|\bnow\b/i.test(v) ? 'high' : 'normal', kind: /wbr/i.test(v) ? 'wbr' : '' }); toast(`Task created on the ${PWHO[to]}'s board.`); setTimeout(() => postMsg(ch, { f: PWHO[to], k: 'role', r: to, to: me, t: ackText(to, v, due) }), reduced ? 0 : 1400); } });
+
+
 document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-chatform]'); if (!f) return; e.preventDefault(); const i = $('.cin', f); const v = i.value; i.value = ''; chatSend(f.dataset.chatform, v); });
 document.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && CHG[el.dataset.change]) CHG[el.dataset.change](el); });
@@ -1706,7 +1888,7 @@ document.addEventListener('input', e => {
 });
 window.addEventListener('hashchange', route);
 $('#role').innerHTML = PERSONAS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-$('#role').addEventListener('change', e => { S.persona = e.target.value; if (S.route === 'landing' || S.route === 'flow') nav('home'); else render(); });
+$('#role').addEventListener('change', e => { S.persona = e.target.value; if (S.route === 'landing' || S.route === 'flow') nav('my'); else render(); });
 $('#btn-chat').addEventListener('click', () => openChat());
 $('#btn-pres').addEventListener('click', () => { S.pres.on ? ACT['pres-off']() : ACT['pres-on'](); });
 function setTheme(t) { document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('ainr-theme', t); } catch (e) { } $('#btn-theme').textContent = t === 'dark' ? 'Light theme' : 'Dark theme'; }
