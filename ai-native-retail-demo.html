@@ -278,7 +278,7 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
    Search the file for "BASELINES" to find the figures to replace with
    measured baselines later.
    ===================================================================== */
-const CONFIG = { COUNTRY: '[COUNTRY]', CURRENCY: '[CURRENCY]', SEED: 20240611 };
+const CONFIG = { COUNTRY: 'Chile', CURRENCY: 'USD', SEED: 20240611 };
 const ZONES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5', 'Zone 6'];
 const ZONE_SHARE = [0.22, 0.19, 0.17, 0.16, 0.14, 0.12];            // share of GMV, sums to 1
 const SUPPLIERS = ['Supplier A', 'Supplier B', 'Supplier C', 'Supplier D', 'Supplier E', 'Supplier F', 'Supplier G', 'Supplier H', 'Supplier I', 'Supplier J', 'Supplier K', 'Supplier L'];
@@ -1633,7 +1633,7 @@ function render() {
   const f = document.activeElement, key = f && f.dataset && f.dataset.act ? f : null;
   const sy = window.scrollY;
   $('#nav').innerHTML = NAV.map(([r, l]) => `<a href="#/${r}" ${(S.route === r || (r === 'flows' && S.route === 'flow')) ? 'aria-current="page"' : ''}>${l}</a>`).join('');
-  $('#view').innerHTML = (V[S.route] || V.landing)(S.arg) + `<footer>All data in this demo is illustrative and synthetic. Placeholders such as ${CTRY}, ${C}, zones and suppliers are set at the top of the file. <button class="btn sm" data-act="reset-demo">Reset demo</button></footer>`;
+  $('#view').innerHTML = (V[S.route] || V.landing)(S.arg) + `<footer>All data in this demo is illustrative and synthetic. Country (${CTRY}), currency (${C}), zones and suppliers are set at the top of the file; zone and supplier names are still placeholders. <button class="btn sm" data-act="reset-demo">Reset demo</button></footer>`;
   S.flash = {}; updateTop(); LAY.forEach(L => { if (L.el.classList.contains('drawer')) L.refresh(); }); presRender();
   if (S.route === 'day') { ['#d-feed', '#d-inbox'].forEach(s => { const e = $(s); e && delete e.dataset.sig; }); updateDay(); }
   window.scrollTo(0, sy);
