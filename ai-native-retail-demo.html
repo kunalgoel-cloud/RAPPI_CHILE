@@ -274,6 +274,8 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0}
 .tc-top{display:flex;gap:8px;align-items:center}.tc-main{all:unset;flex:1;min-width:0;cursor:pointer;display:block}.tc-main:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
 .tt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13.5px;font-weight:600;line-height:1.3}.tm{display:block;font-size:12px;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tc-act{flex:none;padding:4px 10px;min-height:30px}.tc-x{border-top:1px solid var(--line);margin-top:7px;padding-top:7px}
+.ti{font-weight:700;font-size:11.5px}.ti.good{color:var(--good)}.ti.bad{color:var(--crit)}
+.layer.modal.wide .panel{width:min(980px,100%)}.tbl.tgt th,.tbl.tgt td{padding:8px 7px;font-size:13px}.linkbtn{all:unset;cursor:pointer;color:var(--accent);text-align:left;font-size:13px;line-height:1.3}.linkbtn:hover{text-decoration:underline}.linkbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media(max-width:1500px){.role>span{display:none}}
 @media(max-width:640px){#toast{top:auto;bottom:16px}.wrap{padding:0 16px}.pbody{padding:20px 16px 24px}.top-in{gap:8px}.role select{max-width:160px}.lane{grid-template-columns:90px 1fr}#presenter{right:8px;bottom:8px;width:calc(100% - 16px)}.cmp{grid-template-columns:54px 1fr 54px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
@@ -1177,7 +1179,7 @@ function genAn(d) {
 function checkBox(d, kind) {
   const an = analysisFor(d) || genAn(d);
   const body = kind === 'reject' ? `<b>If you reject:</b> ${an.noact}` : kind === 'edit' ? `<b>Agent's recommendation:</b> ${an.sum}` : `<b>What happens next:</b> ${an.next.slice(0, 3).join('; ')}.`;
-  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> Confidence ${an.conf.p}%. Biggest risk: ${an.risks[0]}${fitLine(d)}${raciLine(d)}<br><span style="display:block;margin-top:6px">${body}</span><span class="row" style="margin-top:8px"><button class="chip" data-act="brief" data-id="${d.id}">Open the full evidence brief</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this first</button></span></div>`;
+  return `<div class="card pad small" style="margin-top:12px;background:var(--surface2);box-shadow:none"><b>Before you confirm.</b> ${tgtSentence(d)} Biggest risk: ${an.risks[0]}${fitLine(d)}${raciLine(d)}<br><span style="display:block;margin-top:6px">${body}</span><span class="row" style="margin-top:8px"><button class="chip" data-act="brief" data-id="${d.id}">Open the full evidence brief</button><button class="chip" data-act="brief-q" data-id="${d.id}">Question this first</button></span></div>`;
 }
 function barSVG(c) {
   const W = 520, H = 176, pl = 8, pb = 24, pt = 20, n = c.data.length, mx = Math.max(...c.data, c.ref || 0) * 1.15, bw = (W - pl * 2) / n;
@@ -2365,7 +2367,7 @@ function briefHTML(id) {
   let body = '';
   if (tab === 'numbers') {
     const facts = an.facts.filter(x => x[1]).slice(0, 6);
-    body = `<div class="brief-rec" style="margin-top:14px"><b>${rec.n}.</b> ${firstS(an.sum)}</div>${numChips(d)}
+    body = `<div class="brief-rec" style="margin-top:14px"><b>${rec.n}.</b> ${firstS(an.sum)}</div>${numChips(d)}${tgtTable(d)}
     ${facts.length ? `<div class="grid g3" style="margin-top:12px">${facts.map(x => `<button class="wt big" data-act="dtab-go" data-id="${d.id}"><span class="wl">${x[0]}</span><b>${x[1]}</b><span class="wc">${x[2] || ''}</span></button>`).join('')}</div>` : `<ul class="ev">${an.facts.map(x => `<li>${x[0]}</li>`).join('')}</ul>`}
     ${DRILL[ckey(d)] ? `<h3 class="h3" style="margin:18px 0 6px">How the number is built</h3>${calcHTML(DRILL[ckey(d)].find(s => s.t === 'calc').steps)}` : ''}
     <h3 class="h3" style="margin:18px 0 6px">Options</h3><div class="tw card"><table class="tbl"><thead><tr><th>Option</th><th>Cost</th><th>Net result</th></tr></thead><tbody>${an.opts.map(o => `<tr class="${o.rec ? 'rec' : ''}"><td><b>${o.n}</b>${o.rec ? ' <span class="tag acc">Recommended</span>' : ''}</td><td class="small">${o.cost}</td><td class="small">${o.net || o.gain}</td></tr>`).join('')}</tbody></table></div>
@@ -2417,9 +2419,56 @@ function boardHTML(role) {
     return `<div class="kcol" role="group" aria-label="${l}"><div class="kh"><span>${l}</span><span class="faint">${n}</span></div><div class="kl">${decs.map(decCard).join('')}${items.map(taskCard).join('')}${n ? '' : '<p class="small faint" style="margin:4px 2px">Nothing here.</p>'}</div></div>`; };
   const done = all.filter(t => t.status === 'done'), nd = done.length + dnow.length;
   const doneCol = `<div class="kcol" role="group" aria-label="Done"><div class="kh"><span>Done</span><span class="faint">${nd}</span></div><div class="kl">${nd ? `<button class="btn sm" data-act="tdone">${S.tdone ? 'Hide' : 'Show'} ${nd} done</button>` : '<p class="small faint" style="margin:4px 2px">Nothing yet.</p>'}${S.tdone ? dnow.map(d => `<div class="tc done"><span class="tt">${d.title}</span><span class="tm">${VERB[d.status]} by ${d.by || ''}</span></div>`).join('') + done.map(t => `<div class="tc done"><span class="tt">${esc(t.title)}</span><button class="btn sm" data-act="task-move" data-id="${t.id}" data-k="todo">Reopen</button></div>`).join('') : ''}</div></div>`;
-  return `<div class="row" role="group" aria-label="Filter the board" style="gap:6px;margin-bottom:10px">${[['all', 'All', cnt.all], ['dec', 'Decisions', cnt.dec], ['today', 'Due today', cnt.today], ['hi', 'High priority', cnt.hi]].map(([k, l, n]) => `<button class="chip" data-act="tfilter" data-id="${k}" aria-pressed="${flt === k}" style="${flt === k ? 'background:var(--accent-soft);border-color:var(--accent);color:var(--accent)' : ''}">${l} ${n}</button>`).join('')}</div><div class="kanban">${col('todo', 'To do')}${col('doing', 'In progress')}${col('wait', 'Waiting on others')}${doneCol}</div>`;
+  return `<div class="row" role="group" aria-label="Filter the board" style="gap:6px;margin-bottom:10px">${[['all', 'All', cnt.all], ['dec', 'Decisions', cnt.dec], ['today', 'Due today', cnt.today], ['hi', 'High priority', cnt.hi]].map(([k, l, n]) => `<button class="chip" data-act="tfilter" data-id="${k}" aria-pressed="${flt === k}" style="${flt === k ? 'background:var(--accent-soft);border-color:var(--accent);color:var(--accent)' : ''}">${l} ${n}</button>`).join('')}<span class="grow"></span><button class="chip" data-act="pending-impact">Pending decisions together</button></div><div class="kanban">${col('todo', 'To do')}${col('doing', 'In progress')}${col('wait', 'Waiting on others')}${doneCol}</div>`;
 }
 S.tx = {}; S.tf = 'all'; S.tdone = false;
+
+/* ---------- target impact: what a decision does to the targets people are held to ---------- */
+const CORE_KEYS = ['gmv', 'avail', 'repeat', 'margin', 'wc', 'pick'], SHORTN = { gmv: 'GMV', avail: 'Availability', repeat: 'Repeat rate', margin: 'Margin', wc: 'Working capital', pick: 'Pick speed' };
+const EFFD = { 'd-comp': { gmv: 60000, margin: -0.1, repeat: 0.1 }, 'd-tower': { avail: 0.4, gmv: 14000, repeat: 0.05 }, 'd-guard': { margin: 0.04, avail: -0.05 }, 'd-cash': { wc: -0.4, avail: -0.08 }, 'd-lineup': { gmv: 60000, wc: 0.3, margin: -0.05, avail: -0.1, pick: -2 }, 'd-transfer': { avail: 0.3, wc: 0.02 }, 'd-coach': { pick: 6, avail: -0.05 }, 'd-fdoc': { margin: 0.05, avail: 0.1 }, 'd-unblock': { avail: 0.2, wc: 0.05 }, 'd-negprep': { margin: 0.03, avail: -0.03 }, 'd-camp': { gmv: 16000, avail: -0.05, wc: 0.03, pick: -1 } };
+S.dec.forEach(d => { if (EFFD[d.id]) d.effect = Object.assign({}, EFFD[d.id]); });
+const coreItem = (k, v) => ({ now: () => v, tgt: CORE_T[k].t, tol: CORE_T[k].tol, good: METRIC[k].good });
+const SEV = { 'On track': 0, 'Watch': 1, 'Off track': 2 };
+const dfmt = (k, e) => e === 0 ? '&middot;' : `${e > 0 ? '+' : '-'}${METRIC[k].d(e)}`;
+function tgtRows(d) {
+  const others = openDec().filter(x => x.id !== d.id);
+  return CORE_KEYS.map(k => { const m = METRIC[k], now = mNow(k), e = (d.effect || {})[k] || 0, goodDir = m.good === 'up' ? e > 0 : e < 0, wE = e === 0 ? 0 : goodDir ? 0.5 * e : 1.4 * e, all = others.reduce((s, x) => s + ((x.effect || {})[k] || 0), 0) + e;
+    return { k, m, now, e, goodDir, after: now + e, worst: now + wE, all: now + all, sNow: mStat(coreItem(k, now)), sAfter: mStat(coreItem(k, now + e)), sWorst: mStat(coreItem(k, now + wE)), sAll: mStat(coreItem(k, now + all)), mine: raciOf(k).A.includes(S.persona) }; });
+}
+function tgtSummary(d) { const r = tgtRows(d), ch = r.filter(x => x.e !== 0); return { rows: r, ch, helps: ch.filter(x => x.goodDir).length, hurts: ch.filter(x => !x.goodDir).length, slips: r.filter(x => SEV[x.sAfter] > SEV[x.sNow]).length, wslips: r.filter(x => SEV[x.sWorst] > SEV[x.sNow]).length, aslips: r.filter(x => SEV[x.sAll] > SEV[x.sNow]).length }; }
+function numChips(d) {
+  const ch = CHIPS[ckey(d)], eff = Object.entries(d.effect || {})[0], t = tgtSummary(d);
+  const imp = ch ? ch[0] : eff ? `${METRIC[eff[0]].name} ${eff[1] > 0 ? '+' : '-'}${METRIC[eff[0]].d(eff[1])}` : 'No scorecard change', cost = ch ? ch[1] : 'No spend';
+  const cls = t.slips ? 'crit' : (t.wslips || t.aslips || t.hurts) ? 'warn' : 'good', txt = t.slips ? `${t.slips} target${t.slips > 1 ? 's' : ''} slip` : t.wslips ? `Holds, worst case slips ${t.wslips}` : t.aslips ? `Holds alone, slips with others` : t.hurts ? `Holds, ${t.hurts} trade-off${t.hurts > 1 ? 's' : ''}` : 'All targets hold';
+  return `<div class="nchips"><span class="nchip"><i>Impact</i><b>${imp}</b></span><span class="nchip"><i>Cost</i><b>${cost}</b></span><span class="nchip ${cls}"><i>My targets</i><b>${txt}</b></span></div>`;
+}
+const tgtStrip = d => tgtSummary(d).ch.slice(0, 4).map(x => `<span class="ti ${x.goodDir ? 'good' : 'bad'}">${SHORTN[x.k].split(' ')[0]}${x.e > 0 ? '&#9650;' : '&#9660;'}</span>`).join(' ') || 'no target change';
+function decCard(d) {
+  const open = S.tx[d.id], f = scenFit(d);
+  return `<div class="tc dec"><div class="tc-top"><button class="tc-main" data-act="task-x" data-id="${d.id}" aria-expanded="${!!open}"><span class="tt">${d.title}</span><span class="tm">${impText(d)} &middot; ${tgtStrip(d)}${d.dor ? ' &middot; Escalated' : ''}</span></button><button class="btn sm pri tc-act" data-act="brief" data-id="${d.id}">Decide</button></div>
+  ${open ? `<div class="tc-x">${numChips(d)}${whyTiles(d)}<div class="small" style="margin-top:8px"><b>Asks:</b> ${d.ask}</div><div class="row" style="margin-top:8px;gap:6px"><button class="btn sm pri" data-act="decide" data-k="approve" data-id="${d.id}">Approve</button><button class="btn sm" data-act="decide" data-k="edit" data-id="${d.id}">Edit</button><button class="btn sm bad" data-act="decide" data-k="reject" data-id="${d.id}">Reject</button><button class="btn sm" data-act="brief-q" data-id="${d.id}">Ask</button></div></div>` : ''}</div>`;
+}
+const stg = (s, v) => `<span class="tag ${s === 'On track' ? 'good' : s === 'Watch' ? 'warn' : 'crit'}" style="font-size:11px">${s}</span>`;
+function tgtTable(d) {
+  const t = tgtSummary(d), n = openDec().filter(x => x.id !== d.id).length;
+  const cell = (m, v, s, e) => `<td class="n"><b>${m.fmt(v)}</b><br>${stg(s)}</td>`;
+  const tw = tgtWho(d);
+  return `<h3 class="h3" style="margin:16px 0 6px">What this does to your targets</h3><div class="tw card"><table class="tbl tgt"><thead><tr><th>Target</th><th class="n">Now</th><th class="n">Change</th><th class="n">After</th><th class="n">Worst case</th><th class="n">With all ${n + 1} pending</th><th class="n">Target</th></tr></thead><tbody>${t.rows.map(r => `<tr style="${r.e === 0 ? 'opacity:.55' : ''}"><td><b>${SHORTN[r.k]}</b>${r.mine ? '<br><span class="tag acc" style="font-size:11px">Your target</span>' : ''}</td>${cell(r.m, r.now, r.sNow)}<td class="n ${r.e === 0 ? '' : r.goodDir ? 'delta good' : 'delta bad'}">${dfmt(r.k, r.e)}</td>${cell(r.m, r.after, r.sAfter)}${cell(r.m, r.worst, r.sWorst)}${cell(r.m, r.all, r.sAll)}<td class="n">${r.m.fmt(CORE_T[r.k].t)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="small muted" style="margin:6px 0 0">The scorecard moves by exactly the Change column when you approve. Worst case assumes the harmful effects are 40% larger and the helpful ones half as big.</p>${tw}<div class="row" style="margin-top:8px"><button class="chip" data-act="pending-impact">See all pending decisions together</button></div>`;
+}
+function tgtWho(d) {
+  const k = rowFor(d), r = k ? raciOf(k) : null, tools = [...new Set(wbFor(d).filter(x => x[0] !== 'bi' && x[0] !== 'slack').map(x => S.tools[x[0]].n))];
+  if (!r && !tools.length) return '';
+  const nm = l => l.map(rname).join(', ') || 'nobody';
+  return `<p class="small" style="margin:10px 0 0"><b>Also affects:</b> ${r ? `executes: ${nm(r.R)}; informed: ${nm(r.I)}; ` : ''}tools updated: ${tools.join(', ') || 'none'}.</p>`;
+}
+function tgtSentence(d) { const t = tgtSummary(d); if (!t.ch.length) return 'No target changes.'; return 'Targets after this: ' + t.ch.map(x => `${SHORTN[x.k]} ${x.m.fmt(x.after)} (${x.sAfter.toLowerCase()})`).join(', ') + '.' + (t.slips ? ` ${t.slips} slip${t.slips > 1 ? '' : 's'}.` : ' None slip.'); }
+function pendingHTML() {
+  const ds = openDec(), tot = {}; CORE_KEYS.forEach(k => { tot[k] = ds.reduce((s, x) => s + ((x.effect || {})[k] || 0), 0); });
+  return `<span class="eyebrow">Pending decisions</span><h2 class="h2" style="margin:4px 0 6px">All ${ds.length} together</h2><p class="small muted">Each decision can look safe alone. This shows what happens to every target if all of them are approved.</p>
+  <div class="tw card" style="margin-top:10px"><table class="tbl"><thead><tr><th>Decision</th>${CORE_KEYS.map(k => `<th class="n">${SHORTN[k]}</th>`).join('')}</tr></thead><tbody>${ds.map(d => `<tr><td class="small" style="min-width:220px"><button class="linkbtn" data-act="brief" data-id="${d.id}">${d.title.length > 60 ? d.title.slice(0, 58) + '...' : d.title}</button></td>${CORE_KEYS.map(k => { const e = (d.effect || {})[k] || 0, g = METRIC[k].good === 'up' ? e > 0 : e < 0; return `<td class="n ${e === 0 ? '' : g ? 'delta good' : 'delta bad'}">${dfmt(k, e)}</td>`; }).join('')}</tr>`).join('')}
+  <tr style="font-weight:700"><td>Now</td>${CORE_KEYS.map(k => `<td class="n">${METRIC[k].fmt(mNow(k))}</td>`).join('')}</tr><tr style="font-weight:700"><td>After all approved</td>${CORE_KEYS.map(k => `<td class="n">${METRIC[k].fmt(mNow(k) + tot[k])}<br>${stg(mStat(coreItem(k, mNow(k) + tot[k])))}</td>`).join('')}</tr><tr><td>Target</td>${CORE_KEYS.map(k => `<td class="n">${METRIC[k].fmt(CORE_T[k].t)}</td>`).join('')}</tr></tbody></table></div>`;
+}
 
 /* ---------- presenter ---------- */
 const PSTEPS = [
@@ -2619,6 +2668,8 @@ Object.assign(ACT, {
   tfilter: el => { S.tf = el.dataset.id; render(); },
   tdone: () => { S.tdone = !S.tdone; render(); }
 });
+
+Object.assign(ACT, { 'pending-impact': () => { const L = openLayer('modal', 'Pending decisions together', pendingHTML); L.el.classList.add('wide'); } });
 
 document.addEventListener('click', e => { const el = e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el, e); });
 document.addEventListener('submit', e => { const f = e.target.closest('form[data-chatform]'); if (!f) return; e.preventDefault(); const i = $('.cin', f); const v = i.value; i.value = ''; chatSend(f.dataset.chatform, v); });
